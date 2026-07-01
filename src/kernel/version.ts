@@ -6,6 +6,6 @@ declare const __APP_VERSION__: string;
 export const APP_VERSION = __APP_VERSION__;
 
 export const RELEASE_NOTES: string[] = [
-  "THE ORACLE — ask anything about the open passage. Two minds: ON YOUR MACHINE (Ollama — install, open, done; nothing leaves your device) or IN THE CLOUD (your own Anthropic key, stored only here). Every answer names the engine that gave it.",
-  "THE THREADS — Torrey's 432,898 cross-references, local and instant; SEARCH, MARKS (press B), COMPARE, offline install — all landed in the last release and are yours.",
+  "THE ORACLE speaks to frontier minds — paste one key from Anthropic, xAI, Gemini, Groq or OpenRouter and CODEX asks the STRONGEST model your key can see, today and whenever the next one ships. Gemini and Groq keys are free.",
+  "Or keep it entirely on your machine with Ollama — private, free, no key. Your key persists on this device and nowhere else.",
 ];

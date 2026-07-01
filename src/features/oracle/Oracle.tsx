@@ -6,7 +6,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useApp, setState, type OracleSettings } from "@/kernel/store";
-import { askOracle, probeLocal, type OracleAnswer } from "@/engine/oracle";
+import { askOracle, probeLocal, cloudProvider, type OracleAnswer } from "@/engine/oracle";
 import { getChapter, bookById } from "@/engine/corpus";
 import "./oracle.css";
 
@@ -32,10 +32,41 @@ function Setup() {
 
   return (
     <div className="gx-oracle-setup">
-      <p className="gx-oracle-lead">The Oracle needs a mind. Pick one — you can switch anytime.</p>
+      <p className="gx-oracle-lead">The Oracle needs a mind. Plug in the best one you have — you can switch anytime.</p>
 
       <section className="gx-oracle-card">
-        <h3 className="gx-oracle-card-title">◆ ON YOUR MACHINE <span className="gx-oracle-tag">private · free</span></h3>
+        <h3 className="gx-oracle-card-title">✦ YOUR FRONTIER MODEL <span className="gx-oracle-tag">one key · CODEX picks its strongest mind</span></h3>
+        <ol className="gx-oracle-steps">
+          <li>Paste a key from <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">Anthropic</a>, <a href="https://console.x.ai" target="_blank" rel="noreferrer">xAI</a>, <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">Gemini</a>, <a href="https://console.groq.com/keys" target="_blank" rel="noreferrer">Groq</a> or <a href="https://openrouter.ai/keys" target="_blank" rel="noreferrer">OpenRouter</a> — Gemini and Groq have free tiers.</li>
+          <li>It stays on this device, nowhere else. CODEX asks the strongest model your key can see.</li>
+        </ol>
+        <div className="gx-oracle-actions">
+          <input
+            className="gx-oracle-key"
+            type="password"
+            placeholder="sk-ant-… · xai-… · AIza… · gsk_… · sk-or-…"
+            value={oracle.anthropicKey}
+            onChange={(e) => setOracle({ anthropicKey: e.target.value })}
+          />
+          <button
+            className="gx-oracle-btn"
+            disabled={!cloudProvider(oracle.anthropicKey)}
+            onClick={() => setOracle({ engine: "cloud" })}
+          >USE CLOUD</button>
+        </div>
+        {oracle.anthropicKey && !cloudProvider(oracle.anthropicKey) ? (
+          <p className="gx-oracle-keyhint">
+            That doesn't look like a key I know — Anthropic <code>sk-ant-</code> · xAI <code>xai-</code> · Gemini <code>AIza</code> · Groq <code>gsk_</code> · OpenRouter <code>sk-or-</code>.
+          </p>
+        ) : cloudProvider(oracle.anthropicKey) ? (
+          <p className="gx-oracle-keyhint is-ok">
+            ● {cloudProvider(oracle.anthropicKey)!.label} key recognized
+          </p>
+        ) : null}
+      </section>
+
+      <section className="gx-oracle-card">
+        <h3 className="gx-oracle-card-title">◆ ON YOUR MACHINE <span className="gx-oracle-tag">private · free · no key</span></h3>
         <ol className="gx-oracle-steps">
           <li>Download <a href="https://ollama.com" target="_blank" rel="noreferrer">Ollama</a> and open it (it's one app, no account).</li>
           <li>In Ollama, pick any model when it asks — the small ones work fine.</li>
@@ -61,28 +92,6 @@ function Setup() {
             </div>
           </div>
         ) : null}
-      </section>
-
-      <section className="gx-oracle-card">
-        <h3 className="gx-oracle-card-title">✦ IN THE CLOUD <span className="gx-oracle-tag">smartest · pay-as-you-go</span></h3>
-        <ol className="gx-oracle-steps">
-          <li>Get an API key at <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">console.anthropic.com</a>.</li>
-          <li>Paste it here — it stays on this device, nowhere else.</li>
-        </ol>
-        <div className="gx-oracle-actions">
-          <input
-            className="gx-oracle-key"
-            type="password"
-            placeholder="sk-ant-…"
-            value={oracle.anthropicKey}
-            onChange={(e) => setOracle({ anthropicKey: e.target.value })}
-          />
-          <button
-            className="gx-oracle-btn"
-            disabled={!oracle.anthropicKey.startsWith("sk-ant-")}
-            onClick={() => setOracle({ engine: "cloud" })}
-          >USE CLOUD</button>
-        </div>
       </section>
     </div>
   );

@@ -49,6 +49,13 @@
 }
 .gx-oracle-key:focus { border-color: color-mix(in oklab, var(--accent) 45%, transparent); }
 
+.gx-oracle-keyhint {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.04em;
+  color: var(--red-letter); margin: 8px 0 0; line-height: 1.6;
+}
+.gx-oracle-keyhint.is-ok { color: #7fd18a; }
+.gx-oracle-keyhint code { font-size: 9.5px; }
+
 .gx-oracle-oath {
   font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em;
   color: var(--fg-dim); margin: 0 0 12px; line-height: 1.6;

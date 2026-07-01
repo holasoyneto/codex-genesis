@@ -63,12 +63,74 @@ async function askLocal(question: string, context: string): Promise<OracleAnswer
   return { text: j.choices[0]?.message?.content ?? "", engine: "local", model: probe.model };
 }
 
-// ── cloud (Anthropic, user's own key, browser-direct) ─────────────────
-const CLOUD_MODEL = "claude-opus-4-8";
+// ── cloud (the USER'S OWN key, browser-direct — no middleman) ─────────
+// The key's shape names its provider. Every provider here was verified to
+// answer browser CORS; Gemini, Groq and OpenRouter carry FREE tiers.
+export interface CloudProvider {
+  id: string;
+  label: string;
+  free: boolean;
+  base: string;                       // OpenAI-compatible base URL ("" = Anthropic native)
+  pick: (models: string[]) => string; // choose a model from what the key can see
+}
 
-async function askCloud(question: string, context: string): Promise<OracleAnswer> {
-  const key = getState().settings.oracle.anthropicKey;
-  if (!key) throw new Error("no key — paste your Anthropic API key in the Oracle setup");
+const newest = (ids: string[]) => [...ids].sort((a, b) => b.localeCompare(a, undefined, { numeric: true }))[0];
+
+const PROVIDERS: { prefix: string; p: CloudProvider }[] = [
+  { prefix: "sk-ant-", p: { id: "anthropic", label: "Anthropic (Claude)", free: false, base: "", pick: () => ANTHROPIC_MODEL } },
+  { prefix: "xai-", p: { id: "xai", label: "xAI (Grok)", free: false, base: "https://api.x.ai/v1",
+    pick: (m) => newest(m.filter((x) => /^grok/.test(x))) ?? m[0] } },
+  { prefix: "AIza", p: { id: "gemini", label: "Google (Gemini)", free: true,
+    base: "https://generativelanguage.googleapis.com/v1beta/openai",
+    // frontier first: newest pro, then newest flash
+    pick: (m) => newest(m.filter((x) => /gemini-[\d.]+-pro$/.test(x.replace(/^models\//, ""))))
+      ?? newest(m.filter((x) => /gemini-[\d.]+-flash$/.test(x.replace(/^models\//, "")))) ?? m[0] } },
+  { prefix: "gsk_", p: { id: "groq", label: "Groq", free: true, base: "https://api.groq.com/openai/v1",
+    pick: (m) => newest(m.filter((x) => /llama|deepseek|qwen/.test(x))) ?? m[0] } },
+  { prefix: "sk-or-", p: { id: "openrouter", label: "OpenRouter", free: true, base: "https://openrouter.ai/api/v1",
+    pick: () => "openrouter/auto" } },
+];
+
+export function cloudProvider(key: string): CloudProvider | null {
+  return PROVIDERS.find(({ prefix }) => key.startsWith(prefix))?.p ?? null;
+}
+
+const ANTHROPIC_MODEL = "claude-opus-4-8"; // fallback when discovery fails
+
+// The strongest mind the key can see, discovered live — built for the
+// moment the next frontier model ships. Mythos > Fable > newest Opus >
+// newest Sonnet > whatever else answers.
+const ANTHROPIC_RANK = [/^claude-mythos/, /^claude-fable/, /^claude-opus/, /^claude-sonnet/];
+let anthropicPicked: { key: string; model: string } | null = null;
+
+async function pickAnthropicModel(key: string): Promise<string> {
+  if (anthropicPicked?.key === key) return anthropicPicked.model;
+  try {
+    const r = await fetch("https://api.anthropic.com/v1/models", {
+      headers: {
+        "x-api-key": key,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true",
+      },
+    });
+    if (!r.ok) return ANTHROPIC_MODEL;
+    const ids = ((await r.json()) as { data: { id: string }[] }).data.map((m) => m.id);
+    for (const rank of ANTHROPIC_RANK) {
+      const tier = ids.filter((id) => rank.test(id));
+      if (tier.length) {
+        const model = newest(tier)!;
+        anthropicPicked = { key, model };
+        return model;
+      }
+    }
+    return ids[0] ?? ANTHROPIC_MODEL;
+  } catch {
+    return ANTHROPIC_MODEL;
+  }
+}
+
+async function askAnthropic(key: string, question: string, context: string): Promise<OracleAnswer> {
+  const model = await pickAnthropicModel(key);
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -78,7 +140,7 @@ async function askCloud(question: string, context: string): Promise<OracleAnswer
       "anthropic-dangerous-direct-browser-access": "true",
     },
     body: JSON.stringify({
-      model: CLOUD_MODEL,
+      model,
       max_tokens: 4096,
       system: SYSTEM,
       messages: [{ role: "user", content: `${context}\n\n${question}` }],
@@ -90,10 +152,45 @@ async function askCloud(question: string, context: string): Promise<OracleAnswer
   }
   const j = (await r.json()) as { stop_reason: string; content: { type: string; text?: string }[] };
   if (j.stop_reason === "refusal") {
-    return { text: "The Oracle declined this question.", engine: "cloud", model: CLOUD_MODEL };
+    return { text: "The Oracle declined this question.", engine: "cloud", model };
   }
   const text = j.content.filter((b) => b.type === "text").map((b) => b.text).join("\n");
-  return { text, engine: "cloud", model: CLOUD_MODEL };
+  return { text, engine: "cloud", model };
+}
+
+async function askOpenAICompat(p: CloudProvider, key: string, question: string, context: string): Promise<OracleAnswer> {
+  const auth = { Authorization: `Bearer ${key}`, "X-Title": "CODEX" };
+  const models = await fetch(`${p.base}/models`, { headers: auth });
+  if (models.status === 401 || models.status === 403) throw new Error(`the ${p.label} key was not accepted — check it in Oracle setup`);
+  if (!models.ok) throw new Error(`cloud engine (${p.id} models): ${models.status}`);
+  const list = ((await models.json()) as { data: { id: string }[] }).data.map((m) => m.id);
+  const model = p.pick(list);
+  if (!model) throw new Error(`this ${p.label} key can see no models`);
+
+  const r = await fetch(`${p.base}/chat/completions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...auth },
+    body: JSON.stringify({
+      model,
+      max_tokens: 4096,
+      messages: [
+        { role: "system", content: SYSTEM },
+        { role: "user", content: `${context}\n\n${question}` },
+      ],
+    }),
+  });
+  if (!r.ok) throw new Error(`cloud engine (${p.id}): ${r.status}`);
+  const j = (await r.json()) as { choices: { message: { content: string } }[] };
+  return { text: j.choices[0]?.message?.content ?? "", engine: "cloud", model: model.replace(/^models\//, "") };
+}
+
+async function askCloud(question: string, context: string): Promise<OracleAnswer> {
+  const key = getState().settings.oracle.anthropicKey;
+  const p = cloudProvider(key);
+  if (!p) throw new Error("no usable key — paste a key from Gemini, Groq, OpenRouter, Anthropic or xAI in Oracle setup");
+  return p.id === "anthropic"
+    ? askAnthropic(key, question, context)
+    : askOpenAICompat(p, key, question, context);
 }
 
 // ── the door ───────────────────────────────────────────────────────────

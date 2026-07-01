@@ -282,13 +282,34 @@ try {
     await page.waitForSelector(".gx-oracle-setup", { timeout: 5000 });
     const setup = await page.evaluate(() => ({
       cards: document.querySelectorAll(".gx-oracle-card").length,
-      cloudGated: document.querySelector(".gx-oracle-card:nth-of-type(2) .gx-oracle-btn")?.disabled,
+      cloudGated: [...document.querySelectorAll(".gx-oracle-btn")].find((b) => /USE CLOUD/.test(b.textContent))?.disabled,
     }));
-    check("oracle: setup offers local + cloud, key button gated", setup.cards === 2 && setup.cloudGated === true, JSON.stringify(setup));
+    check("oracle: setup offers frontier + local, key button gated", setup.cards === 2 && setup.cloudGated === true, JSON.stringify(setup));
     await page.evaluate(() => [...document.querySelectorAll(".gx-oracle-btn")].find((b) => /TEST/.test(b.textContent)).click());
     await page.waitForFunction(() => document.querySelector(".gx-oracle-probe.is-fail, .gx-oracle-probe.is-ok"), { timeout: 10000 });
     const probe = await page.evaluate(() => document.querySelector(".gx-oracle-probe")?.className);
     check("oracle: probe answers honestly", /is-fail|is-ok/.test(probe || ""), probe);
+    // Keys persist: paste an xAI-shaped key, reload, it's still there and
+    // recognized (the provider is detected by key shape).
+    await page.type(".gx-oracle-key", "xai-persistence-proof");
+    await sleep(500); // debounce persist
+    await page.reload({ waitUntil: "load" });
+    await page.waitForFunction(() => window.__CODEX_READY__ === true, { timeout: 30000 });
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "oracle");
+    await sleep(250);
+    await page.keyboard.press("Enter");
+    await page.waitForSelector(".gx-oracle-key", { timeout: 5000 });
+    const persisted = await page.evaluate(() => ({
+      key: document.querySelector(".gx-oracle-key")?.value,
+      hint: document.querySelector(".gx-oracle-keyhint")?.textContent,
+      enabled: ![...document.querySelectorAll(".gx-oracle-btn")].find((b) => /USE CLOUD/.test(b.textContent))?.disabled,
+    }));
+    check("oracle: key persists across reload + provider recognized",
+      persisted.key === "xai-persistence-proof" && /xAI/.test(persisted.hint || "") && persisted.enabled === true,
+      JSON.stringify(persisted));
+    await page.evaluate(() => { const i = document.querySelector(".gx-oracle-key"); i.value = ""; i.dispatchEvent(new Event("input", { bubbles: true })); });
     await page.click(".gx-oracle-close");
     await sleep(200);
 

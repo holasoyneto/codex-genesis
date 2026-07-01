@@ -79,7 +79,13 @@ function load(): AppState {
       ...DEFAULTS,
       ...saved,
       cursor: { ...DEFAULTS.cursor, ...saved.cursor },
-      settings: { ...DEFAULTS.settings, ...saved.settings },
+      settings: {
+        ...DEFAULTS.settings,
+        ...saved.settings,
+        // Nested blocks merge deep so a save from an older version can
+        // never clobber new fields — the Oracle key must survive forever.
+        oracle: { ...DEFAULTS.settings.oracle, ...saved.settings?.oracle },
+      },
       veil: null,      // ephemeral — never persisted open
       whispers: [],    // ephemeral
     };
