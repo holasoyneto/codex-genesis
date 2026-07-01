@@ -1,0 +1,27 @@
+.gx-omni {
+  width: min(620px, calc(100vw - 2 * var(--edge-pad)));
+  background: var(--glass); backdrop-filter: blur(18px);
+  border: var(--hairline); border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 18px 50px color-mix(in oklab, black 30%, transparent);
+}
+.gx-omni-input {
+  width: 100%; padding: 16px 18px;
+  font-family: var(--serif); font-size: 19px;
+  color: var(--fg); background: transparent; border: none; outline: none;
+}
+.gx-omni-input::placeholder { color: var(--fg-dim); opacity: 0.7; }
+.gx-omni-rows { list-style: none; margin: 0; padding: 6px; border-top: var(--hairline); }
+.gx-omni-row {
+  display: grid; grid-template-columns: 28px 1fr auto; align-items: baseline;
+  gap: 10px; width: 100%; text-align: left;
+  padding: 10px 12px; border-radius: 8px;
+}
+.gx-omni-row.is-sel { background: color-mix(in oklab, var(--accent) 12%, transparent); }
+.gx-omni-glyph { text-align: center; color: var(--fg-dim); }
+.gx-omni-label { font-size: 15px; }
+.gx-omni-hint { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; color: var(--fg-dim); }
+
+@media (max-width: 880px) {
+  .gx-omni-input { font-size: 17px; padding: 14px 16px; }
+}

@@ -91,6 +91,27 @@ try {
     await sleep(300);
     await shot(page, `desk-${before}`);
 
+    // The door: ⌘K opens the veil, a TYPO'D ref still resolves, Enter jumps.
+    await page.keyboard.down("Meta");
+    await page.keyboard.press("k");
+    await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "Jhon 3 16");
+    await sleep(200);
+    const row = await page.evaluate(() => document.querySelector(".gx-omni-row .gx-omni-label")?.textContent);
+    check("omnibar forgives typos", row === "John 3:16", JSON.stringify(row));
+    await shot(page, "desk-omnibar");
+    await page.keyboard.press("Enter");
+    await page.waitForFunction(
+      () => document.querySelector(".gx-reader-title")?.textContent?.replace(/\s+/g, " ").includes("John 3"),
+      { timeout: 20000 }
+    );
+    const focus = await page.evaluate(() => ({
+      veil: !!document.querySelector(".gx-veil"),
+      focused: document.querySelector(".gx-verse.is-focus .gx-vn")?.textContent,
+    }));
+    check("omnibar jumps + focuses the verse + veil closes", !focus.veil && focus.focused === "16", JSON.stringify(focus));
+
     check("desk: zero js errors", page.jsErrors.length === 0, JSON.stringify(page.jsErrors.slice(0, 3)));
     await ctx.close();
   }
