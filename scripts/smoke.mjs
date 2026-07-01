@@ -204,6 +204,74 @@ try {
     await page.click(".gx-witness-close");
     await sleep(200);
 
+    // THE THREADS: focused verse → Torrey's cross-references, click walks.
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "Genesis 1:1");
+    await sleep(250);
+    await page.keyboard.press("Enter");
+    await page.waitForFunction(() => /Genesis/.test(document.querySelector(".gx-reader-title")?.textContent || ""), { timeout: 20000 });
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "threads");
+    await sleep(250);
+    await page.keyboard.press("Enter");
+    await page.waitForSelector(".gx-thread", { timeout: 15000 });
+    const threads = await page.evaluate(() => document.querySelectorAll(".gx-thread").length);
+    check("threads: Gen 1:1 has many", threads > 5, `${threads} threads`);
+    await page.evaluate(() => document.querySelector(".gx-thread").click());
+    await page.waitForFunction(() => !/Genesis 1/.test(document.querySelector(".gx-reader-title")?.textContent || ""), { timeout: 20000 });
+    check("threads: clicking a thread walks there", true);
+
+    // MARKS: B keeps the focused verse; the panel lists it.
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "John 3:16");
+    await sleep(250);
+    await page.keyboard.press("Enter");
+    await page.waitForFunction(() => !!document.querySelector(".gx-verse.is-focus"), { timeout: 20000 });
+    await page.keyboard.press("b");
+    await sleep(300);
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "marks");
+    await sleep(250);
+    await page.keyboard.press("Enter");
+    await page.waitForSelector(".gx-mark-ref", { timeout: 5000 });
+    const mark = await page.evaluate(() => document.querySelector(".gx-mark-ref")?.textContent);
+    check("marks: B kept John 3:16", mark === "John 3:16", JSON.stringify(mark));
+    await page.click(".gx-marks-close");
+
+    // SEARCH: omnibar free text → panel → hits → click reads.
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "good shepherd");
+    await sleep(300);
+    const searchRow = await page.evaluate(() => document.querySelector(".gx-omni-row .gx-omni-label")?.textContent);
+    check("omnibar: free text offers Scripture search", /Search Scripture/.test(searchRow || ""), JSON.stringify(searchRow));
+    await page.keyboard.press("Enter");
+    await page.waitForSelector(".gx-hit-ref", { timeout: 20000 });
+    // "good shepherd" appears exactly 3× in the KJV (John 10) — the
+    // count asserts truth, not abundance.
+    const hits = await page.evaluate(() => document.querySelectorAll(".gx-hit").length);
+    check("search: hits arrive", hits >= 3, `${hits} hits`);
+    await page.click(".gx-search-close");
+
+    // COMPARE: focused verse across corpora.
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "compare");
+    await sleep(250);
+    await page.keyboard.press("Enter");
+    await page.waitForSelector(".gx-lane", { timeout: 30000 });
+    const lanes = await page.evaluate(() => ({
+      n: document.querySelectorAll(".gx-lane").length,
+      names: [...document.querySelectorAll(".gx-lane-name")].map((e) => e.textContent),
+    }));
+    check("compare: several voices incl. Greek NT", lanes.n >= 4 && lanes.names.some((n) => /SBL/.test(n)), JSON.stringify(lanes));
+    await page.click(".gx-compare-close");
+    await sleep(200);
+
     // Return to canon ground so the shelves spec exercises a book every
     // English corpus carries.
     await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");

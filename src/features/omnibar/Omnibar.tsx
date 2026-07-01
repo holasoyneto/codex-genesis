@@ -4,10 +4,13 @@
 // the index cannot promise what isn't registered.
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { goTo, closeVeil } from "@/kernel/store";
+import { goTo, closeVeil, setState } from "@/kernel/store";
 import { allFeatures } from "@/kernel/registry";
 import { record } from "@/kernel/witness";
+import { setSearchSeed } from "@/features/search";
 import { parseRef } from "./refparse";
+
+const setPanel = (panel: string) => setState({ panel });
 import "./omnibar.css";
 
 interface Row {
@@ -27,18 +30,19 @@ export function Omnibar({ seed }: { seed?: string }) {
   const rows = useMemo<Row[]>(() => {
     const out: Row[] = [];
     const ref = parseRef(q);
-    if (ref) {
-      out.push({
-        key: "ref",
-        glyph: "☰",
-        label: `${ref.book.name} ${ref.chapter}${ref.verse ? ":" + ref.verse : ""}`,
-        hint: ref.fuzzy ? "did you mean — open" : "open",
-        run: () => {
-          goTo({ bookId: ref.book.id, chapter: ref.chapter, verse: ref.verse });
-          closeVeil();
-        },
-      });
-    }
+    const refRow: Row | null = ref ? {
+      key: "ref",
+      glyph: "☰",
+      label: `${ref.book.name} ${ref.chapter}${ref.verse ? ":" + ref.verse : ""}`,
+      hint: ref.fuzzy ? "did you mean — open" : "open",
+      run: () => {
+        goTo({ bookId: ref.book.id, chapter: ref.chapter, verse: ref.verse });
+        closeVeil();
+      },
+    } : null;
+    // A sure reference leads; a FUZZY guess must not outrank an exact
+    // command ("marks" is the panel, not the gospel of Mark misspelled).
+    if (refRow && !ref!.fuzzy) out.push(refRow);
     const needle = q.trim().toLowerCase();
     for (const f of allFeatures()) {
       for (const c of f.commands ?? []) {
@@ -52,6 +56,22 @@ export function Omnibar({ seed }: { seed?: string }) {
           });
         }
       }
+    }
+    if (refRow && ref!.fuzzy) out.push(refRow);
+    // Free text that names no verse and no command searches Scripture —
+    // words are never a dead end.
+    if (needle.length > 2 && !ref) {
+      out.push({
+        key: "search",
+        glyph: "☌",
+        label: `Search Scripture for “${q.trim()}”`,
+        hint: "every occurrence",
+        run: () => {
+          setSearchSeed(q.trim());
+          setPanel("search");
+          closeVeil();
+        },
+      });
     }
     if (!out.length) {
       out.push({

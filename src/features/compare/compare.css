@@ -1,0 +1,18 @@
+.gx-compare { position: relative; padding: 18px 16px; }
+.gx-compare-title {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.22em;
+  color: var(--fg-dim); margin: 0 0 8px; font-weight: 500;
+}
+.gx-compare-here { font-family: var(--serif); font-size: 15px; margin: 0 0 12px; }
+.gx-compare-hint { font-family: var(--mono); font-size: 9.5px; color: var(--fg-dim); letter-spacing: 0.05em; }
+.gx-compare-wait { color: var(--fg-dim); }
+.gx-compare-lanes { list-style: none; margin: 0; padding: 0; }
+.gx-lane { padding: 10px 2px; border-bottom: var(--hairline); }
+.gx-lane-name { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--fg-dim); }
+.gx-lane-text { font-family: var(--serif); font-size: 14.5px; line-height: 1.6; margin: 5px 0 0; }
+.gx-compare-close {
+  position: absolute; top: 10px; right: 10px;
+  width: 28px; height: 28px; border-radius: 6px;
+  color: var(--fg-dim); font-size: 15px;
+}
+.gx-compare-close:hover { color: var(--fg); }

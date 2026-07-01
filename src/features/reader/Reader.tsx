@@ -60,7 +60,37 @@ export function Reader() {
     }
   }, [ch, cursor.verse]);
 
+  // B keeps the focused verse (a mark). Quiet when typing or veiled.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() !== "b" || e.metaKey || e.ctrlKey || e.altKey) return;
+      if ((e.target as HTMLElement)?.closest?.("input, textarea, [contenteditable]")) return;
+      const loaded = ch && ch.bookId === cursor.bookId && ch.chapter === cursor.chapter ? ch : null;
+      const v = cursor.verse != null && loaded ? loaded.verses.find((x) => x.n === cursor.verse) : null;
+      if (!v) return;
+      e.preventDefault();
+      setState((s) => {
+        const dup = s.marks.find((m) => m.bookId === cursor.bookId && m.chapter === cursor.chapter && m.verse === v.n);
+        if (dup) return { marks: s.marks.filter((m) => m.id !== dup.id) }; // B again lets go
+        return {
+          marks: [...s.marks, {
+            id: "m" + Math.random().toString(36).slice(2, 9),
+            bookId: cursor.bookId, chapter: cursor.chapter, verse: v.n,
+            text: v.text.slice(0, 90), at: Date.now(),
+          }],
+        };
+      });
+      record("mark", `${cursor.bookId}.${cursor.chapter}.${v.n}`);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [ch, cursor.bookId, cursor.chapter, cursor.verse]);
+
   const red = redLetter ? redLetterVerses(cursor.bookId, cursor.chapter) : null;
+
+  // While a jump is in flight the OLD chapter is still on screen — verse
+  // focus and marks must never act on it.
+  const current = ch && ch.bookId === cursor.bookId && ch.chapter === cursor.chapter ? ch : null;
 
   if (!book) return null;
   return (
@@ -107,7 +137,7 @@ export function Reader() {
               className={
                 "gx-verse" +
                 (red?.has(v.n) ? " is-red" : "") +
-                (cursor.verse === v.n ? " is-focus" : "")
+                (current && cursor.verse === v.n ? " is-focus" : "")
               }
               onClick={() => goTo({ verse: cursor.verse === v.n ? null : v.n })}
             >

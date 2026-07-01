@@ -13,7 +13,9 @@ export interface ParsedRef {
 }
 
 function norm(s: string): string {
-  return s.toLowerCase().replace(/[^a-z0-9 ]/g, "").replace(/\s+/g, " ").trim();
+  // Punctuation SEPARATES, it never deletes — stripping the colon from
+  // "Genesis 1:1" would weld it into "Genesis 11".
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
 
 // Damerau-Levenshtein — transpositions cost 1, because "jhon" is a

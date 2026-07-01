@@ -17,6 +17,15 @@ export interface Settings {
   witness: boolean;         // the app records its own use, locally
 }
 
+export interface Mark {
+  id: string;
+  bookId: string;
+  chapter: number;
+  verse: number | null;
+  text: string;   // first words of the kept verse, for the panel
+  at: number;     // epoch ms
+}
+
 export interface AppState {
   cursor: Cursor;
   settings: Settings;
@@ -24,6 +33,7 @@ export interface AppState {
   panel: string | null; // the open instrument (desk: side panel · palm: sheet)
   whispers: Whisper[]; // the single notification lane (queued, never stacked chrome)
   lastVersion: string | null; // last version whose notes the user has seen
+  marks: Mark[]; // kept verses — the reader's own gold
 }
 
 export interface Whisper {
@@ -44,6 +54,7 @@ const DEFAULTS: AppState = {
   panel: null,
   whispers: [],
   lastVersion: null,
+  marks: [],
 };
 
 type Listener = () => void;

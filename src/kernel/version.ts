@@ -6,7 +6,7 @@ declare const __APP_VERSION__: string;
 export const APP_VERSION = __APP_VERSION__;
 
 export const RELEASE_NOTES: string[] = [
-  "NO DARK PAGES — every one of the 101 books now finds a corpus that carries it: the Apocrypha through Charles 1913, Enoch through the Ethiopic, the recovered books through Beyond; the chip always tells you who served.",
-  "THE WITNESS — the app keeps a local ledger of its own use (jumps, commands, walls you hit) so it can be made better; nothing leaves your device unless you export it. Silence it in Settings.",
-  "A page that fails now offers TRY AGAIN and THE SHELVES — never a dead end.",
+  "THE THREADS — Torrey's 432,898 cross-references, local and instant: open any verse and walk everywhere Scripture answers it.",
+  "SEARCH the whole of Scripture from the omnibar — type any words; MARKS — press B to keep a verse forever; COMPARE — one verse in every voice, Hebrew and Greek beside the English.",
+  "CODEX is now installable and works offline — add it to your home screen or dock.",
 ];

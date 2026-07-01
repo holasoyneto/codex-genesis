@@ -6,6 +6,10 @@ import "./features/omnibar";
 import "./features/library";
 import "./features/settings";
 import "./features/witness";
+import "./features/marks";
+import "./features/threads";
+import "./features/search";
+import "./features/compare";
 import "./styles/base.css";
 import { getState, setState, whisper } from "./kernel/store";
 import { APP_VERSION, RELEASE_NOTES } from "./kernel/version";
@@ -41,5 +45,22 @@ if (seen !== APP_VERSION) {
 }
 
 startWitness();
+
+// The generated service worker (production builds only). When a new
+// version lands, the whisper offers one tap — no double-reload rituals.
+if ("serviceWorker" in navigator && import.meta.env.PROD) {
+  import("virtual:pwa-register").then(({ registerSW }) => {
+    const update = registerSW({
+      onNeedRefresh() {
+        whisper({
+          kind: "update",
+          title: "✦ CODEX updated",
+          body: "A new version is ready — close this to keep reading, or refresh to receive it.",
+        });
+        void update;
+      },
+    });
+  });
+}
 
 window.__CODEX_READY__ = true;

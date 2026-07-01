@@ -1,0 +1,30 @@
+.gx-threads { position: relative; padding: 18px 16px; }
+.gx-threads-title {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.22em;
+  color: var(--fg-dim); margin: 0 0 8px; font-weight: 500;
+}
+.gx-threads-here { font-family: var(--serif); font-size: 15px; margin: 0 0 12px; }
+.gx-threads-hint { font-family: var(--mono); font-size: 9.5px; color: var(--fg-dim); letter-spacing: 0.05em; }
+.gx-threads-wait, .gx-threads-none { color: var(--fg-dim); font-size: 12.5px; }
+.gx-threads-rows {
+  list-style: none; margin: 0 0 14px; padding: 0;
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.gx-thread {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.04em;
+  color: var(--accent);
+  border: 1px solid color-mix(in oklab, var(--accent) 30%, transparent);
+  border-radius: 6px; padding: 6px 9px;
+}
+.gx-thread.is-nt { color: var(--gold); border-color: color-mix(in oklab, var(--gold) 35%, transparent); }
+.gx-thread:hover { border-color: currentColor; }
+.gx-threads-oath {
+  font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.14em;
+  color: var(--fg-dim); opacity: 0.6; margin: 0;
+}
+.gx-threads-close {
+  position: absolute; top: 10px; right: 10px;
+  width: 28px; height: 28px; border-radius: 6px;
+  color: var(--fg-dim); font-size: 15px;
+}
+.gx-threads-close:hover { color: var(--fg); }
