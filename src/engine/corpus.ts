@@ -83,7 +83,7 @@ async function idbPut(key: string, value: Chapter): Promise<void> {
 async function fromBundle(translation: string, bookId: string, chapter: number): Promise<Verse[] | null> {
   if (!BUNDLED.has(translation)) return null;
   if (!bundles.has(translation)) {
-    bundles.set(translation, fetch(`/data/bibles/${translation}.json`)
+    bundles.set(translation, fetch(`${import.meta.env.BASE_URL}data/bibles/${translation}.json`)
       .then((r) => { if (!r.ok) throw new Error(`bundle ${translation}: ${r.status}`); return r.json(); })
       .then((j: { chapters: Record<string, Verse[]> }) => j.chapters));
   }

@@ -10,7 +10,7 @@ let loading: Promise<void> | null = null;
 
 function ensure(): void {
   if (index || loading) return;
-  loading = fetch("/data/red-letter.json")
+  loading = fetch(`${import.meta.env.BASE_URL}data/red-letter.json`)
     .then((r) => (r.ok ? r.json() : {}))
     .then((j: RedIndex) => { index = j; })
     .catch(() => { index = {}; });
