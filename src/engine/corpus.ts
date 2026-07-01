@@ -93,6 +93,11 @@ async function fromBundle(translation: string, bookId: string, chapter: number):
 
 function sanitizeBolls(html: string): string {
   return html
+    // Markup whose CONTENT is not scripture: <S> carries Strong's numbers,
+    // <sup> carries KJV margin notes ("comprehended: or, did not admit").
+    // Both must go with their contents, before the generic tag strip.
+    .replace(/<S>[^<]*<\/S>/gi, "")
+    .replace(/<sup>[\s\S]*?<\/sup>/gi, "")
     .replace(/<[^>]+>/g, "")
     // bolls.life leaks Strong's numbers — sometimes glued to the preceding
     // word ("man444"), sometimes standalone ("man 444 that"). Scripture
@@ -124,8 +129,12 @@ async function fromBibleApi(translation: string, bookId: string, chapter: number
 }
 
 // ── the door ───────────────────────────────────────────────────────────
+// Bump when the sanitizer changes — cached text from an older sanitizer
+// is stale by definition and must re-fetch, not linger.
+const SANITIZER_REV = 2;
+
 export async function getChapter(translation: string, bookId: string, chapter: number): Promise<Chapter> {
-  const key = `${translation}/${bookId}.${chapter}`;
+  const key = `r${SANITIZER_REV}:${translation}/${bookId}.${chapter}`;
   const mem = memory.get(key);
   if (mem) return { ...mem, servedFrom: "memory" };
 

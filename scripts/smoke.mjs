@@ -55,6 +55,11 @@ try {
     // leakage from network sources) and John 1:1 reads as itself.
     const v1 = await page.evaluate(() => document.querySelector(".gx-verse")?.textContent?.replace(/^\d+/, "").trim());
     check("scripture text is pure", !!v1 && /^In the beginning was the Word/.test(v1) && !/[a-z]\d/.test(v1), JSON.stringify(v1?.slice(0, 60)));
+    // …and carries no leaked margin notes anywhere in the chapter
+    // (bolls <sup> notes read like "comprehended: or, did not admit").
+    const notes = await page.evaluate(() =>
+      [...document.querySelectorAll(".gx-verse")].filter((v) => /: or,/.test(v.textContent)).length);
+    check("no margin notes leak into scripture", notes === 0, `${notes} verse(s) with ': or,'`);
     check("served-from chip is honest", !!boot1.served && /⇄/.test(boot1.served), boot1.served);
     check("version stamp visible in the Trace", !!boot1.version && /^v\d/.test(boot1.version), boot1.version);
 
