@@ -3,9 +3,8 @@
 // reach for it.
 
 import { useEffect, useState } from "react";
-import { useApp, setState, openVeil } from "@/kernel/store";
-
-declare const __APP_VERSION__: string;
+import { useApp, setState, openVeil, whisper, getState, dismissWhisper } from "@/kernel/store";
+import { APP_VERSION, RELEASE_NOTES } from "@/kernel/version";
 
 export function Trace() {
   const theme = useApp((s) => s.settings.theme);
@@ -26,7 +25,12 @@ export function Trace() {
         className="gx-trace-ver"
         data-version
         title="What’s new"
-      >{`v${__APP_VERSION__}`}</button>
+        onClick={() => {
+          const open = getState().whispers.find((w) => w.kind === "update");
+          if (open) dismissWhisper(open.id);
+          else whisper({ kind: "update", title: `✦ CODEX GENESIS v${APP_VERSION}`, body: RELEASE_NOTES.join(" — ") });
+        }}
+      >{`v${APP_VERSION}`}</button>
       <span className="gx-trace-time">{hh}:{mm}</span>
       <button
         className="gx-trace-btn"

@@ -1,25 +1,10 @@
 // The shelves — translations as lanes, one tap sets the primary.
 // Source lights are honest: ● baked bundle (offline forever),
-// ◐ cached locally after first read, ○ network.
+// ○ network-then-kept. Lanes derive from the engine's ONE registry.
 
 import { useApp, goTo, setState } from "@/kernel/store";
+import { TRANSLATIONS } from "@/engine/corpus";
 import "./library.css";
-
-interface Shelf {
-  id: string;
-  name: string;
-  lang: string;
-  source: "bundle" | "network";
-}
-
-const SHELVES: Shelf[] = [
-  { id: "kjv", name: "King James Version", lang: "EN 1611", source: "network" },
-  { id: "web", name: "World English Bible", lang: "EN 2000", source: "network" },
-  { id: "asv", name: "American Standard", lang: "EN 1901", source: "network" },
-  { id: "ylt", name: "Young's Literal", lang: "EN 1862", source: "network" },
-  { id: "wlc", name: "Westminster Leningrad Codex", lang: "עברית · Tanakh", source: "bundle" },
-  { id: "sblgnt", name: "SBL Greek New Testament", lang: "Ελληνικά · NT", source: "bundle" },
-];
 
 export function Library() {
   const active = useApp((s) => s.cursor.translation);
@@ -27,18 +12,18 @@ export function Library() {
     <div className="gx-library" role="region" aria-label="Library">
       <h2 className="gx-library-title">THE SHELVES</h2>
       <ul className="gx-shelves">
-        {SHELVES.map((s) => (
-          <li key={s.id}>
+        {TRANSLATIONS.map((t) => (
+          <li key={t.id}>
             <button
-              className={"gx-shelf" + (s.id === active ? " is-active" : "")}
-              onClick={() => goTo({ translation: s.id })}
-              aria-pressed={s.id === active}
+              className={"gx-shelf" + (t.id === active ? " is-active" : "")}
+              onClick={() => goTo({ translation: t.id })}
+              aria-pressed={t.id === active}
             >
-              <span className="gx-shelf-light" data-src={s.source} aria-hidden>
-                {s.source === "bundle" ? "●" : "○"}
+              <span className="gx-shelf-light" data-src={t.bundled ? "bundle" : "network"} aria-hidden>
+                {t.bundled ? "●" : "○"}
               </span>
-              <span className="gx-shelf-name">{s.name}</span>
-              <span className="gx-shelf-lang">{s.lang}</span>
+              <span className="gx-shelf-name">{t.name}</span>
+              <span className="gx-shelf-lang">{t.lang}</span>
             </button>
           </li>
         ))}

@@ -39,10 +39,31 @@ const BOLLS_ID: Record<string, number> = {
   "1pe": 60, "2pe": 61, "1jn": 62, "2jn": 63, "3jn": 64, jud: 65, rev: 66,
 };
 
-// Translations with a baked bundle in /data/bibles.
-const BUNDLED = new Set(["wlc", "sblgnt", "beyond", "charles", "eth-en", "zohrab"]);
-// bolls translation codes for the common English corpora.
-const BOLLS_CODE: Record<string, string> = { kjv: "KJV", web: "WEB", asv: "ASV", ylt: "YLT" };
+// THE translation registry — the one source of truth. The library, the
+// omnibar, and the fetch chain all derive from this table; nothing may
+// duplicate it.
+export interface Translation {
+  id: string;
+  name: string;
+  lang: string;        // display lane, e.g. "EN 1611"
+  bolls?: string;      // bolls.life code when network-servable
+  bundled?: boolean;   // baked into /data/bibles — offline forever
+}
+
+export const TRANSLATIONS: Translation[] = [
+  { id: "kjv", name: "King James Version", lang: "EN 1611", bolls: "KJV" },
+  { id: "web", name: "World English Bible", lang: "EN 2000", bolls: "WEB" },
+  { id: "asv", name: "American Standard", lang: "EN 1901", bolls: "ASV" },
+  { id: "ylt", name: "Young's Literal", lang: "EN 1862", bolls: "YLT" },
+  { id: "wlc", name: "Westminster Leningrad Codex", lang: "עברית · Tanakh", bundled: true },
+  { id: "sblgnt", name: "SBL Greek New Testament", lang: "Ελληνικά · NT", bundled: true },
+  { id: "beyond", name: "The Recovered Books", lang: "EN · Deuterocanon+", bundled: true },
+];
+
+const BUNDLED = new Set(TRANSLATIONS.filter((t) => t.bundled).map((t) => t.id));
+const BOLLS_CODE: Record<string, string> = Object.fromEntries(
+  TRANSLATIONS.filter((t) => t.bolls).map((t) => [t.id, t.bolls as string])
+);
 
 // ── caches ─────────────────────────────────────────────────────────────
 const memory = new Map<string, Chapter>();

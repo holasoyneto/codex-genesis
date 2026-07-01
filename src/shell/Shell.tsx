@@ -12,6 +12,7 @@
 import { useEffect } from "react";
 import { useApp, dismissWhisper, closeVeil, getState, setState } from "@/kernel/store";
 import { getFeature } from "@/kernel/registry";
+import { bookById } from "@/engine/corpus";
 import { Trace } from "./Trace";
 import "./shell.css";
 
@@ -81,13 +82,27 @@ function Veil() {
 
 export function Shell({ children }: { children: React.ReactNode }) {
   useTheme();
-  // ⌘K opens the omnibar veil — the one door, wired at the shell level.
+  // Shell-level keys: ⌘K opens the one door; ←/→ turn chapters when the
+  // reader has the floor (no veil, not typing).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         const open = getState().veil;
         setState({ veil: open ? null : { feature: "omnibar" } });
+        return;
+      }
+      const typing = (e.target as HTMLElement)?.closest?.("input, textarea, [contenteditable]");
+      if (typing || getState().veil || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+        const { cursor } = getState();
+        const book = bookById.get(cursor.bookId);
+        if (!book) return;
+        const next = cursor.chapter + (e.key === "ArrowRight" ? 1 : -1);
+        if (next >= 1 && next <= book.chapters) {
+          e.preventDefault();
+          setState({ cursor: { ...cursor, chapter: next, verse: null } });
+        }
       }
     };
     window.addEventListener("keydown", onKey);

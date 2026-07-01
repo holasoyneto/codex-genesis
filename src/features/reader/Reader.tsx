@@ -45,6 +45,14 @@ export function Reader() {
     document.querySelector(".gx-scripture")?.scrollTo({ top: 0 });
   }, [cursor.bookId, cursor.chapter]);
 
+  // A jump that names a verse carries the eye TO that verse once the
+  // chapter arrives — a focus that lands below the fold is a dead end.
+  useEffect(() => {
+    if (ch && cursor.verse != null) {
+      document.querySelector(".gx-verse.is-focus")?.scrollIntoView({ block: "center" });
+    }
+  }, [ch, cursor.verse]);
+
   const red = redLetter ? redLetterVerses(cursor.bookId, cursor.chapter) : null;
 
   if (!book) return null;

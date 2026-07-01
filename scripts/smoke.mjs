@@ -111,11 +111,54 @@ try {
       () => document.querySelector(".gx-reader-title")?.textContent?.replace(/\s+/g, " ").includes("John 3"),
       { timeout: 20000 }
     );
-    const focus = await page.evaluate(() => ({
-      veil: !!document.querySelector(".gx-veil"),
-      focused: document.querySelector(".gx-verse.is-focus .gx-vn")?.textContent,
-    }));
-    check("omnibar jumps + focuses the verse + veil closes", !focus.veil && focus.focused === "16", JSON.stringify(focus));
+    await sleep(400);
+    const focus = await page.evaluate(() => {
+      const el = document.querySelector(".gx-verse.is-focus");
+      const r = el?.getBoundingClientRect();
+      return {
+        veil: !!document.querySelector(".gx-veil"),
+        focused: el?.querySelector(".gx-vn")?.textContent,
+        inView: !!r && r.top >= 0 && r.bottom <= innerHeight,
+      };
+    });
+    check("omnibar jumps + focused verse IN VIEW + veil closes", !focus.veil && focus.focused === "16" && focus.inView, JSON.stringify(focus));
+
+    // No dead clicks: the v-stamp summons the what's-new whisper.
+    await page.click("[data-version]");
+    await sleep(300);
+    const wsp = await page.evaluate(() => document.querySelector(".gx-whisper-update .gx-whisper-title")?.textContent);
+    check("v-stamp click summons the notes whisper", !!wsp && /GENESIS/.test(wsp), JSON.stringify(wsp));
+    await page.click(".gx-whisper-x");
+    await sleep(200);
+
+    // Arrow-key reading: → turns the chapter.
+    const chBefore = await page.evaluate(() => document.querySelector(".gx-reader-title")?.textContent?.trim());
+    await page.keyboard.press("ArrowRight");
+    await sleep(600);
+    const chAfter = await page.evaluate(() => document.querySelector(".gx-reader-title")?.textContent?.trim());
+    check("→ turns the chapter", chBefore !== chAfter, `${chBefore} → ${chAfter}`);
+
+    // Settings: open via omnibar; red-letter toggle edits the page LIVE.
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "settings");
+    await sleep(250);
+    await page.keyboard.press("Enter");
+    await page.waitForSelector(".gx-settings", { timeout: 5000 });
+    await page.evaluate(() => { const s = document.querySelector(".gx-scripture"); if (s) s.scrollTop = 0; });
+    // Jump somewhere red-lettered first (John 3 has words of Jesus).
+    const redToggle = async () => page.evaluate(() => {
+      document.querySelector('.gx-switch[aria-label*="Jesus"]').click();
+    });
+    const redCount = () => page.evaluate(() => document.querySelectorAll(".gx-verse.is-red").length);
+    const redBefore = await redCount();
+    await redToggle();
+    await sleep(400);
+    const redAfter = await redCount();
+    check("settings edit the page live (red letters)", redBefore > 0 && redAfter === 0, `${redBefore} → ${redAfter}`);
+    await redToggle();
+    await sleep(200);
+    await page.click(".gx-settings-close");
 
     // The shelves: omnibar → library panel → switch to WEB → honest chip.
     await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");

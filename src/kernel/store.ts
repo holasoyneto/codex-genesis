@@ -22,6 +22,7 @@ export interface AppState {
   veil: null | { feature: string; seed?: string }; // one modal surface at a time
   panel: string | null; // the open instrument (desk: side panel · palm: sheet)
   whispers: Whisper[]; // the single notification lane (queued, never stacked chrome)
+  lastVersion: string | null; // last version whose notes the user has seen
 }
 
 export interface Whisper {
@@ -41,6 +42,7 @@ const DEFAULTS: AppState = {
   veil: null,
   panel: null,
   whispers: [],
+  lastVersion: null,
 };
 
 type Listener = () => void;
