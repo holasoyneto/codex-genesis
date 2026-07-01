@@ -1,0 +1,57 @@
+/* CODEX GENESIS — design tokens. The whole visual language lives here.
+   Law: scripture serif and serene; data/instruments mono at the edges;
+   Apple-grade restraint — flat surfaces, hairlines, one 150ms fade. */
+
+:root {
+  /* type */
+  --serif: "New York", "Iowan Old Style", Palatino, Georgia, serif;
+  --mono: "SF Mono", ui-monospace, Menlo, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+
+  /* scripture scale — the reading experience is the product */
+  --scripture-size: 19px;
+  --scripture-leading: 1.72;
+  --scripture-measure: 62ch;
+
+  /* motion */
+  --fade: 150ms ease;
+
+  /* layers — the shell's z contract. Features never invent z-indexes. */
+  --z-wallpaper: 0;
+  --z-scripture: 100;
+  --z-instruments: 200;
+  --z-edge: 300;
+  --z-whisper: 400;
+  --z-veil: 500;
+
+  /* geometry */
+  --edge-pad: 16px;
+  --radius: 10px;
+  --hairline: 1px solid var(--line);
+}
+
+:root[data-theme="dark"] {
+  --bg: #070b12;
+  --bg-raise: #0c1220;
+  --fg: #dbe4f0;
+  --fg-dim: #8295ae;
+  --line: color-mix(in oklab, #8295ae 18%, transparent);
+  --accent: #5cc8ff;
+  --gold: #d4af5f;
+  --divine: #e3c878;
+  --red-letter: #e06c5f;
+  --glass: color-mix(in oklab, #0c1220 72%, transparent);
+}
+
+:root[data-theme="light"] {
+  --bg: #f4f1ea;
+  --bg-raise: #fdfbf6;
+  --fg: #23303f;
+  --fg-dim: #6b7b8d;
+  --line: color-mix(in oklab, #6b7b8d 22%, transparent);
+  --accent: #1a7fb8;
+  --gold: #9a7b2f;
+  --divine: #8a6d1f;
+  --red-letter: #b33a2b;
+  --glass: color-mix(in oklab, #fdfbf6 76%, transparent);
+}

@@ -1,0 +1,78 @@
+/* The shell's regions. All z-indexes come from tokens — features have none. */
+
+.gx-shell { position: relative; height: 100%; }
+
+.gx-wallpaper {
+  position: absolute; inset: 0; z-index: var(--z-wallpaper);
+  background:
+    radial-gradient(1px 1px at 12% 24%, color-mix(in oklab, var(--fg) 34%, transparent) 50%, transparent 51%),
+    radial-gradient(1px 1px at 63% 71%, color-mix(in oklab, var(--fg) 26%, transparent) 50%, transparent 51%),
+    radial-gradient(1px 1px at 84% 18%, color-mix(in oklab, var(--fg) 30%, transparent) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 38% 52%, color-mix(in oklab, var(--fg) 22%, transparent) 50%, transparent 51%),
+    var(--bg);
+}
+:root[data-theme="light"] .gx-wallpaper { background: var(--bg); }
+
+.gx-scripture {
+  position: absolute; inset: 0; z-index: var(--z-scripture);
+  display: grid; justify-items: center; align-items: stretch;
+  overflow-y: auto;
+  /* reserve the edge strip so scripture chrome and the Trace can NEVER
+     collide — the clash class dies here, by layout */
+  padding: 44px var(--edge-pad) 0;
+}
+
+.gx-edge {
+  position: absolute; inset: 0; z-index: var(--z-edge);
+  pointer-events: none; /* slots re-enable */
+}
+
+.gx-trace {
+  position: absolute; top: 10px; right: var(--edge-pad);
+  display: flex; align-items: center; gap: 6px;
+  pointer-events: auto;
+  opacity: 0.38; transition: opacity var(--fade);
+}
+.gx-trace:hover, .gx-trace:focus-within { opacity: 1; }
+.gx-trace-time {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+  color: var(--fg-dim); user-select: none;
+}
+.gx-trace-btn, .gx-trace-ver {
+  color: var(--fg-dim); border: 1px solid transparent; border-radius: 6px;
+  position: relative;
+}
+.gx-trace-btn { width: 28px; height: 28px; font-size: 13px; }
+.gx-trace-ver { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; padding: 2px 5px; }
+.gx-trace-btn::after, .gx-trace-ver::after { content: ""; position: absolute; inset: -8px; }
+.gx-trace-btn:hover, .gx-trace-ver:hover { color: var(--fg); border-color: var(--line); }
+
+.gx-whisper-lane {
+  position: absolute; top: 52px; right: var(--edge-pad); z-index: var(--z-whisper);
+  display: flex; flex-direction: column; gap: 8px;
+  width: min(360px, calc(100vw - 2 * var(--edge-pad)));
+}
+.gx-whisper {
+  background: var(--glass); backdrop-filter: blur(14px);
+  border: var(--hairline); border-radius: var(--radius);
+  padding: 10px 12px;
+}
+.gx-whisper-head { display: flex; align-items: baseline; gap: 8px; }
+.gx-whisper-title { font-size: 13px; font-weight: 600; flex: 1; }
+.gx-whisper-x { color: var(--fg-dim); font-size: 14px; padding: 0 2px; }
+.gx-whisper-x:hover { color: var(--fg); }
+.gx-whisper-body { margin: 6px 0 0; font-size: 12.5px; color: var(--fg-dim); line-height: 1.5; }
+
+.gx-veil {
+  position: absolute; inset: 0; z-index: var(--z-veil);
+  display: grid; justify-items: center; align-items: start;
+  padding-top: 14vh;
+  background: color-mix(in oklab, var(--bg) 42%, transparent);
+  backdrop-filter: blur(2px);
+}
+
+/* palm posture — same tree, tighter edges */
+@media (max-width: 880px) {
+  .gx-scripture { padding-top: 40px; }
+  .gx-whisper-lane { top: auto; bottom: 18px; right: var(--edge-pad); }
+}

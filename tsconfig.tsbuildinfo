@@ -1,0 +1,1 @@
+{"root":["./src/main.tsx","./src/engine/corpus.ts","./src/features/reader/reader.tsx","./src/features/reader/index.ts","./src/features/reader/redletter.ts","./src/kernel/registry.ts","./src/kernel/store.ts","./src/shell/shell.tsx","./src/shell/trace.tsx"],"version":"5.9.3"}

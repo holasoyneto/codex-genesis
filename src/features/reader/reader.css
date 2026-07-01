@@ -1,0 +1,83 @@
+/* The sacred column. Serif, serene — paper should feel clunky after this. */
+
+.gx-reader {
+  width: 100%;
+  max-width: var(--scripture-measure);
+  padding: 28px 8px 64px;
+}
+
+.gx-reader-head {
+  display: flex; align-items: baseline; justify-content: center; gap: 14px;
+  margin-bottom: 26px;
+}
+.gx-reader-title {
+  font-family: var(--serif);
+  font-size: 26px; font-weight: 400; margin: 0;
+  letter-spacing: 0.01em;
+}
+.gx-reader-title b { font-weight: 600; }
+.gx-reader-of {
+  font-family: var(--mono); font-size: 11px; color: var(--fg-dim);
+  margin-left: 8px; letter-spacing: 0.1em;
+}
+.gx-reader-nav {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: var(--hairline); color: var(--fg-dim);
+  font-size: 18px; line-height: 1;
+  transition: color var(--fade), border-color var(--fade);
+  position: relative;
+}
+.gx-reader-nav::after { content: ""; position: absolute; inset: -6px; }
+.gx-reader-nav:hover:not(:disabled) { color: var(--fg); border-color: var(--fg-dim); }
+.gx-reader-nav:disabled { opacity: 0.3; cursor: default; }
+
+.gx-verses {
+  font-family: var(--serif);
+  font-size: var(--scripture-size);
+  line-height: var(--scripture-leading);
+}
+.gx-verse {
+  margin: 0 0 0.55em;
+  padding: 2px 10px;
+  border-left: 2px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background var(--fade);
+}
+.gx-verse:hover { background: color-mix(in oklab, var(--fg) 4%, transparent); }
+.gx-verse.is-focus {
+  border-left-color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 7%, transparent);
+}
+.gx-verse.is-red { color: var(--red-letter); }
+.gx-vn {
+  font-family: var(--mono);
+  font-size: 0.58em; color: var(--fg-dim);
+  margin-right: 0.9em; vertical-align: 0.35em;
+  user-select: none;
+}
+.gx-divine {
+  color: var(--divine);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.gx-reader-dark {
+  font-family: var(--mono); font-size: 13px; color: var(--fg-dim);
+  text-align: center; margin-top: 12vh; line-height: 2;
+}
+.gx-reader-err { display: block; font-size: 10px; opacity: 0.6; }
+.gx-reader-wait { text-align: center; color: var(--fg-dim); margin-top: 12vh; }
+
+.gx-reader-foot {
+  display: flex; justify-content: flex-end; margin-top: 30px;
+}
+.gx-served {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+  color: var(--fg-dim); opacity: 0.7; user-select: none;
+}
+
+@media (max-width: 880px) {
+  .gx-reader { padding-top: 10px; }
+  .gx-reader-title { font-size: 22px; }
+}
