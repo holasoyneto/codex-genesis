@@ -7,8 +7,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useApp, setState, type OracleSettings } from "@/kernel/store";
 import { askOracle, probeLocal, cloudProvider, type OracleAnswer } from "@/engine/oracle";
-import { getChapter, bookById } from "@/engine/corpus";
 import "./oracle.css";
+
+const LEVEL_LABEL = {
+  canon: "the whole canon in mind",
+  testament: "the whole testament in mind",
+  book: "the whole book in mind",
+  chapter: "this chapter in mind",
+} as const;
 
 const OLLAMA_FIX = `launchctl setenv OLLAMA_ORIGINS "*" && osascript -e 'quit app "Ollama"' && open -a Ollama`;
 
@@ -101,7 +107,6 @@ interface Turn { q: string; a?: OracleAnswer; err?: string }
 
 export function Oracle() {
   const oracle = useApp((s) => s.settings.oracle);
-  const cursor = useApp((s) => s.cursor);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
@@ -114,15 +119,8 @@ export function Oracle() {
     setQ("");
     setBusy(true);
     setTurns((t) => [...t, { q: question }]);
-    const book = bookById.get(cursor.bookId);
-    let context = `The reader has ${book?.name ?? cursor.bookId} ${cursor.chapter} open`;
     try {
-      const ch = await getChapter(cursor.translation, cursor.bookId, cursor.chapter);
-      const v = cursor.verse != null ? ch.verses.find((x) => x.n === cursor.verse) : null;
-      context += v ? `, verse ${v.n}: "${v.text}"` : ".";
-    } catch { context += "."; }
-    try {
-      const a = await askOracle(question, context);
+      const a = await askOracle(question);
       setTurns((t) => t.map((x, i) => (i === t.length - 1 ? { ...x, a } : x)));
     } catch (e) {
       setTurns((t) => t.map((x, i) => (i === t.length - 1 ? { ...x, err: String(e) } : x)));
@@ -149,7 +147,9 @@ export function Oracle() {
                 {t.a ? (
                   <div className="gx-oracle-a">
                     <p className="gx-oracle-a-text">{t.a.text}</p>
-                    <span className="gx-oracle-a-chip">⇄ {t.a.engine} · {t.a.model}</span>
+                    <span className="gx-oracle-a-chip">
+                      ⇄ {t.a.engine} · {t.a.model} · {LEVEL_LABEL[t.a.context.level]} (~{Math.round(t.a.context.approxTokens / 1000)}k tokens)
+                    </span>
                   </div>
                 ) : t.err ? (
                   <p className="gx-oracle-err">{t.err}</p>

@@ -56,7 +56,7 @@ export interface Translation {
 
 export const TRANSLATIONS: Translation[] = [
   { id: "kjv", name: "King James Version", lang: "EN 1611", bolls: "KJV", coverage: "canon66" },
-  { id: "web", name: "World English Bible", lang: "EN 2000", bolls: "WEB", coverage: "canon66" },
+  { id: "web", name: "World English Bible", lang: "EN 2000", bolls: "WEB", bundled: true, coverage: "canon66" },
   { id: "asv", name: "American Standard", lang: "EN 1901", bolls: "ASV", coverage: "canon66" },
   { id: "ylt", name: "Young's Literal", lang: "EN 1862", bolls: "YLT", coverage: "canon66" },
   { id: "wlc", name: "Westminster Leningrad Codex", lang: "עברית · Tanakh", bundled: true, coverage: "ot" },
@@ -119,6 +119,16 @@ async function idbPut(key: string, value: Chapter): Promise<void> {
 }
 
 // ── sources ────────────────────────────────────────────────────────────
+/** The whole baked corpus of a bundled translation — the Oracle's food. */
+export async function bundleChapters(translation: string): Promise<Record<string, Verse[]>> {
+  if (!bundles.has(translation)) {
+    bundles.set(translation, fetch(`${import.meta.env.BASE_URL}data/bibles/${translation}.json`)
+      .then((r) => { if (!r.ok) throw new Error(`bundle ${translation}: ${r.status}`); return r.json(); })
+      .then((j: { chapters: Record<string, Verse[]> }) => j.chapters));
+  }
+  return bundles.get(translation)!;
+}
+
 async function fromBundle(translation: string, bookId: string, chapter: number): Promise<Verse[] | null> {
   if (!bundles.has(translation)) {
     bundles.set(translation, fetch(`${import.meta.env.BASE_URL}data/bibles/${translation}.json`)

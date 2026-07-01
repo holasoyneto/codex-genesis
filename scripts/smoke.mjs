@@ -344,7 +344,17 @@ try {
       active: [...document.querySelectorAll(".gx-shelf.is-active")].map((b) => b.querySelector(".gx-shelf-name")?.textContent)[0],
       served: document.querySelector(".gx-served")?.textContent?.trim(),
     }));
-    check("library switches the primary translation", /World English/.test(shelf.active || "") && /WEB/.test(shelf.served || ""), JSON.stringify(shelf));
+    check("library switches the primary translation (WEB now baked)", /World English/.test(shelf.active || "") && /bundle · WEB/.test(shelf.served || ""), JSON.stringify(shelf));
+
+    // #98: the Oracle's food — the whole canon is baked and buildable.
+    const canon = await page.evaluate(async () => {
+      const r = await fetch("data/bibles/web.json");
+      const j = await r.json();
+      const verses = Object.values(j.chapters).reduce((a, c) => a + c.length, 0);
+      const chars = Object.values(j.chapters).flat().reduce((a, v) => a + v.text.length, 0);
+      return { verses, approxTokens: Math.round(chars / 4) };
+    });
+    check("whole canon baked for frontier context", canon.verses === 31105 && canon.approxTokens > 900_000, JSON.stringify(canon));
     await shot(page, "desk-library");
     await page.click('.gx-library-close');
     await sleep(200);

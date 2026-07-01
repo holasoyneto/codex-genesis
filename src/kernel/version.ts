@@ -6,6 +6,6 @@ declare const __APP_VERSION__: string;
 export const APP_VERSION = __APP_VERSION__;
 
 export const RELEASE_NOTES: string[] = [
-  "THE ORACLE speaks to frontier minds — paste one key from Anthropic, xAI, Gemini, Groq or OpenRouter and CODEX asks the STRONGEST model your key can see, today and whenever the next one ships. Gemini and Groq keys are free.",
-  "Or keep it entirely on your machine with Ollama — private, free, no key. Your key persists on this device and nowhere else.",
+  "THE WHOLE CANON IN ONE MIND — a frontier model now receives the entire Bible (~990k tokens) with your question; smaller minds get the testament, the book, or the chapter, and every answer says exactly how much scripture it held.",
+  "The full World English Bible is now baked in — the complete canon reads offline, and repeat questions to Claude reuse the cached canon at a tenth of the price.",
 ];
