@@ -3,8 +3,9 @@
 // instruments live at the edges, the omnibar is the door.
 
 import { useEffect, useState } from "react";
-import { useApp, goTo } from "@/kernel/store";
+import { useApp, goTo, setState } from "@/kernel/store";
 import { getChapter, bookById, type Chapter } from "@/engine/corpus";
+import { record } from "@/kernel/witness";
 import { redLetterVerses } from "./redletter";
 import "./reader.css";
 
@@ -29,6 +30,7 @@ export function Reader() {
   const { redLetter, divineName, scriptureScale } = useApp((s) => s.settings);
   const [ch, setCh] = useState<Chapter | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [retry, setRetry] = useState(0);
   const book = bookById.get(cursor.bookId);
 
   useEffect(() => {
@@ -36,9 +38,14 @@ export function Reader() {
     setError(null);
     getChapter(cursor.translation, cursor.bookId, cursor.chapter)
       .then((c) => { if (live) { setCh(c); } })
-      .catch((e) => { if (live) setError(String(e)); });
+      .catch((e) => {
+        if (live) {
+          setError(String(e));
+          record("darkpage", `${cursor.translation}/${cursor.bookId}.${cursor.chapter}`);
+        }
+      });
     return () => { live = false; };
-  }, [cursor.translation, cursor.bookId, cursor.chapter]);
+  }, [cursor.translation, cursor.bookId, cursor.chapter, retry]);
 
   // The eye goes up on a chapter turn; the machine follows.
   useEffect(() => {
@@ -82,10 +89,14 @@ export function Reader() {
       </header>
 
       {error ? (
-        <p className="gx-reader-dark">
-          THE PAGE IS DARK — no source could serve this passage.
+        <div className="gx-reader-dark">
+          <p className="gx-reader-dark-line">THE PAGE IS DARK — no source could serve this passage.</p>
+          <div className="gx-reader-dark-acts">
+            <button className="gx-dark-act" onClick={() => setRetry((n) => n + 1)}>⟳ TRY AGAIN</button>
+            <button className="gx-dark-act" onClick={() => setState({ panel: "library" })}>❖ THE SHELVES</button>
+          </div>
           <span className="gx-reader-err">{error}</span>
-        </p>
+        </div>
       ) : !ch ? (
         <p className="gx-reader-wait" aria-live="polite">…</p>
       ) : (

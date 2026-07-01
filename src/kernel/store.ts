@@ -14,6 +14,7 @@ export interface Settings {
   scriptureScale: number;   // px
   redLetter: boolean;
   divineName: boolean;      // golden יהוה treatment
+  witness: boolean;         // the app records its own use, locally
 }
 
 export interface AppState {
@@ -38,7 +39,7 @@ const KEY = "codex-genesis.v" + VERSION;
 
 const DEFAULTS: AppState = {
   cursor: { bookId: "jhn", chapter: 1, verse: null, translation: "kjv" },
-  settings: { theme: "auto", scriptureScale: 19, redLetter: true, divineName: true },
+  settings: { theme: "auto", scriptureScale: 19, redLetter: true, divineName: true, witness: true },
   veil: null,
   panel: null,
   whispers: [],

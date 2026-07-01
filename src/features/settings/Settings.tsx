@@ -67,6 +67,16 @@ export function Settings() {
         ><i /></button>
       </div>
 
+      <div className="gx-set-row">
+        <span className="gx-set-label">The Witness — local use ledger</span>
+        <button
+          className={"gx-switch" + (s.witness ? " is-on" : "")}
+          role="switch" aria-checked={s.witness}
+          aria-label="Record app usage locally"
+          onClick={() => set("witness", !s.witness)}
+        ><i /></button>
+      </div>
+
       <button
         className="gx-settings-close"
         aria-label="Close settings"

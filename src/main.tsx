@@ -5,9 +5,11 @@ import { Reader } from "./features/reader";
 import "./features/omnibar";
 import "./features/library";
 import "./features/settings";
+import "./features/witness";
 import "./styles/base.css";
 import { getState, setState, whisper } from "./kernel/store";
 import { APP_VERSION, RELEASE_NOTES } from "./kernel/version";
+import { startWitness } from "./kernel/witness";
 
 // Boot signal for the smoke harness.
 declare global {
@@ -37,5 +39,7 @@ if (seen !== APP_VERSION) {
   }
   setState({ lastVersion: APP_VERSION });
 }
+
+startWitness();
 
 window.__CODEX_READY__ = true;

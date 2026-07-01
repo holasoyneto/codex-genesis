@@ -160,6 +160,62 @@ try {
     await sleep(200);
     await page.click(".gx-settings-close");
 
+    // NO DARK PAGES: a recovered book requested under KJV routes to the
+    // corpus that carries it, and the chip confesses the substitution.
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "Apocalypse of Moses 1");
+    await sleep(250);
+    await page.keyboard.press("Enter");
+    await page.waitForFunction(
+      () => /BEYOND/.test(document.querySelector(".gx-served")?.textContent || "") &&
+            document.querySelectorAll(".gx-verse").length > 0,
+      { timeout: 20000 }
+    );
+    const ghost = await page.evaluate(() => ({
+      title: document.querySelector(".gx-reader-title")?.textContent?.replace(/\s+/g, " ").trim(),
+      served: document.querySelector(".gx-served")?.textContent?.trim(),
+      dark: !!document.querySelector(".gx-reader-dark"),
+    }));
+    check("no dark pages: ap-mos serves via BEYOND", !ghost.dark && /Apocalypse of Moses/.test(ghost.title || ""), JSON.stringify(ghost));
+
+    // …and the standard Apocrypha serves via Charles 1913.
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "Tobit 1");
+    await sleep(250);
+    await page.keyboard.press("Enter");
+    await page.waitForFunction(
+      () => /CHARLES/.test(document.querySelector(".gx-served")?.textContent || ""),
+      { timeout: 20000 }
+    );
+    check("no dark pages: Tobit serves via CHARLES", true);
+
+    // The witness heard all of this and can show its ledger.
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "witness");
+    await sleep(250);
+    await page.keyboard.press("Enter");
+    await page.waitForSelector(".gx-witness", { timeout: 5000 });
+    const heard = await page.evaluate(() =>
+      [...document.querySelectorAll(".gx-witness-kind")].map((k) => k.textContent));
+    check("the witness heard jumps and veils", heard.includes("jump") && heard.includes("veil"), JSON.stringify(heard));
+    await page.click(".gx-witness-close");
+    await sleep(200);
+
+    // Return to canon ground so the shelves spec exercises a book every
+    // English corpus carries.
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "John 1");
+    await sleep(250);
+    await page.keyboard.press("Enter");
+    await page.waitForFunction(
+      () => /John/.test(document.querySelector(".gx-reader-title")?.textContent || ""),
+      { timeout: 20000 }
+    );
+
     // The shelves: omnibar → library panel → switch to WEB → honest chip.
     await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
     await page.waitForSelector(".gx-omni-input", { timeout: 5000 });

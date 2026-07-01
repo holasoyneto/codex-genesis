@@ -48,19 +48,37 @@ export interface Translation {
   lang: string;        // display lane, e.g. "EN 1611"
   bolls?: string;      // bolls.life code when network-servable
   bundled?: boolean;   // baked into /data/bibles — offline forever
+  /** What this corpus can serve: the 66-book canon, a testament, or an
+      explicit book list. Routing NEVER asks a corpus for a book outside
+      its coverage — that is how pages go dark. */
+  coverage: "canon66" | "ot" | "nt" | string[];
 }
 
 export const TRANSLATIONS: Translation[] = [
-  { id: "kjv", name: "King James Version", lang: "EN 1611", bolls: "KJV" },
-  { id: "web", name: "World English Bible", lang: "EN 2000", bolls: "WEB" },
-  { id: "asv", name: "American Standard", lang: "EN 1901", bolls: "ASV" },
-  { id: "ylt", name: "Young's Literal", lang: "EN 1862", bolls: "YLT" },
-  { id: "wlc", name: "Westminster Leningrad Codex", lang: "עברית · Tanakh", bundled: true },
-  { id: "sblgnt", name: "SBL Greek New Testament", lang: "Ελληνικά · NT", bundled: true },
-  { id: "beyond", name: "The Recovered Books", lang: "EN · Deuterocanon+", bundled: true },
+  { id: "kjv", name: "King James Version", lang: "EN 1611", bolls: "KJV", coverage: "canon66" },
+  { id: "web", name: "World English Bible", lang: "EN 2000", bolls: "WEB", coverage: "canon66" },
+  { id: "asv", name: "American Standard", lang: "EN 1901", bolls: "ASV", coverage: "canon66" },
+  { id: "ylt", name: "Young's Literal", lang: "EN 1862", bolls: "YLT", coverage: "canon66" },
+  { id: "wlc", name: "Westminster Leningrad Codex", lang: "עברית · Tanakh", bundled: true, coverage: "ot" },
+  { id: "sblgnt", name: "SBL Greek New Testament", lang: "Ελληνικά · NT", bundled: true, coverage: "nt" },
+  { id: "charles", name: "Charles 1913 Apocrypha", lang: "EN · Deuterocanon",
+    bundled: true,
+    coverage: ["tob", "jdt", "wis", "sir", "bar", "1ma", "2ma", "sus", "bel", "pra", "1es", "2es", "3ma", "4ma", "pmn", "ps151"] },
+  { id: "eth-en", name: "Book of Enoch (Ethiopic)", lang: "EN · R.H. Charles", bundled: true, coverage: ["1en"] },
+  { id: "beyond", name: "The Recovered Books", lang: "EN · beyond the canon",
+    bundled: true,
+    coverage: ["esg", "jub", "4ezr", "3co", "lao", "ps2", "2ba", "epb", "1cl", "2cl", "2en", "od-sol", "jas-pat", "ap-mos", "1mq", "2mq", "3mq", "3en"] },
 ];
 
-const BUNDLED = new Set(TRANSLATIONS.filter((t) => t.bundled).map((t) => t.id));
+export function covers(t: Translation, bookId: string): boolean {
+  const b = bookById.get(bookId);
+  if (!b) return false;
+  if (t.coverage === "canon66") return !!BOLLS_ID[bookId];
+  if (t.coverage === "ot") return b.testament === "OT";
+  if (t.coverage === "nt") return b.testament === "NT";
+  return t.coverage.includes(bookId);
+}
+
 const BOLLS_CODE: Record<string, string> = Object.fromEntries(
   TRANSLATIONS.filter((t) => t.bolls).map((t) => [t.id, t.bolls as string])
 );
@@ -102,7 +120,6 @@ async function idbPut(key: string, value: Chapter): Promise<void> {
 
 // ── sources ────────────────────────────────────────────────────────────
 async function fromBundle(translation: string, bookId: string, chapter: number): Promise<Verse[] | null> {
-  if (!BUNDLED.has(translation)) return null;
   if (!bundles.has(translation)) {
     bundles.set(translation, fetch(`${import.meta.env.BASE_URL}data/bibles/${translation}.json`)
       .then((r) => { if (!r.ok) throw new Error(`bundle ${translation}: ${r.status}`); return r.json(); })
@@ -160,22 +177,39 @@ export async function getChapter(translation: string, bookId: string, chapter: n
     return out;
   }
 
-  const attempts: [Chapter["servedFrom"], () => Promise<Verse[] | null>][] = [
-    ["bundle", () => fromBundle(translation, bookId, chapter)],
-    ["bolls", () => fromBolls(translation, bookId, chapter)],
-    ["bible-api", () => fromBibleApi(translation, bookId, chapter)],
+  // Coverage-aware routing: the requested corpus goes first IF it covers
+  // the book; every other covering corpus follows (bundles before network
+  // — they cannot flake). The chapter that returns says which corpus
+  // actually served it; the chip stays honest when a book lives outside
+  // the requested translation.
+  const requested = TRANSLATIONS.find((t) => t.id === translation);
+  const able = TRANSLATIONS.filter((t) => covers(t, bookId))
+    .sort((a, b) => Number(b.bundled ?? false) - Number(a.bundled ?? false));
+  const order = [
+    ...(requested && covers(requested, bookId) ? [requested] : []),
+    ...able.filter((t) => t.id !== translation),
   ];
+
   let lastErr: unknown = null;
-  for (const [servedFrom, run] of attempts) {
-    try {
-      const verses = await run();
-      if (verses && verses.length) {
-        const out: Chapter = { translation, bookId, chapter, verses, servedFrom };
-        memory.set(key, out);
-        void idbPut(key, out);
-        return out;
-      }
-    } catch (e) { lastErr = e; }
+  for (const t of order) {
+    const attempts: (readonly [Chapter["servedFrom"], () => Promise<Verse[] | null>])[] = [
+      ...(t.bundled ? [["bundle", () => fromBundle(t.id, bookId, chapter)] as const] : []),
+      ...(t.bolls ? [
+        ["bolls", () => fromBolls(t.id, bookId, chapter)] as const,
+        ["bible-api", () => fromBibleApi(t.id, bookId, chapter)] as const,
+      ] : []),
+    ];
+    for (const [servedFrom, run] of attempts) {
+      try {
+        const verses = await run();
+        if (verses && verses.length) {
+          const out: Chapter = { translation: t.id, bookId, chapter, verses, servedFrom };
+          memory.set(key, out);
+          void idbPut(key, out);
+          return out;
+        }
+      } catch (e) { lastErr = e; }
+    }
   }
   throw new Error(`no source could serve ${key}` + (lastErr ? ` · last: ${String(lastErr)}` : ""));
 }

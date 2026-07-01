@@ -67,6 +67,14 @@
   text-align: center; margin-top: 12vh; line-height: 2;
 }
 .gx-reader-err { display: block; font-size: 10px; opacity: 0.6; }
+.gx-reader-dark-line { margin: 0 0 14px; }
+.gx-reader-dark-acts { display: flex; gap: 10px; justify-content: center; margin-bottom: 14px; }
+.gx-dark-act {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+  color: var(--fg); border: var(--hairline); border-radius: 7px;
+  padding: 9px 14px;
+}
+.gx-dark-act:hover { border-color: var(--accent); color: var(--accent); }
 .gx-reader-wait { text-align: center; color: var(--fg-dim); margin-top: 12vh; }
 
 .gx-reader-foot {

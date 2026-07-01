@@ -6,6 +6,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { goTo, closeVeil } from "@/kernel/store";
 import { allFeatures } from "@/kernel/registry";
+import { record } from "@/kernel/witness";
 import { parseRef } from "./refparse";
 import "./omnibar.css";
 
@@ -58,7 +59,12 @@ export function Omnibar({ seed }: { seed?: string }) {
         glyph: "✦",
         label: "Try a reference — John 3:16 · psa 23 · 1 co 13",
         hint: "the door opens on the Word",
-        run: () => setQ("John 3:16"),
+        run: () => {
+          // The purest signal of an unmet want: the user asked, the door
+          // had nothing. The witness remembers what was asked.
+          record("dead-end", q);
+          setQ("John 3:16");
+        },
       });
     }
     return out.slice(0, 8);
