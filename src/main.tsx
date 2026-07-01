@@ -9,7 +9,7 @@ import "./styles/base.css";
 import { getState, setState, whisper } from "./kernel/store";
 import { APP_VERSION, RELEASE_NOTES } from "./kernel/version";
 
-// Boot signal for the smoke harness — same contract as v1.
+// Boot signal for the smoke harness.
 declare global {
   interface Window { __CODEX_READY__?: boolean }
 }

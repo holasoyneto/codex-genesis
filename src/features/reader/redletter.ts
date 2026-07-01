@@ -1,7 +1,7 @@
-// Red letters — painted ONLY from data/red-letter.json (generated in v1
-// from the WEB's <wj> markup: a real red-letter edition, not vibes).
-// Shape: { "jhn.1": "38-39,42-43,50-51", ... } — compact verse ranges;
-// keys starting with "_" are dataset provenance notes.
+// Red letters — painted ONLY from data/red-letter.json, a dataset derived
+// from the World English Bible's <wj> (words-of-Jesus) markup: a real
+// red-letter edition, not vibes. Shape: { "jhn.1": "38-39,42-43", ... } —
+// compact verse ranges; keys starting with "_" are provenance notes.
 
 interface RedIndex { [chapterKey: string]: string }
 

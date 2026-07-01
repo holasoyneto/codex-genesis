@@ -6,8 +6,8 @@
 //   whisper     — ONE notification lane (top-right on desk, below the edge
 //                 slot; bottom on palm) — queued, collision-free by layout
 //   veil        — modal surface (omnibar), one at a time
-// No feature may position itself fixed; it renders into a region. This is
-// the law that kills v1's entire clash class.
+// No feature may position itself fixed; it renders into a region. Chrome
+// that cannot choose its own place cannot collide.
 
 import { useEffect } from "react";
 import { useApp, dismissWhisper, closeVeil, getState, setState } from "@/kernel/store";

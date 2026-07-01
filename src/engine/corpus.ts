@@ -4,7 +4,7 @@
 //   2. IndexedDB (previous sessions — offline works forever after first read)
 //   3. baked bundle  /data/bibles/<id>.json  (wlc, sblgnt, beyond, …)
 //   4. network mirrors (bolls.life → bible-api.com), then cached to (2)
-// Every result carries `servedFrom` — honesty is load-bearing (v1's ⇄ chip).
+// Every result carries `servedFrom` — honesty is load-bearing.
 
 import booksRaw from "./books.json";
 
@@ -112,20 +112,14 @@ async function fromBundle(translation: string, bookId: string, chapter: number):
   return chapters[`${bookId}.${chapter}`] ?? null;
 }
 
+// bolls verse text is HTML. Two element classes carry non-scripture in
+// their CONTENT — <S> (Strong's numbers) and <sup> (translator margin
+// notes) — so they are removed whole; every other element is unwrapped
+// to its text. The purity specs in scripts/smoke.mjs hold the line.
 function sanitizeBolls(html: string): string {
   return html
-    // Markup whose CONTENT is not scripture: <S> carries Strong's numbers,
-    // <sup> carries KJV margin notes ("comprehended: or, did not admit").
-    // Both must go with their contents, before the generic tag strip.
-    .replace(/<S>[^<]*<\/S>/gi, "")
-    .replace(/<sup>[\s\S]*?<\/sup>/gi, "")
+    .replace(/<(S|sup)\b[^>]*>[\s\S]*?<\/\1>/gi, "")
     .replace(/<[^>]+>/g, "")
-    // bolls.life leaks Strong's numbers — sometimes glued to the preceding
-    // word ("man444"), sometimes standalone ("man 444 that"). Scripture
-    // text never carries inline integers; strip both forms. (Lesson
-    // inherited from v1's bible.js.)
-    .replace(/(?<=[a-zA-ZéÀ-ſ'])\d+/g, "")
-    .replace(/(?<=^|[\s.,;:!?()'"—–-])\d{2,5}(?=[\s.,;:!?()'"—–-]|$)/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -152,7 +146,7 @@ async function fromBibleApi(translation: string, bookId: string, chapter: number
 // ── the door ───────────────────────────────────────────────────────────
 // Bump when the sanitizer changes — cached text from an older sanitizer
 // is stale by definition and must re-fetch, not linger.
-const SANITIZER_REV = 2;
+const SANITIZER_REV = 3;
 
 export async function getChapter(translation: string, bookId: string, chapter: number): Promise<Chapter> {
   const key = `r${SANITIZER_REV}:${translation}/${bookId}.${chapter}`;
