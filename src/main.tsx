@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { Shell } from "./shell/Shell";
 import { Reader } from "./features/reader";
 import "./features/omnibar";
+import "./features/library";
 import "./styles/base.css";
 
 // Boot signal for the smoke harness — same contract as v1.

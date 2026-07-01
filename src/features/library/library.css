@@ -1,0 +1,35 @@
+.gx-library { position: relative; padding: 18px 16px; }
+.gx-library-title {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.22em;
+  color: var(--fg-dim); margin: 0 0 14px; font-weight: 500;
+}
+.gx-shelves { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.gx-shelf {
+  display: grid; grid-template-columns: 18px 1fr; align-items: baseline;
+  column-gap: 10px; width: 100%; text-align: left;
+  padding: 10px 10px; border-radius: 8px;
+  border: 1px solid transparent;
+  transition: background var(--fade);
+}
+.gx-shelf:hover { background: color-mix(in oklab, var(--fg) 5%, transparent); }
+.gx-shelf.is-active {
+  border-color: color-mix(in oklab, var(--accent) 40%, transparent);
+  background: color-mix(in oklab, var(--accent) 8%, transparent);
+}
+.gx-shelf-light { color: var(--gold); font-size: 10px; }
+.gx-shelf-light[data-src="network"] { color: var(--fg-dim); }
+.gx-shelf-name { font-size: 14px; }
+.gx-shelf-lang {
+  grid-column: 2; font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.08em; color: var(--fg-dim);
+}
+.gx-library-note {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em;
+  color: var(--fg-dim); opacity: 0.75; margin: 14px 2px 0; line-height: 1.6;
+}
+.gx-library-close {
+  position: absolute; top: 10px; right: 10px;
+  width: 28px; height: 28px; border-radius: 6px;
+  color: var(--fg-dim); font-size: 15px;
+}
+.gx-library-close:hover { color: var(--fg); }

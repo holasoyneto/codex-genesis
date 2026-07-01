@@ -49,6 +49,18 @@ function WhisperLane() {
   );
 }
 
+function Instrument() {
+  const panel = useApp((s) => s.panel);
+  if (!panel) return null;
+  const F = getFeature(panel)?.surfaces.main;
+  if (!F) return null;
+  return (
+    <aside className="gx-instrument">
+      <F />
+    </aside>
+  );
+}
+
 function Veil() {
   const veil = useApp((s) => s.veil);
   useEffect(() => {
@@ -86,6 +98,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
     <div className="gx-shell">
       <div className="gx-wallpaper" aria-hidden />
       <main className="gx-scripture">{children}</main>
+      <Instrument />
       <div className="gx-edge">
         <Trace />
       </div>

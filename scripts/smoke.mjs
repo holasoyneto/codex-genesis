@@ -112,6 +112,32 @@ try {
     }));
     check("omnibar jumps + focuses the verse + veil closes", !focus.veil && focus.focused === "16", JSON.stringify(focus));
 
+    // The shelves: omnibar → library panel → switch to WEB → honest chip.
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "library");
+    await sleep(250);
+    await page.keyboard.press("Enter");
+    await page.waitForSelector(".gx-instrument .gx-shelf", { timeout: 5000 });
+    await page.evaluate(() => {
+      const web = [...document.querySelectorAll(".gx-shelf")].find((b) => /World English/.test(b.textContent));
+      web.click();
+    });
+    await page.waitForFunction(
+      () => /WEB/.test(document.querySelector(".gx-served")?.textContent || ""),
+      { timeout: 20000 }
+    );
+    const shelf = await page.evaluate(() => ({
+      active: [...document.querySelectorAll(".gx-shelf.is-active")].map((b) => b.querySelector(".gx-shelf-name")?.textContent)[0],
+      served: document.querySelector(".gx-served")?.textContent?.trim(),
+    }));
+    check("library switches the primary translation", /World English/.test(shelf.active || "") && /WEB/.test(shelf.served || ""), JSON.stringify(shelf));
+    await shot(page, "desk-library");
+    await page.click('.gx-library-close');
+    await sleep(200);
+    const panelGone = await page.evaluate(() => !document.querySelector(".gx-instrument"));
+    check("library closes", panelGone);
+
     check("desk: zero js errors", page.jsErrors.length === 0, JSON.stringify(page.jsErrors.slice(0, 3)));
     await ctx.close();
   }

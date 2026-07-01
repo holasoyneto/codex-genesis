@@ -20,6 +20,7 @@ export interface AppState {
   cursor: Cursor;
   settings: Settings;
   veil: null | { feature: string; seed?: string }; // one modal surface at a time
+  panel: string | null; // the open instrument (desk: side panel · palm: sheet)
   whispers: Whisper[]; // the single notification lane (queued, never stacked chrome)
 }
 
@@ -38,6 +39,7 @@ const DEFAULTS: AppState = {
   cursor: { bookId: "jhn", chapter: 1, verse: null, translation: "kjv" },
   settings: { theme: "auto", scriptureScale: 19, redLetter: true, divineName: true },
   veil: null,
+  panel: null,
   whispers: [],
 };
 
