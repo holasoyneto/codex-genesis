@@ -272,6 +272,26 @@ try {
     await page.click(".gx-compare-close");
     await sleep(200);
 
+    // THE ORACLE: fresh profile shows the beginner setup — both engine
+    // cards, gated key button, and an HONEST probe failure (no Ollama in CI).
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "oracle");
+    await sleep(250);
+    await page.keyboard.press("Enter");
+    await page.waitForSelector(".gx-oracle-setup", { timeout: 5000 });
+    const setup = await page.evaluate(() => ({
+      cards: document.querySelectorAll(".gx-oracle-card").length,
+      cloudGated: document.querySelector(".gx-oracle-card:nth-of-type(2) .gx-oracle-btn")?.disabled,
+    }));
+    check("oracle: setup offers local + cloud, key button gated", setup.cards === 2 && setup.cloudGated === true, JSON.stringify(setup));
+    await page.evaluate(() => [...document.querySelectorAll(".gx-oracle-btn")].find((b) => /TEST/.test(b.textContent)).click());
+    await page.waitForFunction(() => document.querySelector(".gx-oracle-probe.is-fail, .gx-oracle-probe.is-ok"), { timeout: 10000 });
+    const probe = await page.evaluate(() => document.querySelector(".gx-oracle-probe")?.className);
+    check("oracle: probe answers honestly", /is-fail|is-ok/.test(probe || ""), probe);
+    await page.click(".gx-oracle-close");
+    await sleep(200);
+
     // Return to canon ground so the shelves spec exercises a book every
     // English corpus carries.
     await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");

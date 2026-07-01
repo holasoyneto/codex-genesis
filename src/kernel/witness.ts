@@ -91,7 +91,11 @@ export function startWitness(): void {
     if (s.veil?.feature !== prev.veil?.feature && s.veil) record("veil", s.veil.feature);
     if (s.settings !== prev.settings) {
       for (const k of Object.keys(s.settings) as (keyof typeof s.settings)[]) {
-        if (s.settings[k] !== prev.settings[k]) record("setting", `${k} = ${String(s.settings[k])}`);
+        if (s.settings[k] === prev.settings[k]) continue;
+        // Objects (oracle config) are recorded by name only — never their
+        // contents; a key must not reach the ledger even obfuscated.
+        const v = s.settings[k];
+        record("setting", typeof v === "object" ? `${k} changed` : `${k} = ${String(v)}`);
       }
     }
     prev = s;

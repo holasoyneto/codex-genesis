@@ -1,0 +1,77 @@
+.gx-oracle { position: relative; padding: 18px 16px; display: flex; flex-direction: column; min-height: 60%; }
+.gx-oracle-title {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.22em;
+  color: var(--fg-dim); margin: 0 0 10px; font-weight: 500;
+}
+.gx-oracle-lead { font-family: var(--serif); font-size: 14.5px; margin: 0 0 14px; }
+
+.gx-oracle-card {
+  border: var(--hairline); border-radius: var(--radius);
+  padding: 12px 14px; margin-bottom: 12px;
+}
+.gx-oracle-card-title {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em;
+  margin: 0 0 10px; font-weight: 600;
+  display: flex; align-items: baseline; gap: 8px;
+}
+.gx-oracle-tag { font-size: 8.5px; color: var(--gold); letter-spacing: 0.1em; font-weight: 400; }
+.gx-oracle-steps { margin: 0 0 10px; padding-left: 18px; font-size: 13px; line-height: 1.7; }
+.gx-oracle-steps a { color: var(--accent); }
+.gx-oracle-actions { display: flex; align-items: center; gap: 10px; }
+.gx-oracle-btn {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+  color: var(--fg); border: var(--hairline); border-radius: 7px;
+  padding: 8px 13px;
+}
+.gx-oracle-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.gx-oracle-btn:disabled { opacity: 0.4; cursor: default; }
+.gx-oracle-probe { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.05em; }
+.gx-oracle-probe.is-ok { color: #7fd18a; }
+.gx-oracle-probe.is-fail { color: var(--red-letter); }
+.gx-oracle-fix { margin-top: 10px; font-size: 12px; line-height: 1.6; color: var(--fg-dim); }
+.gx-oracle-cmd {
+  display: flex; align-items: center; gap: 8px; margin-top: 6px;
+  border: var(--hairline); border-radius: 7px; padding: 7px 9px;
+}
+.gx-oracle-cmd code {
+  font-family: var(--mono); font-size: 9.5px; color: var(--fg);
+  overflow-x: auto; white-space: nowrap; flex: 1;
+}
+.gx-oracle-copy {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em;
+  color: var(--accent); flex-shrink: 0;
+}
+.gx-oracle-key {
+  flex: 1; padding: 8px 10px;
+  font-family: var(--mono); font-size: 11px;
+  color: var(--fg); background: transparent;
+  border: var(--hairline); border-radius: 7px; outline: none;
+}
+.gx-oracle-key:focus { border-color: color-mix(in oklab, var(--accent) 45%, transparent); }
+
+.gx-oracle-oath {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em;
+  color: var(--fg-dim); margin: 0 0 12px; line-height: 1.6;
+}
+.gx-oracle-relink { color: var(--accent); font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; }
+.gx-oracle-turns { flex: 1; overflow-y: auto; margin-bottom: 12px; }
+.gx-oracle-turn { margin-bottom: 14px; }
+.gx-oracle-q { font-family: var(--serif); font-size: 14px; font-style: italic; margin: 0 0 6px; color: var(--gold); }
+.gx-oracle-a-text { font-size: 13.5px; line-height: 1.65; margin: 0 0 4px; white-space: pre-wrap; }
+.gx-oracle-a-chip { font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.1em; color: var(--fg-dim); }
+.gx-oracle-err { font-family: var(--mono); font-size: 10px; color: var(--red-letter); line-height: 1.6; }
+.gx-oracle-wait { font-family: var(--mono); font-size: 10px; color: var(--fg-dim); }
+.gx-oracle-ask { display: flex; gap: 8px; }
+.gx-oracle-input {
+  flex: 1; padding: 9px 11px;
+  font-family: var(--serif); font-size: 14px;
+  color: var(--fg); background: transparent;
+  border: var(--hairline); border-radius: 8px; outline: none;
+}
+.gx-oracle-input:focus { border-color: color-mix(in oklab, var(--accent) 45%, transparent); }
+.gx-oracle-close {
+  position: absolute; top: 10px; right: 10px;
+  width: 28px; height: 28px; border-radius: 6px;
+  color: var(--fg-dim); font-size: 15px;
+}
+.gx-oracle-close:hover { color: var(--fg); }

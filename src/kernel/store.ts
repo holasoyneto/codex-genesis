@@ -9,12 +9,19 @@ export interface Cursor {
   translation: string; // corpus id, e.g. "kjv"
 }
 
+export interface OracleSettings {
+  engine: "local" | "cloud" | null;
+  localUrl: string;        // OpenAI-compatible server (default: Ollama)
+  anthropicKey: string;    // the USER'S OWN key — stored on this device only
+}
+
 export interface Settings {
   theme: "auto" | "dark" | "light";
   scriptureScale: number;   // px
   redLetter: boolean;
   divineName: boolean;      // golden יהוה treatment
   witness: boolean;         // the app records its own use, locally
+  oracle: OracleSettings;
 }
 
 export interface Mark {
@@ -49,7 +56,10 @@ const KEY = "codex-genesis.v" + VERSION;
 
 const DEFAULTS: AppState = {
   cursor: { bookId: "jhn", chapter: 1, verse: null, translation: "kjv" },
-  settings: { theme: "auto", scriptureScale: 19, redLetter: true, divineName: true, witness: true },
+  settings: {
+    theme: "auto", scriptureScale: 19, redLetter: true, divineName: true, witness: true,
+    oracle: { engine: null, localUrl: "http://localhost:11434/v1", anthropicKey: "" },
+  },
   veil: null,
   panel: null,
   whispers: [],

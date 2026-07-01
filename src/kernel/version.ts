@@ -6,7 +6,6 @@ declare const __APP_VERSION__: string;
 export const APP_VERSION = __APP_VERSION__;
 
 export const RELEASE_NOTES: string[] = [
-  "THE THREADS — Torrey's 432,898 cross-references, local and instant: open any verse and walk everywhere Scripture answers it.",
-  "SEARCH the whole of Scripture from the omnibar — type any words; MARKS — press B to keep a verse forever; COMPARE — one verse in every voice, Hebrew and Greek beside the English.",
-  "CODEX is now installable and works offline — add it to your home screen or dock.",
+  "THE ORACLE — ask anything about the open passage. Two minds: ON YOUR MACHINE (Ollama — install, open, done; nothing leaves your device) or IN THE CLOUD (your own Anthropic key, stored only here). Every answer names the engine that gave it.",
+  "THE THREADS — Torrey's 432,898 cross-references, local and instant; SEARCH, MARKS (press B), COMPARE, offline install — all landed in the last release and are yours.",
 ];

@@ -6,6 +6,7 @@ import "./features/omnibar";
 import "./features/library";
 import "./features/settings";
 import "./features/witness";
+import "./features/oracle";
 import "./features/marks";
 import "./features/threads";
 import "./features/search";
