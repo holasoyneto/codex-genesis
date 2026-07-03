@@ -1,14 +1,16 @@
 {
   "name": "codex-genesis",
   "private": true,
-  "version": "0.7.0",
+  "version": "0.8.0",
   "type": "module",
   "scripts": {
     "dev": "vite --port 7778 --strictPort",
     "build": "tsc -b && vite build",
     "preview": "vite preview --port 7778 --strictPort",
     "smoke": "node scripts/smoke.mjs",
-    "audit:ui": "node scripts/audit-ui.mjs"
+    "audit:ui": "node scripts/audit-ui.mjs",
+    "seed:ontology": "node scripts/seed-ontology.mjs",
+    "audit:ontology": "node scripts/audit-ontology.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

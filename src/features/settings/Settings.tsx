@@ -68,6 +68,16 @@ export function Settings() {
       </div>
 
       <div className="gx-set-row">
+        <span className="gx-set-label">Entity names — quiet underlines</span>
+        <button
+          className={"gx-switch" + (s.entities ? " is-on" : "")}
+          role="switch" aria-checked={s.entities}
+          aria-label="Underline named persons and places in the reader"
+          onClick={() => set("entities", !s.entities)}
+        ><i /></button>
+      </div>
+
+      <div className="gx-set-row">
         <span className="gx-set-label">The Witness — local use ledger</span>
         <button
           className={"gx-switch" + (s.witness ? " is-on" : "")}

@@ -3,9 +3,10 @@
 // instruments live at the edges, the omnibar is the door.
 
 import { useEffect, useState } from "react";
-import { useApp, goTo, setState } from "@/kernel/store";
+import { useApp, goTo, setState, openDossier } from "@/kernel/store";
 import { getChapter, bookById, type Chapter } from "@/engine/corpus";
 import { record } from "@/kernel/witness";
+import { loadOntology, getLoadedOntology, chapterMentions, type Mention } from "@/engine/ontology";
 import { redLetterVerses } from "./redletter";
 import "./reader.css";
 
@@ -25,13 +26,58 @@ function DivineText({ text }: { text: string }) {
   );
 }
 
+const escRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+// The verse body — scripture stays serif and serene. When entities are on and
+// the verse names one, the name becomes a quiet underline that opens its
+// Dossier; everything else still flows as text (divine Name honored within).
+function VerseBody({ text, mentions, divineName }: {
+  text: string; mentions?: Mention[]; divineName: boolean;
+}) {
+  const plain = (seg: string, k: number) =>
+    divineName ? <DivineText key={k} text={seg} /> : <span key={k}>{seg}</span>;
+  if (!mentions || !mentions.length) return plain(text, 0);
+
+  const forms = new Map<string, string>(); // surface form → entityId (first wins)
+  for (const m of mentions) if (!forms.has(m.form)) forms.set(m.form, m.entityId);
+  const re = new RegExp(`(?<![\\p{L}])(${[...forms.keys()].map(escRe).join("|")})(?![\\p{L}])`, "gu");
+
+  const nodes: React.ReactNode[] = [];
+  let last = 0, k = 0, mm: RegExpExecArray | null;
+  while ((mm = re.exec(text))) {
+    if (mm.index > last) nodes.push(plain(text.slice(last, mm.index), k++));
+    const form = mm[1];
+    const eid = forms.get(form)!;
+    nodes.push(
+      <button
+        key={k++}
+        className="gx-entity"
+        title="Open the dossier"
+        onClick={(e) => { e.stopPropagation(); openDossier(eid); }}
+      >{form}</button>
+    );
+    last = mm.index + form.length;
+  }
+  if (last < text.length) nodes.push(plain(text.slice(last), k++));
+  return <>{nodes}</>;
+}
+
 export function Reader() {
   const cursor = useApp((s) => s.cursor);
-  const { redLetter, divineName, scriptureScale } = useApp((s) => s.settings);
+  const { redLetter, divineName, entities, scriptureScale } = useApp((s) => s.settings);
   const [ch, setCh] = useState<Chapter | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [retry, setRetry] = useState(0);
+  const [ontReady, setOntReady] = useState(false);
   const book = bookById.get(cursor.bookId);
+
+  // Warm the ontology once; a re-render swaps text for chips when it lands.
+  useEffect(() => {
+    if (!entities) return;
+    let live = true;
+    loadOntology().then(() => { if (live) setOntReady(true); }).catch(() => { /* dark-safe */ });
+    return () => { live = false; };
+  }, [entities]);
 
   useEffect(() => {
     let live = true;
@@ -87,6 +133,9 @@ export function Reader() {
   }, [ch, cursor.bookId, cursor.chapter, cursor.verse]);
 
   const red = redLetter ? redLetterVerses(cursor.bookId, cursor.chapter) : null;
+  // Entity mentions for this chapter (empty until the ontology is warm).
+  const ont = entities && ontReady ? getLoadedOntology() : null;
+  const chMentions = ont ? chapterMentions(ont, cursor.bookId, cursor.chapter) : null;
 
   // While a jump is in flight the OLD chapter is still on screen — verse
   // focus and marks must never act on it.
@@ -142,7 +191,7 @@ export function Reader() {
               onClick={() => goTo({ verse: cursor.verse === v.n ? null : v.n })}
             >
               <span className="gx-vn" aria-hidden>{v.n}</span>
-              {divineName ? <DivineText text={v.text} /> : v.text}
+              <VerseBody text={v.text} mentions={chMentions?.get(v.n)} divineName={divineName} />
             </p>
           ))}
         </div>

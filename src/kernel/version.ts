@@ -6,6 +6,7 @@ declare const __APP_VERSION__: string;
 export const APP_VERSION = __APP_VERSION__;
 
 export const RELEASE_NOTES: string[] = [
-  "THE WHOLE CANON IN ONE MIND — a frontier model now receives the entire Bible (~990k tokens) with your question; smaller minds get the testament, the book, or the chapter, and every answer says exactly how much scripture it held.",
-  "The full World English Bible is now baked in — the complete canon reads offline, and repeat questions to Claude reuse the cached canon at a tenth of the price.",
+  "THE ONTOLOGY — the keystone. Named persons and places in the Torah are now first-class objects: a name in the sacred column becomes a quiet gold underline, and tapping it opens its Dossier — summary, walkable relations, every mention, and honest provenance. Melchizedek's disputed identity is rendered as three sourced views, not flattened to fact.",
+  "The omnibar learns entities — type “melchizedek” and the priest-king ranks above any fuzzy book guess.",
+  "Every one of the seed's ~3,000 mentions is verified against real scripture by the harness; the full frontier sweep of all 66 books lands next.",
 ];

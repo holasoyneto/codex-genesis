@@ -20,6 +20,7 @@ export interface Settings {
   scriptureScale: number;   // px
   redLetter: boolean;
   divineName: boolean;      // golden יהוה treatment
+  entities: boolean;        // quiet entity underlines in the sacred column
   witness: boolean;         // the app records its own use, locally
   oracle: OracleSettings;
 }
@@ -38,6 +39,7 @@ export interface AppState {
   settings: Settings;
   veil: null | { feature: string; seed?: string }; // one modal surface at a time
   panel: string | null; // the open instrument (desk: side panel · palm: sheet)
+  entity: string | null; // the entity the Dossier is looking at (an ontology id)
   whispers: Whisper[]; // the single notification lane (queued, never stacked chrome)
   lastVersion: string | null; // last version whose notes the user has seen
   marks: Mark[]; // kept verses — the reader's own gold
@@ -57,11 +59,12 @@ const KEY = "codex-genesis.v" + VERSION;
 const DEFAULTS: AppState = {
   cursor: { bookId: "jhn", chapter: 1, verse: null, translation: "kjv" },
   settings: {
-    theme: "auto", scriptureScale: 19, redLetter: true, divineName: true, witness: true,
+    theme: "auto", scriptureScale: 19, redLetter: true, divineName: true, entities: true, witness: true,
     oracle: { engine: null, localUrl: "http://localhost:11434/v1", anthropicKey: "" },
   },
   veil: null,
   panel: null,
+  entity: null,
   whispers: [],
   lastVersion: null,
   marks: [],
@@ -141,6 +144,12 @@ export function openVeil(feature: string, seed?: string): void {
   setState({ veil: { feature, seed } });
 }
 export function closeVeil(): void { setState({ veil: null }); }
+
+// Open the Dossier on an entity — the one gesture that makes a name a door.
+// The veil (omnibar) yields; an instrument takes the floor.
+export function openDossier(entityId: string): void {
+  setState({ entity: entityId, panel: "dossier", veil: null });
+}
 
 // React binding (no dependency): useSyncExternalStore against the store.
 import { useSyncExternalStore } from "react";

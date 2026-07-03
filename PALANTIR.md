@@ -386,8 +386,8 @@ provenance footers; a share URL rehydrates an investigation read-only.
 
 | # | Ships | Retires (first blood) |
 |---|-------|------------------------|
-| 1 | Ontology schema + extraction harness + persons/places/mentions for the Torah; entity chips + Dossier panel v1 | #11–14, #18 |
-| 2 | Extraction sweep of all 66 books + genealogy/speaker relations + audit harness + omnibar entities; beyond books queued | #15–17, #21–23, #42 |
+| 1 | ✓ **v0.8.0** — `engine/ontology.ts` schema + engine; `scripts/{seed,extract,audit}-ontology.mjs`; verified Torah seed (45 persons · 22 places · 50 relations · 2,994 mentions, all resolve in the harness); entity underlines in the sacred column + Dossier v1 (CONTESTED views, walkable relations & mentions, provenance footer); omnibar learns entities | #11–14, #18 |
+| 2 | Frontier extraction sweep of all 66 books (the harness exists — `extract-ontology.mjs`) + genealogy/speaker relations + reconciliation (Viz.Bible / OpenBible) + omnibar Elijah + John 3:16 speaker CONTESTED; beyond books queued | #15–17, #21–23, #42 |
 | 3 | Strong's/lemma layer: re-bake KJV keeping `<S>`, Strong's dictionaries, word-study instrument, interlinear v1 | #19–20, #35, #57 |
 | 4 | Graph engine (PATH/NEAR/FAMILIES over TSK+ontology) + quotation dataset; Threads molts to ego-graph | #6, #32–33, #41, #2 |
 | 5 | THE GALAXY instrument (baked layout, fly-to, gold trails) | #1, #3, #94(part) |

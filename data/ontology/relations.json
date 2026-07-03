@@ -1,0 +1,363 @@
+{
+  "_meta": {
+    "source": "World English Bible (public domain)",
+    "license": "Public Domain",
+    "extracted_by": "whole-word match over baked WEB · curated by claude-opus-4-8 · 2026-07-03",
+    "method": "seed",
+    "scope": "Torah (Genesis–Deuteronomy) principal persons & places",
+    "limitations": "Exact-name match only — coreference and pronoun anaphora are NOT resolved. The full frontier mention+relation sweep over all 66 books lands in Session 2. A verified seed, not the sweep.",
+    "contested_policy": "Where a tradition disputes an identity or reading, the entity carries a `contested` block with the competing views and their sources. The app never presents one lens as neutral fact."
+  },
+  "relations": [
+    {
+      "from": "p.adam",
+      "to": "p.eve",
+      "kind": "spouse_of",
+      "ref": "gen.3.20",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.adam",
+      "to": "p.cain",
+      "kind": "father_of",
+      "ref": "gen.4.1",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.adam",
+      "to": "p.abel",
+      "kind": "father_of",
+      "ref": "gen.4.2",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.adam",
+      "to": "p.seth",
+      "kind": "father_of",
+      "ref": "gen.4.25",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.eve",
+      "to": "p.cain",
+      "kind": "mother_of",
+      "ref": "gen.4.1",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.eve",
+      "to": "p.seth",
+      "kind": "mother_of",
+      "ref": "gen.4.25",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.noah",
+      "to": "p.shem",
+      "kind": "father_of",
+      "ref": "gen.5.32",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.noah",
+      "to": "p.ham",
+      "kind": "father_of",
+      "ref": "gen.5.32",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.noah",
+      "to": "p.japheth",
+      "kind": "father_of",
+      "ref": "gen.5.32",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.terah",
+      "to": "p.abraham",
+      "kind": "father_of",
+      "ref": "gen.11.27",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.abraham",
+      "to": "p.sarah",
+      "kind": "spouse_of",
+      "ref": "gen.11.29",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.abraham",
+      "to": "p.ishmael",
+      "kind": "father_of",
+      "ref": "gen.16.15",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.hagar",
+      "to": "p.ishmael",
+      "kind": "mother_of",
+      "ref": "gen.16.15",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.abraham",
+      "to": "p.isaac",
+      "kind": "father_of",
+      "ref": "gen.21.3",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.sarah",
+      "to": "p.isaac",
+      "kind": "mother_of",
+      "ref": "gen.21.3",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.abraham",
+      "to": "p.lot",
+      "kind": "uncle_of",
+      "ref": "gen.12.5",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.melchizedek",
+      "to": "p.abraham",
+      "kind": "blessed",
+      "ref": "gen.14.19",
+      "provenance": "curated · Genesis 14 (the showcase)"
+    },
+    {
+      "from": "p.melchizedek",
+      "to": "pl.salem",
+      "kind": "king_of",
+      "ref": "gen.14.18",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.lot",
+      "to": "pl.sodom",
+      "kind": "dwelt_in",
+      "ref": "gen.13.12",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.isaac",
+      "to": "p.rebekah",
+      "kind": "spouse_of",
+      "ref": "gen.24.67",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.isaac",
+      "to": "p.esau",
+      "kind": "father_of",
+      "ref": "gen.25.25",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.isaac",
+      "to": "p.jacob",
+      "kind": "father_of",
+      "ref": "gen.25.26",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.rebekah",
+      "to": "p.esau",
+      "kind": "mother_of",
+      "ref": "gen.25.25",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.rebekah",
+      "to": "p.jacob",
+      "kind": "mother_of",
+      "ref": "gen.25.26",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.laban",
+      "to": "p.rebekah",
+      "kind": "brother_of",
+      "ref": "gen.24.29",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.laban",
+      "to": "p.rachel",
+      "kind": "father_of",
+      "ref": "gen.29.16",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.laban",
+      "to": "p.leah",
+      "kind": "father_of",
+      "ref": "gen.29.16",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.jacob",
+      "to": "p.rachel",
+      "kind": "spouse_of",
+      "ref": "gen.29.28",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.jacob",
+      "to": "p.leah",
+      "kind": "spouse_of",
+      "ref": "gen.29.23",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.jacob",
+      "to": "p.reuben",
+      "kind": "father_of",
+      "ref": "gen.29.32",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.jacob",
+      "to": "p.simeon",
+      "kind": "father_of",
+      "ref": "gen.29.33",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.jacob",
+      "to": "p.levi",
+      "kind": "father_of",
+      "ref": "gen.29.34",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.jacob",
+      "to": "p.judah",
+      "kind": "father_of",
+      "ref": "gen.29.35",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.jacob",
+      "to": "p.joseph",
+      "kind": "father_of",
+      "ref": "gen.30.24",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.jacob",
+      "to": "p.benjamin",
+      "kind": "father_of",
+      "ref": "gen.35.18",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.leah",
+      "to": "p.reuben",
+      "kind": "mother_of",
+      "ref": "gen.29.32",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.leah",
+      "to": "p.levi",
+      "kind": "mother_of",
+      "ref": "gen.29.34",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.leah",
+      "to": "p.judah",
+      "kind": "mother_of",
+      "ref": "gen.29.35",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.rachel",
+      "to": "p.joseph",
+      "kind": "mother_of",
+      "ref": "gen.30.24",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.rachel",
+      "to": "p.benjamin",
+      "kind": "mother_of",
+      "ref": "gen.35.18",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.joseph",
+      "to": "p.manasseh",
+      "kind": "father_of",
+      "ref": "gen.41.51",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.joseph",
+      "to": "p.ephraim",
+      "kind": "father_of",
+      "ref": "gen.41.52",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.levi",
+      "to": "p.moses",
+      "kind": "ancestor_of",
+      "ref": "exo.6.20",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.levi",
+      "to": "p.aaron",
+      "kind": "ancestor_of",
+      "ref": "exo.6.20",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.moses",
+      "to": "p.aaron",
+      "kind": "brother_of",
+      "ref": "exo.7.1",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.moses",
+      "to": "p.miriam",
+      "kind": "sibling_of",
+      "ref": "num.26.59",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.jethro",
+      "to": "p.zipporah",
+      "kind": "father_of",
+      "ref": "exo.2.21",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.moses",
+      "to": "p.zipporah",
+      "kind": "spouse_of",
+      "ref": "exo.2.21",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.aaron",
+      "to": "p.eleazar",
+      "kind": "father_of",
+      "ref": "exo.6.23",
+      "provenance": "curated · Torah genealogy"
+    },
+    {
+      "from": "p.eleazar",
+      "to": "p.phinehas",
+      "kind": "father_of",
+      "ref": "exo.6.25",
+      "provenance": "curated · Torah genealogy"
+    }
+  ]
+}

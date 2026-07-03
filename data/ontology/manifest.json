@@ -1,0 +1,33 @@
+{
+  "_meta": {
+    "source": "World English Bible (public domain)",
+    "license": "Public Domain",
+    "extracted_by": "whole-word match over baked WEB · curated by claude-opus-4-8 · 2026-07-03",
+    "method": "seed",
+    "scope": "Torah (Genesis–Deuteronomy) principal persons & places",
+    "limitations": "Exact-name match only — coreference and pronoun anaphora are NOT resolved. The full frontier mention+relation sweep over all 66 books lands in Session 2. A verified seed, not the sweep.",
+    "contested_policy": "Where a tradition disputes an identity or reading, the entity carries a `contested` block with the competing views and their sources. The app never presents one lens as neutral fact."
+  },
+  "generated": "2026-07-03",
+  "books": [
+    "gen",
+    "exo",
+    "lev",
+    "num",
+    "deu"
+  ],
+  "counts": {
+    "persons": 45,
+    "places": 22,
+    "entities": 67,
+    "relations": 50,
+    "mentions": 2994,
+    "mentionsByBook": {
+      "gen": 1313,
+      "exo": 585,
+      "lev": 181,
+      "num": 695,
+      "deu": 220
+    }
+  }
+}

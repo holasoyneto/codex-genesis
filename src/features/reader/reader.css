@@ -62,6 +62,18 @@
   letter-spacing: 0.02em;
 }
 
+/* Entity underline — the name is a door, but scripture stays serene: no
+   button chrome, the serif flows unbroken, only a faint gold rule beneath.
+   The reading is undisturbed; the door opens only when sought. */
+.gx-entity {
+  font: inherit; color: inherit; background: none; border: 0; padding: 0;
+  cursor: pointer;
+  border-bottom: 1px solid color-mix(in oklab, var(--gold) 32%, transparent);
+  transition: border-color var(--fade), color var(--fade);
+}
+.gx-entity:hover { color: var(--gold); border-bottom-color: var(--gold); }
+.gx-verse.is-red .gx-entity { border-bottom-color: color-mix(in oklab, var(--red-letter) 40%, transparent); }
+
 .gx-reader-dark {
   font-family: var(--mono); font-size: 13px; color: var(--fg-dim);
   text-align: center; margin-top: 12vh; line-height: 2;

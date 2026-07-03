@@ -11,6 +11,7 @@ import "./features/marks";
 import "./features/threads";
 import "./features/search";
 import "./features/compare";
+import "./features/dossier";
 import "./styles/base.css";
 import { getState, setState, whisper } from "./kernel/store";
 import { APP_VERSION, RELEASE_NOTES } from "./kernel/version";

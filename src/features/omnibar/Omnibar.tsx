@@ -4,10 +4,11 @@
 // the index cannot promise what isn't registered.
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { goTo, closeVeil, setState } from "@/kernel/store";
+import { goTo, closeVeil, setState, openDossier } from "@/kernel/store";
 import { allFeatures } from "@/kernel/registry";
 import { record } from "@/kernel/witness";
 import { setSearchSeed } from "@/features/search";
+import { getLoadedOntology, searchEntities } from "@/engine/ontology";
 import { parseRef } from "./refparse";
 
 const setPanel = (panel: string) => setState({ panel });
@@ -55,6 +56,21 @@ export function Omnibar({ seed }: { seed?: string }) {
             run: () => { c.run(); closeVeil(); },
           });
         }
+      }
+    }
+    // Entities are doors. A named person or place ranks ABOVE a fuzzy book
+    // guess ("melchizedek" is the priest-king, not a misspelt book) but never
+    // shadows an exact reference or command.
+    const ont = getLoadedOntology();
+    if (ont && needle.length >= 2) {
+      for (const e of searchEntities(ont, needle, 3)) {
+        out.push({
+          key: `entity:${e.id}`,
+          glyph: e.kind === "place" ? "⌖" : "☖",
+          label: e.names[0],
+          hint: e.summary.length > 48 ? e.summary.slice(0, 47) + "…" : e.summary,
+          run: () => { openDossier(e.id); closeVeil(); },
+        });
       }
     }
     if (refRow && ref!.fuzzy) out.push(refRow);

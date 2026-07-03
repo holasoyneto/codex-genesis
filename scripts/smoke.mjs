@@ -16,6 +16,39 @@ const check = (name, ok, info = "") => {
   console.log(`[smoke] ${ok ? "ok  " : "FAIL"} — ${name}${info ? " :: " + info : ""}`);
 };
 
+// ── ontology data integrity (node-side, before any browser) ───────────────
+// The keystone must be sound in the data before it can be sound in the UI:
+// every mention resolves to a real verse, and its surface form is really there.
+{
+  const web = JSON.parse(fs.readFileSync("data/bibles/web.json", "utf8")).chapters;
+  const manifest = JSON.parse(fs.readFileSync("data/ontology/manifest.json", "utf8"));
+  const verseText = (ref) => {
+    const [b, c, v] = String(ref).split(".");
+    return (web[`${b}.${c}`] || []).find((x) => x.n === Number(v))?.text ?? null;
+  };
+  let total = 0, dead = 0, formMiss = 0;
+  for (const b of manifest.books) {
+    const { mentions } = JSON.parse(fs.readFileSync(`data/ontology/mentions/${b}.json`, "utf8"));
+    for (const m of mentions) {
+      total++;
+      const t = verseText(m.ref);
+      if (t == null) dead++;
+      else if (!t.includes(m.form)) formMiss++;
+    }
+  }
+  check("ontology: Torah seed has persons & places", manifest.counts.persons > 0 && manifest.counts.places > 0, JSON.stringify(manifest.counts));
+  check("ontology: every mention resolves to a real verse", total > 0 && dead === 0, `${total} mentions · ${dead} dead`);
+  check("ontology: every mention form occurs in its verse", formMiss === 0, `${formMiss} misses`);
+  // relations are evidenced and their endpoints are known entities
+  const ents = new Set([
+    ...JSON.parse(fs.readFileSync("data/ontology/persons.json", "utf8")).entities.map((e) => e.id),
+    ...JSON.parse(fs.readFileSync("data/ontology/places.json", "utf8")).entities.map((e) => e.id),
+  ]);
+  const rels = JSON.parse(fs.readFileSync("data/ontology/relations.json", "utf8")).relations;
+  const relBad = rels.filter((r) => !ents.has(r.from) || !ents.has(r.to) || (r.ref && verseText(r.ref) == null));
+  check("ontology: every relation is evidenced and well-formed", relBad.length === 0, `${rels.length} relations · ${relBad.length} bad`);
+}
+
 const browser = await puppeteer.launch({
   executablePath: CHROME, headless: "new",
   args: ["--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage"],
@@ -360,6 +393,69 @@ try {
     await sleep(200);
     const panelGone = await page.evaluate(() => !document.querySelector(".gx-instrument"));
     check("library closes", panelGone);
+
+    // THE DOSSIER — entities are first-class. Genesis 14, the Melchizedek
+    // showcase: a name in the sacred column becomes a walkable door.
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "Genesis 14");
+    await sleep(250);
+    await page.keyboard.press("Enter");
+    await page.waitForFunction(
+      () => /Genesis\s*14\b/.test(document.querySelector(".gx-reader-title")?.textContent?.replace(/\s+/g, " ") || ""),
+      { timeout: 20000 }
+    );
+    await page.waitForSelector(".gx-entity", { timeout: 15000 });
+    const chips = await page.evaluate(() => {
+      const els = [...document.querySelectorAll(".gx-entity")];
+      return { count: els.length, hasMel: els.some((e) => e.textContent === "Melchizedek") };
+    });
+    check("dossier: entity underlines render in the sacred column", chips.count > 3 && chips.hasMel, JSON.stringify(chips));
+
+    // Tap Melchizedek → the Dossier, with relations, an honest CONTESTED
+    // stamp, and a provenance footer.
+    await page.evaluate(() => [...document.querySelectorAll(".gx-entity")].find((e) => e.textContent === "Melchizedek").click());
+    await page.waitForSelector(".gx-dossier .gx-dos-name", { timeout: 5000 });
+    const dos = await page.evaluate(() => ({
+      name: document.querySelector(".gx-dos-name")?.textContent,
+      rels: document.querySelectorAll(".gx-dos-rel").length,
+      mentions: document.querySelectorAll(".gx-dos-mention").length,
+      contested: !!document.querySelector(".gx-dos-contested"),
+      prov: !!document.querySelector(".gx-dos-prov"),
+    }));
+    check("dossier: Melchizedek opens — relations, CONTESTED, provenance",
+      dos.name === "Melchizedek" && dos.rels >= 1 && dos.contested && dos.prov, JSON.stringify(dos));
+    await shot(page, "desk-dossier");
+
+    // The graph is walkable: a relation to Abraham opens Abraham's dossier.
+    await page.evaluate(() => {
+      const b = [...document.querySelectorAll(".gx-dos-rel-who")].find((x) => /Abraham/.test(x.textContent));
+      b.click();
+    });
+    await page.waitForFunction(() => document.querySelector(".gx-dos-name")?.textContent === "Abraham", { timeout: 5000 });
+    check("dossier: relations walk (Melchizedek → Abraham)", true);
+
+    // A mention is a door back into scripture — clicking it moves the reader.
+    const target = await page.evaluate(() => document.querySelector(".gx-dos-mention .gx-dos-mention-ref")?.textContent);
+    await page.evaluate(() => document.querySelector(".gx-dos-mention").click());
+    await page.waitForFunction(
+      (t) => document.querySelector(".gx-reader-title")?.textContent?.replace(/\s+/g, " ").includes(t.replace(/:.*/, "").trim()),
+      { timeout: 15000 }, target
+    );
+    check("dossier: a mention navigates the reader", true, target);
+
+    // The omnibar learns entities: a named person outranks a fuzzy book guess.
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "melchiz");
+    await sleep(250);
+    const topRow = await page.evaluate(() => document.querySelector(".gx-omni-row .gx-omni-label")?.textContent);
+    check("omnibar: an entity outranks a fuzzy book guess", topRow === "Melchizedek", JSON.stringify(topRow));
+    await page.keyboard.press("Enter");
+    await page.waitForFunction(() => document.querySelector(".gx-dos-name")?.textContent === "Melchizedek", { timeout: 5000 });
+    check("omnibar: entity row opens the Dossier", true);
+    await page.click(".gx-dossier-close");
+    await sleep(200);
 
     check("desk: zero js errors", page.jsErrors.length === 0, JSON.stringify(page.jsErrors.slice(0, 3)));
     await ctx.close();

@@ -1,0 +1,191 @@
+{
+  "_meta": {
+    "source": "World English Bible (public domain)",
+    "license": "Public Domain",
+    "extracted_by": "whole-word match over baked WEB · curated by claude-opus-4-8 · 2026-07-03",
+    "method": "seed",
+    "scope": "Torah (Genesis–Deuteronomy) principal persons & places",
+    "limitations": "Exact-name match only — coreference and pronoun anaphora are NOT resolved. The full frontier mention+relation sweep over all 66 books lands in Session 2. A verified seed, not the sweep.",
+    "contested_policy": "Where a tradition disputes an identity or reading, the entity carries a `contested` block with the competing views and their sources. The app never presents one lens as neutral fact."
+  },
+  "entities": [
+    {
+      "id": "pl.eden",
+      "kind": "place",
+      "names": [
+        "Eden"
+      ],
+      "summary": "The garden God planted eastward, where man was set."
+    },
+    {
+      "id": "pl.ararat",
+      "kind": "place",
+      "names": [
+        "Ararat"
+      ],
+      "summary": "The mountains where the ark came to rest."
+    },
+    {
+      "id": "pl.babel",
+      "kind": "place",
+      "names": [
+        "Babel"
+      ],
+      "summary": "Where the LORD confused the one language of the earth."
+    },
+    {
+      "id": "pl.ur",
+      "kind": "place",
+      "names": [
+        "Ur"
+      ],
+      "summary": "Ur of the Chaldees, Abram's birthplace."
+    },
+    {
+      "id": "pl.haran",
+      "kind": "place",
+      "names": [
+        "Haran"
+      ],
+      "summary": "Where Terah settled and Abram was called onward."
+    },
+    {
+      "id": "pl.canaan",
+      "kind": "place",
+      "names": [
+        "Canaan"
+      ],
+      "summary": "The land promised to Abraham and his seed."
+    },
+    {
+      "id": "pl.shechem",
+      "kind": "place",
+      "names": [
+        "Shechem"
+      ],
+      "summary": "Abram's first altar-site in the land."
+    },
+    {
+      "id": "pl.bethel",
+      "kind": "place",
+      "names": [
+        "Bethel"
+      ],
+      "summary": "'House of God'; Jacob's ladder and vow."
+    },
+    {
+      "id": "pl.hebron",
+      "kind": "place",
+      "names": [
+        "Hebron",
+        "Mamre"
+      ],
+      "summary": "Where Abraham pitched his tent and was buried."
+    },
+    {
+      "id": "pl.beersheba",
+      "kind": "place",
+      "names": [
+        "Beersheba"
+      ],
+      "summary": "'Well of the oath'; a patriarchal boundary."
+    },
+    {
+      "id": "pl.sodom",
+      "kind": "place",
+      "names": [
+        "Sodom"
+      ],
+      "summary": "The city of the plain destroyed with Gomorrah."
+    },
+    {
+      "id": "pl.gomorrah",
+      "kind": "place",
+      "names": [
+        "Gomorrah"
+      ],
+      "summary": "Destroyed with Sodom by fire from heaven."
+    },
+    {
+      "id": "pl.salem",
+      "kind": "place",
+      "names": [
+        "Salem"
+      ],
+      "summary": "Melchizedek's city, later associated with Jerusalem."
+    },
+    {
+      "id": "pl.egypt",
+      "kind": "place",
+      "names": [
+        "Egypt"
+      ],
+      "summary": "The land of bondage and of Joseph's exaltation."
+    },
+    {
+      "id": "pl.goshen",
+      "kind": "place",
+      "names": [
+        "Goshen"
+      ],
+      "summary": "The region of Egypt where Israel dwelt."
+    },
+    {
+      "id": "pl.midian",
+      "kind": "place",
+      "names": [
+        "Midian"
+      ],
+      "summary": "Where Moses fled and kept Jethro's flock."
+    },
+    {
+      "id": "pl.sinai",
+      "kind": "place",
+      "names": [
+        "Sinai"
+      ],
+      "summary": "The mountain of the Law and the covenant."
+    },
+    {
+      "id": "pl.horeb",
+      "kind": "place",
+      "names": [
+        "Horeb"
+      ],
+      "summary": "The mountain of God; the burning bush and the rock."
+    },
+    {
+      "id": "pl.jordan",
+      "kind": "place",
+      "names": [
+        "Jordan"
+      ],
+      "summary": "The river bounding the land of promise."
+    },
+    {
+      "id": "pl.moab",
+      "kind": "place",
+      "names": [
+        "Moab"
+      ],
+      "summary": "The plains where Israel camped before crossing over."
+    },
+    {
+      "id": "pl.nebo",
+      "kind": "place",
+      "names": [
+        "Nebo",
+        "Pisgah"
+      ],
+      "summary": "The height from which Moses saw the land and died."
+    },
+    {
+      "id": "pl.kadesh",
+      "kind": "place",
+      "names": [
+        "Kadesh"
+      ],
+      "summary": "The wilderness camp of Israel's long sojourn."
+    }
+  ]
+}
