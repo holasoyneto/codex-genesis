@@ -3,6 +3,55 @@
   font-family: var(--mono); font-size: 11px; letter-spacing: 0.22em;
   color: var(--fg-dim); margin: 0 0 14px; font-weight: 500;
 }
+.gx-library-sub {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em;
+  color: var(--fg-dim); margin: 18px 2px 8px; font-weight: 500;
+}
+.gx-library-search {
+  width: 100%; padding: 9px 11px; margin-bottom: 12px;
+  font-family: var(--serif); font-size: 14px;
+  color: var(--fg); background: transparent;
+  border: var(--hairline); border-radius: 8px; outline: none;
+}
+.gx-library-search:focus { border-color: color-mix(in oklab, var(--accent) 45%, transparent); }
+
+.gx-books { display: flex; flex-direction: column; gap: 14px; }
+.gx-bookshelf-h {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.18em;
+  color: var(--fg-dim); opacity: 0.75; margin: 0 2px 4px; font-weight: 500;
+}
+.gx-book { border-radius: 8px; }
+.gx-book-row {
+  display: grid; grid-template-columns: 14px 1fr auto; align-items: center;
+  column-gap: 9px; width: 100%; text-align: left;
+  padding: 8px 8px; border-radius: 8px; border: 1px solid transparent;
+  transition: background var(--fade);
+}
+.gx-book-row:hover { background: color-mix(in oklab, var(--fg) 5%, transparent); }
+.gx-book-row.is-active {
+  border-color: color-mix(in oklab, var(--accent) 40%, transparent);
+  background: color-mix(in oklab, var(--accent) 8%, transparent);
+}
+.gx-book-light { width: 8px; height: 8px; border-radius: 50%; justify-self: center; }
+.gx-book-light.is-own { background: var(--gold); }
+.gx-book-light.is-other { background: var(--accent); opacity: 0.7; }
+.gx-book-light.is-none { background: var(--fg-dim); opacity: 0.35; }
+.gx-book-name { font-size: 13.5px; }
+.gx-book-meta { font-family: var(--mono); font-size: 10px; color: var(--fg-dim); }
+.gx-chs {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  padding: 8px 6px 10px 23px;
+}
+.gx-ch {
+  min-width: 28px; height: 24px; padding: 0 6px;
+  font-family: var(--mono); font-size: 11px; color: var(--fg-dim);
+  border: var(--hairline); border-radius: 6px;
+  transition: background var(--fade), color var(--fade), border-color var(--fade);
+}
+.gx-ch:hover { color: var(--fg); border-color: color-mix(in oklab, var(--fg) 30%, transparent); }
+.gx-ch.is-active {
+  color: var(--bg); background: var(--accent); border-color: var(--accent); font-weight: 600;
+}
 .gx-shelves { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .gx-shelf {
   display: grid; grid-template-columns: 18px 1fr; align-items: baseline;
