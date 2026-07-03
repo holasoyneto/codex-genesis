@@ -180,6 +180,9 @@ const REL_LABEL: Record<string, string> = {
   killed: "killed", ruled: "ruled", located_in: "located in",
   dwelt_in: "dwelt in", participant_in: "took part in", speaker_of: "spoke",
   about: "about", quotes: "quotes", fulfills: "fulfills", parallels: "parallels",
+  anointed: "anointed", called: "called", covenant_with: "made covenant with",
+  rebuked: "rebuked", summoned: "summoned", loved: "loved",
+  guardian_of: "guardian of", mother_in_law_of: "mother-in-law of",
 };
 export function relationLabel(kind: string): string {
   return REL_LABEL[kind] ?? kind.replace(/_/g, " ");
@@ -191,6 +194,10 @@ const REL_INVERSE: Record<string, string> = {
   sibling_of: "sibling", brother_of: "brother", ancestor_of: "descendant of",
   uncle_of: "nephew/niece of", king_of: "ruled by", blessed: "blessed by",
   dwelt_in: "dwelt here", king_of_inv: "ruled by",
+  anointed: "anointed by", called: "called by", covenant_with: "made covenant with",
+  rebuked: "rebuked by", summoned: "summoned by", loved: "loved by",
+  guardian_of: "ward of", mother_in_law_of: "child-in-law of", killed: "killed by",
+  ruled: "ruled by",
 };
 export function relationInverseLabel(kind: string): string {
   return REL_INVERSE[kind] ?? relationLabel(kind);

@@ -4,8 +4,8 @@
     "license": "Public Domain",
     "extracted_by": "whole-word match over baked WEB · curated by claude-opus-4-8 · 2026-07-03",
     "method": "seed",
-    "scope": "Torah (Genesis–Deuteronomy) principal persons & places",
-    "limitations": "Exact-name match only — coreference and pronoun anaphora are NOT resolved. The full frontier mention+relation sweep over all 66 books lands in Session 2. A verified seed, not the sweep.",
+    "scope": "Distinctive persons & places, each scoped to the books where its name is unambiguous (Torah + OT narrative & prophets).",
+    "limitations": "Exact-name match only, no coreference or pronoun anaphora. Each entity is confined to a curated `books` scope, so recall is deliberately bounded (a figure named outside its scope gets no chip) in exchange for precision. Ambiguous common names the seed cannot safely disambiguate — most of the New Testament (John, Mary, Simon, James, Judas), tribe-vs-person eponyms outside the Torah — are LEFT for the frontier sweep over all 66 books (Session 2), not approximated here. A verified seed, not the sweep.",
     "contested_policy": "Where a tradition disputes an identity or reading, the entity carries a `contested` block with the competing views and their sources. The app never presents one lens as neutral fact."
   },
   "entities": [
@@ -186,6 +186,70 @@
         "Kadesh"
       ],
       "summary": "The wilderness camp of Israel's long sojourn."
+    },
+    {
+      "id": "pl.jericho",
+      "kind": "place",
+      "names": [
+        "Jericho"
+      ],
+      "summary": "The city of palms whose walls fell at the shout."
+    },
+    {
+      "id": "pl.shiloh",
+      "kind": "place",
+      "names": [
+        "Shiloh"
+      ],
+      "summary": "Where the tabernacle stood and Samuel was called."
+    },
+    {
+      "id": "pl.gilgal",
+      "kind": "place",
+      "names": [
+        "Gilgal"
+      ],
+      "summary": "Israel's first camp across the Jordan."
+    },
+    {
+      "id": "pl.carmel",
+      "kind": "place",
+      "names": [
+        "Carmel"
+      ],
+      "summary": "The mount of Elijah's contest with the prophets of Baal."
+    },
+    {
+      "id": "pl.samaria",
+      "kind": "place",
+      "names": [
+        "Samaria"
+      ],
+      "summary": "Capital of the northern kingdom of Israel."
+    },
+    {
+      "id": "pl.nineveh",
+      "kind": "place",
+      "names": [
+        "Nineveh"
+      ],
+      "summary": "The great city of Assyria, spared at Jonah's preaching."
+    },
+    {
+      "id": "pl.babylon",
+      "kind": "place",
+      "names": [
+        "Babylon"
+      ],
+      "summary": "The empire and city of Judah's exile."
+    },
+    {
+      "id": "pl.zion",
+      "kind": "place",
+      "names": [
+        "Zion"
+      ],
+      "summary": "The mount of the city of David; the beloved of God."
     }
   ]
 }

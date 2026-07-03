@@ -36,7 +36,10 @@ const check = (name, ok, info = "") => {
       else if (!t.includes(m.form)) formMiss++;
     }
   }
-  check("ontology: Torah seed has persons & places", manifest.counts.persons > 0 && manifest.counts.places > 0, JSON.stringify(manifest.counts));
+  check("ontology: seed has persons & places", manifest.counts.persons > 0 && manifest.counts.places > 0, JSON.stringify(manifest.counts));
+  // The seed reaches beyond the Torah — the book-scoped OT expansion spans
+  // narrative and prophets, not just the five books.
+  check("ontology: coverage spans beyond the Torah", manifest.books.length >= 20 && manifest.books.includes("1ki"), `${manifest.books.length} books`);
   check("ontology: every mention resolves to a real verse", total > 0 && dead === 0, `${total} mentions · ${dead} dead`);
   check("ontology: every mention form occurs in its verse", formMiss === 0, `${formMiss} misses`);
   // relations are evidenced and their endpoints are known entities
@@ -454,6 +457,36 @@ try {
     await page.keyboard.press("Enter");
     await page.waitForFunction(() => document.querySelector(".gx-dos-name")?.textContent === "Melchizedek", { timeout: 5000 });
     check("omnibar: entity row opens the Dossier", true);
+    await page.click(".gx-dossier-close");
+    await sleep(200);
+
+    // The ontology reaches the kingdoms: 1 Kings 18 lights up with chips, and
+    // Elijah's dossier walks the graph to Elisha — the seed is no longer Torah-bound.
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "1 Kings 18");
+    await sleep(250);
+    await page.keyboard.press("Enter");
+    await page.waitForFunction(
+      () => /Kings\s*18\b/.test(document.querySelector(".gx-reader-title")?.textContent?.replace(/\s+/g, " ") || ""),
+      { timeout: 20000 }
+    );
+    await page.waitForSelector(".gx-entity", { timeout: 15000 });
+    const kchips = await page.evaluate(() => {
+      const els = [...document.querySelectorAll(".gx-entity")];
+      return { count: els.length, hasElijah: els.some((e) => e.textContent === "Elijah") };
+    });
+    check("dossier: the kingdoms light up (1 Kings 18 · Elijah)", kchips.count > 3 && kchips.hasElijah, JSON.stringify(kchips));
+    await page.evaluate(() => [...document.querySelectorAll(".gx-entity")].find((e) => e.textContent === "Elijah").click());
+    await page.waitForFunction(() => document.querySelector(".gx-dos-name")?.textContent === "Elijah", { timeout: 5000 });
+    const walked = await page.evaluate(() => {
+      const b = [...document.querySelectorAll(".gx-dos-rel-who")].find((x) => /Elisha/.test(x.textContent));
+      if (!b) return false;
+      b.click();
+      return true;
+    });
+    await page.waitForFunction(() => document.querySelector(".gx-dos-name")?.textContent === "Elisha", { timeout: 5000 });
+    check("dossier: Elijah → Elisha walks the prophetic succession", walked === true);
     await page.click(".gx-dossier-close");
     await sleep(200);
 
