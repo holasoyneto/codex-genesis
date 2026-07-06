@@ -7,7 +7,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useApp, setState, type OracleSettings, closePanel } from "@/kernel/store";
 import { takeSeed } from "@/kernel/seeds";
-import { askOracle, probeLocal, cloudProvider, type OracleAnswer } from "@/engine/oracle";
+import { askOracleStream, listModels, probeLocal, cloudProvider, type OracleAnswer, type ChatTurn } from "@/engine/oracle";
+import { gradeClaims, type Citation } from "@/engine/claims";
+import { Ref } from "@/kernel/Ref";
 import "./oracle.css";
 
 const LEVEL_LABEL = {
@@ -104,7 +106,75 @@ function Setup() {
   );
 }
 
-interface Turn { q: string; a?: OracleAnswer; err?: string }
+interface ToolChip { name: string; args: string }
+interface Turn {
+  q: string;
+  text: string;                 // streamed answer text
+  tools: ToolChip[];            // the work, visible
+  a?: OracleAnswer;
+  cites?: Citation[];
+  err?: string;
+}
+
+// Answer text with citations woven in as <Ref> chips; a quote that failed
+// verbatim check against the corpus carries a visible ⚠ UNVERIFIED stamp.
+function AnswerText({ text, cites }: { text: string; cites?: Citation[] }) {
+  if (!cites?.length) return <p className="gx-oracle-a-text">{text}</p>;
+  const nodes: React.ReactNode[] = [];
+  let last = 0;
+  cites.forEach((c, i) => {
+    if (c.start > last) nodes.push(<span key={"t" + i}>{text.slice(last, c.start)}</span>);
+    nodes.push(
+      <Ref key={"r" + i} bookId={c.bookId} chapter={c.chapter} verse={c.verse} className="gx-oracle-cite" />
+    );
+    if (c.verified === false) {
+      nodes.push(<span key={"u" + i} className="gx-oracle-unverified" title="This quote does not match the verse verbatim">⚠ UNVERIFIED</span>);
+    }
+    last = c.end;
+  });
+  if (last < text.length) nodes.push(<span key="tail">{text.slice(last)}</span>);
+  return <p className="gx-oracle-a-text">{nodes}</p>;
+}
+
+// The model & effort picker — the discovered list becomes a visible choice;
+// Anthropic keys also choose how hard the mind thinks.
+function MindPicker() {
+  const oracle = useApp((s) => s.settings.oracle);
+  const [models, setModels] = useState<string[]>([]);
+  const anthropic = oracle.engine === "cloud" && cloudProvider(oracle.anthropicKey)?.id === "anthropic";
+  useEffect(() => {
+    if (oracle.engine !== "cloud") return;
+    let live = true;
+    listModels().then((r) => { if (live) setModels(r.models); }).catch(() => {});
+    return () => { live = false; };
+  }, [oracle.engine, oracle.anthropicKey]);
+  if (oracle.engine !== "cloud") return null;
+  return (
+    <div className="gx-oracle-mind">
+      <select
+        className="gx-oracle-select"
+        aria-label="Model"
+        value={oracle.model}
+        onChange={(e) => setOracle({ model: e.target.value })}
+      >
+        <option value="">strongest (auto)</option>
+        {models.map((m) => <option key={m} value={m}>{m}</option>)}
+      </select>
+      {anthropic ? (
+        <select
+          className="gx-oracle-select"
+          aria-label="Effort"
+          value={oracle.effort}
+          onChange={(e) => setOracle({ effort: e.target.value as OracleSettings["effort"] })}
+        >
+          <option value="low">effort · low</option>
+          <option value="medium">effort · medium</option>
+          <option value="high">effort · high</option>
+        </select>
+      ) : null}
+    </div>
+  );
+}
 
 export function Oracle() {
   const oracle = useApp((s) => s.settings.oracle);
@@ -116,17 +186,28 @@ export function Oracle() {
   // A <Ref> chip may open the panel WITH a question in hand.
   useEffect(() => { const s = takeSeed("oracle"); if (s) setQ(s); }, []);
 
+  const patchLast = (fn: (t: Turn) => Turn) =>
+    setTurns((ts) => ts.map((x, i) => (i === ts.length - 1 ? fn(x) : x)));
+
   const ask = async () => {
     const question = q.trim();
     if (!question || busy) return;
     setQ("");
     setBusy(true);
-    setTurns((t) => [...t, { q: question }]);
+    // conversation memory: the running transcript travels with every turn
+    const transcript: ChatTurn[] = turns.flatMap((t) =>
+      t.a ? [{ role: "user" as const, content: t.q }, { role: "assistant" as const, content: t.text }] : []);
+    setTurns((t) => [...t, { q: question, text: "", tools: [] }]);
     try {
-      const a = await askOracle(question);
-      setTurns((t) => t.map((x, i) => (i === t.length - 1 ? { ...x, a } : x)));
+      const a = await askOracleStream(question, transcript, {
+        onDelta: (d) => patchLast((t) => ({ ...t, text: t.text + d })),
+        onTool: (name, args) =>
+          patchLast((t) => ({ ...t, tools: [...t.tools, { name, args: JSON.stringify(args) }] })),
+      });
+      const cites = await gradeClaims(a.text).catch(() => []);
+      patchLast((t) => ({ ...t, a, text: a.text, cites }));
     } catch (e) {
-      setTurns((t) => t.map((x, i) => (i === t.length - 1 ? { ...x, err: String(e) } : x)));
+      patchLast((t) => ({ ...t, err: String(e) }));
     } finally {
       setBusy(false);
     }
@@ -143,21 +224,34 @@ export function Oracle() {
             {oracle.engine === "local" ? "◆ on your machine" : "✦ cloud · your key"} · the Oracle can err — Scripture is the source ·{" "}
             <button className="gx-oracle-relink" onClick={() => setOracle({ engine: null })}>change engine</button>
           </p>
+          <MindPicker />
           <div className="gx-oracle-turns">
             {turns.map((t, i) => (
               <div key={i} className="gx-oracle-turn">
                 <p className="gx-oracle-q">{t.q}</p>
-                {t.a ? (
-                  <div className="gx-oracle-a">
-                    <p className="gx-oracle-a-text">{t.a.text}</p>
-                    <span className="gx-oracle-a-chip">
-                      ⇄ {t.a.engine} · {t.a.model} · {LEVEL_LABEL[t.a.context.level]} (~{Math.round(t.a.context.approxTokens / 1000)}k tokens)
-                    </span>
+                {t.tools.length ? (
+                  <div className="gx-oracle-tools">
+                    {t.tools.map((tc, k) => (
+                      <span key={k} className="gx-oracle-tool" title={tc.args}>
+                        ⚙ {tc.name}
+                      </span>
+                    ))}
                   </div>
-                ) : t.err ? (
+                ) : null}
+                {t.err ? (
                   <p className="gx-oracle-err">{t.err}</p>
+                ) : t.text || t.a ? (
+                  <div className="gx-oracle-a">
+                    <AnswerText text={t.text} cites={t.cites} />
+                    {t.a ? (
+                      <span className="gx-oracle-a-chip">
+                        ⇄ {t.a.engine} · {t.a.model} · {LEVEL_LABEL[t.a.context.level]} (~{Math.round(t.a.context.approxTokens / 1000)}k tokens)
+                        {t.cites?.length ? ` · ${t.cites.length} refs · ${t.cites.filter((c) => c.verified === false).length} unverified` : ""}
+                      </span>
+                    ) : null}
+                  </div>
                 ) : (
-                  <p className="gx-oracle-wait">the Oracle ponders…</p>
+                  <p className="gx-oracle-wait"><span className="gx-oracle-shimmer">the Oracle ponders…</span></p>
                 )}
               </div>
             ))}

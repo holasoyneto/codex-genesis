@@ -13,6 +13,8 @@ export interface OracleSettings {
   engine: "local" | "cloud" | null;
   localUrl: string;        // OpenAI-compatible server (default: Ollama)
   anthropicKey: string;    // the USER'S OWN key — stored on this device only
+  model: string;           // "" = the strongest the key can see (auto)
+  effort: "low" | "medium" | "high"; // Anthropic thinking budget
 }
 
 export interface Settings {
@@ -73,7 +75,7 @@ const DEFAULTS: AppState = {
   cursor: { bookId: "jhn", chapter: 1, verse: null, translation: "kjv" },
   settings: {
     theme: "auto", scriptureScale: 19, redLetter: true, divineName: true, entities: true, witness: true,
-    oracle: { engine: null, localUrl: "http://localhost:11434/v1", anthropicKey: "" },
+    oracle: { engine: null, localUrl: "http://localhost:11434/v1", anthropicKey: "", model: "", effort: "low" },
   },
   veil: null,
   panel: null,

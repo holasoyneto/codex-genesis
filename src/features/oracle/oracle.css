@@ -82,3 +82,44 @@
   color: var(--fg-dim); font-size: 15px;
 }
 .gx-oracle-close:hover { color: var(--fg); }
+
+/* v0.9.0 — the analyst's thread */
+.gx-oracle-mind { display: flex; gap: 6px; margin: 0 0 8px; flex-wrap: wrap; }
+.gx-oracle-select {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em;
+  color: var(--fg-dim); background: transparent;
+  border: 1px solid var(--line); border-radius: 8px; padding: 4px 6px;
+  max-width: 100%;
+}
+.gx-oracle-select:hover { color: var(--fg); }
+
+.gx-oracle-tools { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
+.gx-oracle-tool {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em;
+  color: var(--fg-dim);
+  border: 1px solid var(--line); border-radius: 6px; padding: 2px 7px;
+}
+
+.gx-oracle-cite { display: inline-flex; vertical-align: baseline; }
+.gx-oracle-cite .gx-ref-go { padding: 0 3px; }
+.gx-oracle-unverified {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em;
+  color: var(--red-letter);
+  border: 1px solid color-mix(in oklab, var(--red-letter) 45%, transparent);
+  border-radius: 5px; padding: 1px 5px; margin-left: 4px;
+  vertical-align: baseline; white-space: nowrap;
+}
+
+/* the thinking shimmer — quiet, GPU-cheap, honest about waiting */
+.gx-oracle-shimmer {
+  background: linear-gradient(90deg, var(--fg-dim) 30%, var(--fg) 50%, var(--fg-dim) 70%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gx-shimmer 1.6s linear infinite;
+}
+@keyframes gx-shimmer { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .gx-oracle-shimmer { animation: none; color: var(--fg-dim); background: none; }
+}
