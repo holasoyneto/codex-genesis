@@ -9,9 +9,12 @@
     radial-gradient(1px 1px at 63% 71%, color-mix(in oklab, var(--fg) 26%, transparent) 50%, transparent 51%),
     radial-gradient(1px 1px at 84% 18%, color-mix(in oklab, var(--fg) 30%, transparent) 50%, transparent 51%),
     radial-gradient(1.5px 1.5px at 38% 52%, color-mix(in oklab, var(--fg) 22%, transparent) 50%, transparent 51%),
+    var(--wallpaper-aurora),
     var(--bg);
 }
-:root[data-theme="light"] .gx-wallpaper { background: var(--bg); }
+:root[data-theme="light"] .gx-wallpaper {
+  background: var(--wallpaper-aurora), var(--bg);
+}
 
 .gx-scripture {
   position: absolute; inset: 0; z-index: var(--z-scripture);
@@ -53,8 +56,6 @@
   width: min(360px, calc(100vw - 2 * var(--edge-pad)));
 }
 .gx-whisper {
-  background: var(--glass); backdrop-filter: blur(14px);
-  border: var(--hairline); border-radius: var(--radius);
   padding: 10px 12px;
 }
 .gx-whisper-head { display: flex; align-items: baseline; gap: 8px; }
@@ -68,14 +69,11 @@
   z-index: var(--z-instruments);
   width: min(340px, calc(100vw - 2 * var(--edge-pad)));
   overflow-y: auto;
-  background: var(--glass); backdrop-filter: blur(16px);
-  border: var(--hairline); border-radius: var(--radius);
 }
 @media (max-width: 880px) {
   .gx-instrument {
     top: auto; left: var(--edge-pad); right: var(--edge-pad); bottom: 12px;
     width: auto; max-height: 62vh;
-    box-shadow: 0 -12px 40px color-mix(in oklab, black 26%, transparent);
   }
 }
 

@@ -1,0 +1,77 @@
+/* The shared glass utility. Every instrument window/panel/sheet, the
+   omnibar veil, whisper cards, the dock, trace strip, sheets, and any
+   popover/picker apply `.glass`. Restraint over spectacle: no gradient
+   text, no neon, no nested-card-in-card look. */
+
+.glass {
+  background: var(--glass-2);
+  -webkit-backdrop-filter: var(--glass-blur-md);
+  backdrop-filter: var(--glass-blur-md);
+  border: var(--hairline);
+  border-radius: var(--radius-glass);
+  box-shadow: var(--glass-shadow);
+  position: relative;
+}
+.glass::before {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  box-shadow: var(--glass-edge);
+  pointer-events: none;
+}
+
+.glass-sm { -webkit-backdrop-filter: var(--glass-blur-sm); backdrop-filter: var(--glass-blur-sm); background: var(--glass-1); }
+.glass-lg { -webkit-backdrop-filter: var(--glass-blur-lg); backdrop-filter: var(--glass-blur-lg); background: var(--glass-3); }
+
+/* fallback for browsers without backdrop-filter, and reduced-transparency */
+@supports not (backdrop-filter: blur(1px)) {
+  .glass, .glass-sm, .glass-lg { background: var(--bg-raise); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass, .glass-sm, .glass-lg {
+    background: var(--bg-raise) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+
+/* focus ring using the accent bloom — for the omnibar and any focused glass */
+.glass-glow-focus:focus-within {
+  box-shadow: var(--glass-shadow), var(--glass-glow);
+}
+
+/* standard enter/exit motion utilities, reused rather than hand-rolled */
+.gx-enter {
+  animation: gx-enter var(--dur-enter) var(--ease-enter) both;
+}
+.gx-exit {
+  animation: gx-exit var(--dur-exit) var(--ease-enter) both;
+}
+@keyframes gx-enter {
+  from { opacity: 0; transform: scale(.98); filter: blur(4px); }
+  to   { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+@keyframes gx-exit {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(.98); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gx-enter, .gx-exit { animation-duration: 1ms; filter: none; transform: none; }
+}
+
+/* instrument titles: letterspaced small-caps mono treatment */
+.gx-instrument-title {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-variant-caps: small-caps;
+  color: var(--fg-dim);
+}
+
+/* hairline divider replacing hard borders on instrument chrome */
+.gx-hr {
+  border: none;
+  border-top: var(--hairline);
+  margin: 0;
+}

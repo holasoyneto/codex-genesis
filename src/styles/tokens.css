@@ -1,6 +1,7 @@
 /* CODEX GENESIS — design tokens. The whole visual language lives here.
    Law: scripture serif and serene; data/instruments mono at the edges;
-   Apple-grade restraint — flat surfaces, hairlines, one 150ms fade. */
+   Apple-grade restraint — flat surfaces, hairlines, one 150ms fade.
+   v0.9.0: the glass molt — instruments read as felt, not decorated. */
 
 :root {
   /* type */
@@ -13,8 +14,11 @@
   --scripture-leading: 1.72;
   --scripture-measure: 62ch;
 
-  /* motion */
+  /* motion — standardized timing, features reuse rather than hand-roll */
   --fade: 150ms ease;
+  --ease-enter: cubic-bezier(.32,.72,.28,1);
+  --dur-enter: 180ms;
+  --dur-exit: 140ms;
 
   /* layers — the shell's z contract. Features never invent z-indexes. */
   --z-wallpaper: 0;
@@ -27,11 +31,25 @@
   /* geometry */
   --edge-pad: 16px;
   --radius: 10px;
+  --radius-glass: 18px;
   --hairline: 1px solid var(--line);
+
+  /* glass — blur tiers + surfaces, defined per-theme below via color-mix */
+  --glass-blur-sm: saturate(180%) blur(12px);
+  --glass-blur-md: saturate(180%) blur(24px);
+  --glass-blur-lg: saturate(180%) blur(36px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-enter: 1ms;
+    --dur-exit: 1ms;
+    --ease-enter: linear;
+  }
 }
 
 :root[data-theme="dark"] {
-  --bg: #070b12;
+  --bg: #05080f;
   --bg-raise: #0c1220;
   --fg: #dbe4f0;
   --fg-dim: #8295ae;
@@ -41,6 +59,20 @@
   --divine: #e3c878;
   --red-letter: #e06c5f;
   --glass: color-mix(in oklab, #0c1220 72%, transparent);
+
+  /* glass surface tiers — progressive opacity */
+  --glass-1: color-mix(in oklab, #101828 46%, transparent);
+  --glass-2: color-mix(in oklab, #101828 64%, transparent);
+  --glass-3: color-mix(in oklab, #101828 82%, transparent);
+  --glass-edge: inset 0 1px 0 rgba(255,255,255,.06);
+  --glass-shadow: 0 20px 60px -12px color-mix(in oklab, black 60%, transparent),
+                  0 4px 16px -4px color-mix(in oklab, black 40%, transparent);
+  --glass-glow: 0 0 0 1px color-mix(in oklab, var(--accent) 45%, transparent),
+                0 0 32px -4px color-mix(in oklab, var(--accent) 55%, transparent);
+
+  --wallpaper-aurora:
+    radial-gradient(60% 45% at 18% 12%, color-mix(in oklab, #5cc8ff 16%, transparent) 0%, transparent 65%),
+    radial-gradient(55% 50% at 86% 78%, color-mix(in oklab, #8a5cff 14%, transparent) 0%, transparent 65%);
 }
 
 :root[data-theme="light"] {
@@ -54,4 +86,17 @@
   --divine: #8a6d1f;
   --red-letter: #b33a2b;
   --glass: color-mix(in oklab, #fdfbf6 76%, transparent);
+
+  --glass-1: color-mix(in oklab, #ffffff 52%, transparent);
+  --glass-2: color-mix(in oklab, #ffffff 68%, transparent);
+  --glass-3: color-mix(in oklab, #ffffff 84%, transparent);
+  --glass-edge: inset 0 1px 0 rgba(255,255,255,.5);
+  --glass-shadow: 0 16px 44px -14px color-mix(in oklab, #23303f 22%, transparent),
+                  0 3px 10px -3px color-mix(in oklab, #23303f 14%, transparent);
+  --glass-glow: 0 0 0 1px color-mix(in oklab, var(--accent) 35%, transparent),
+                0 0 28px -6px color-mix(in oklab, var(--accent) 40%, transparent);
+
+  --wallpaper-aurora:
+    radial-gradient(65% 50% at 14% 10%, color-mix(in oklab, #e8dcc0 55%, transparent) 0%, transparent 70%),
+    radial-gradient(60% 55% at 88% 82%, color-mix(in oklab, #dccbb0 45%, transparent) 0%, transparent 70%);
 }

@@ -34,7 +34,7 @@ function WhisperLane() {
   return (
     <div className="gx-whisper-lane" role="status" aria-live="polite">
       {whispers.slice(0, 3).map((w) => (
-        <div key={w.id} className={`gx-whisper gx-whisper-${w.kind}`}>
+        <div key={w.id} className={`gx-whisper gx-whisper-${w.kind} glass gx-enter`}>
           <div className="gx-whisper-head">
             <span className="gx-whisper-title">{w.title}</span>
             <button
@@ -56,7 +56,7 @@ function Instrument() {
   const F = getFeature(panel)?.surfaces.main;
   if (!F) return null;
   return (
-    <aside className="gx-instrument">
+    <aside className="gx-instrument glass gx-enter">
       <F />
     </aside>
   );

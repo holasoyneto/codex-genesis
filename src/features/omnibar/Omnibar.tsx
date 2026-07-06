@@ -115,7 +115,7 @@ export function Omnibar({ seed }: { seed?: string }) {
   };
 
   return (
-    <div className="gx-omni" role="dialog" aria-label="Omnibar">
+    <div className="gx-omni glass glass-lg glass-glow-focus gx-enter" role="dialog" aria-label="Omnibar">
       <input
         ref={inputRef}
         className="gx-omni-input"
