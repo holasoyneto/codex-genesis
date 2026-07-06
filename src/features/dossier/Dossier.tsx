@@ -4,7 +4,8 @@
 // This is the keystone surface: clicking "Melchizedek" anywhere lands here.
 
 import { useEffect, useState } from "react";
-import { useApp, goTo, setState, openDossier } from "@/kernel/store";
+import { useApp, goTo, openDossier, closePanel } from "@/kernel/store";
+import { Ref } from "@/kernel/Ref";
 import { bookById } from "@/engine/corpus";
 import {
   loadOntology, type Ontology, type Entity, type Relation,
@@ -47,10 +48,16 @@ function RelRow({ o, rel, selfId }: { o: Ontology; rel: Relation; selfId: string
   );
 }
 
+const MENTION_FOLD = 30;
+
 export function Dossier() {
   const id = useApp((s) => s.entity);
   const [o, setO] = useState<Ontology | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
+
+  // A new entity folds its mention list again.
+  useEffect(() => setShowAll(false), [id]);
 
   useEffect(() => {
     let live = true;
@@ -110,16 +117,23 @@ export function Dossier() {
           <section className="gx-dos-sec">
             <h3 className="gx-dos-sec-title">MENTIONED <span className="gx-dos-count">{mentions.length}</span></h3>
             {mentions.length ? (
-              <ul className="gx-dos-mentions">
-                {mentions.map((m, i) => (
-                  <li key={i}>
-                    <button className="gx-dos-mention" onClick={() => jump(m.ref)}>
-                      <span className="gx-dos-mention-ref">{refLabel(m.ref)}</span>
-                      <span className="gx-dos-mention-form">{m.form}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              <>
+                <ul className="gx-dos-mentions">
+                  {(showAll ? mentions : mentions.slice(0, MENTION_FOLD)).map((m, i) => {
+                    const [b, c, v] = m.ref.split(".");
+                    return (
+                      <li key={i} className="gx-dos-mention">
+                        <Ref bookId={b} chapter={Number(c)} verse={Number(v)} detail={m.form} />
+                      </li>
+                    );
+                  })}
+                </ul>
+                {mentions.length > MENTION_FOLD && !showAll ? (
+                  <button className="gx-dos-more" onClick={() => setShowAll(true)}>
+                    show all {mentions.length}
+                  </button>
+                ) : null}
+              </>
             ) : (
               <p className="gx-dos-none">No mentions in the seeded books yet.</p>
             )}
@@ -131,7 +145,7 @@ export function Dossier() {
           </footer>
         </>
       )}
-      <button className="gx-dossier-close" aria-label="Close dossier" onClick={() => setState({ panel: null })}>×</button>
+      <button className="gx-dossier-close" aria-label="Close dossier" onClick={() => closePanel()}>×</button>
     </div>
   );
 }

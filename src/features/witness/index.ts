@@ -1,5 +1,5 @@
 import { registerFeature } from "@/kernel/registry";
-import { setState } from "@/kernel/store";
+import { openPanel } from "@/kernel/store";
 import { Witness } from "./Witness";
 
 registerFeature({
@@ -8,6 +8,6 @@ registerFeature({
   title: "Witness",
   surfaces: { main: Witness },
   commands: [
-    { phrase: "witness", hint: "what the app has heard", run: () => setState({ panel: "witness" }) },
+    { phrase: "witness", hint: "what the app has heard", run: () => openPanel("witness") },
   ],
 });

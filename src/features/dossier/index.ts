@@ -1,5 +1,5 @@
 import { registerFeature } from "@/kernel/registry";
-import { setState } from "@/kernel/store";
+import { openPanel } from "@/kernel/store";
 import { loadOntology } from "@/engine/ontology";
 import { Dossier } from "./Dossier";
 
@@ -13,6 +13,6 @@ registerFeature({
   title: "Dossier",
   surfaces: { main: Dossier },
   commands: [
-    { phrase: "dossier", hint: "the entity under study", run: () => setState({ panel: "dossier" }) },
+    { phrase: "dossier", hint: "the entity under study", run: () => openPanel("dossier") },
   ],
 });

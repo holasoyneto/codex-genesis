@@ -2,7 +2,8 @@
 // every hit walks straight into the reader.
 
 import { useEffect, useState } from "react";
-import { useApp, goTo, setState } from "@/kernel/store";
+import { useApp, closePanel } from "@/kernel/store";
+import { Ref } from "@/kernel/Ref";
 import { searchScripture, type SearchHit } from "@/engine/search";
 import { record } from "@/kernel/witness";
 import "./search.css";
@@ -59,14 +60,14 @@ export function Search() {
       ) : (
         <ul className="gx-search-rows">
           {(hits ?? []).map((h, i) => (
-            <li key={i}>
-              <button
-                className="gx-hit"
-                onClick={() => goTo({ bookId: h.bookId, chapter: h.chapter, verse: h.verse })}
-              >
-                <span className="gx-hit-ref">{h.bookName} {h.chapter}:{h.verse}</span>
-                <span className="gx-hit-text"><Snippet text={h.text} /></span>
-              </button>
+            <li key={i} className="gx-hit">
+              <Ref
+                bookId={h.bookId}
+                chapter={h.chapter}
+                verse={h.verse}
+                className="gx-hit-ref"
+                detail={<span className="gx-hit-text"><Snippet text={h.text} /></span>}
+              />
             </li>
           ))}
         </ul>
@@ -74,7 +75,7 @@ export function Search() {
       <button
         className="gx-search-close"
         aria-label="Close search"
-        onClick={() => setState({ panel: null })}
+        onClick={() => closePanel()}
       >×</button>
     </div>
   );

@@ -3,8 +3,8 @@
 // instruments live at the edges, the omnibar is the door.
 
 import { useEffect, useState } from "react";
-import { useApp, goTo, setState, openDossier } from "@/kernel/store";
-import { getChapter, bookById, type Chapter } from "@/engine/corpus";
+import { useApp, goTo, setState, openDossier, openPanel } from "@/kernel/store";
+import { getChapter, bookById, BOOKS, type Chapter } from "@/engine/corpus";
 import { record } from "@/kernel/witness";
 import { loadOntology, getLoadedOntology, chapterMentions, type Mention } from "@/engine/ontology";
 import { redLetterVerses } from "./redletter";
@@ -62,10 +62,45 @@ function VerseBody({ text, mentions, divineName }: {
   return <>{nodes}</>;
 }
 
+// The grid picker — one gesture from the title to any chapter of any book.
+// A glass popover inside the reader's own header (the shell still owns space).
+function Picker({ bookId, onDone }: { bookId: string; onDone: () => void }) {
+  const [pick, setPick] = useState(bookId);
+  const book = bookById.get(pick);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onDone(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onDone]);
+  return (
+    <div className="gx-picker glass gx-enter" role="dialog" aria-label="Book and chapter">
+      <div className="gx-picker-books">
+        {BOOKS.map((b) => (
+          <button
+            key={b.id}
+            className={"gx-picker-book" + (b.id === pick ? " is-active" : "")}
+            onClick={() => setPick(b.id)}
+          >{b.name}</button>
+        ))}
+      </div>
+      <div className="gx-picker-grid">
+        {book ? Array.from({ length: book.chapters }, (_, i) => (
+          <button
+            key={i}
+            className="gx-picker-ch"
+            onClick={() => { goTo({ bookId: pick, chapter: i + 1, verse: null }); onDone(); }}
+          >{i + 1}</button>
+        )) : null}
+      </div>
+    </div>
+  );
+}
+
 export function Reader() {
   const cursor = useApp((s) => s.cursor);
   const { redLetter, divineName, entities, scriptureScale } = useApp((s) => s.settings);
   const [ch, setCh] = useState<Chapter | null>(null);
+  const [picker, setPicker] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [retry, setRetry] = useState(0);
   const [ontReady, setOntReady] = useState(false);
@@ -155,16 +190,24 @@ export function Reader() {
           disabled={cursor.chapter <= 1}
           onClick={() => goTo({ chapter: cursor.chapter - 1, verse: null })}
         >‹</button>
-        <h1 className="gx-reader-title">
-          {book.name} <b>{cursor.chapter}</b>
-          <span className="gx-reader-of">/ {book.chapters}</span>
-        </h1>
+        <button
+          className="gx-reader-title-btn"
+          aria-label="Choose book and chapter"
+          aria-expanded={picker}
+          onClick={() => setPicker((p) => !p)}
+        >
+          <h1 className="gx-reader-title">
+            {book.name} <b>{cursor.chapter}</b>
+            <span className="gx-reader-of">/ {book.chapters}</span>
+          </h1>
+        </button>
         <button
           className="gx-reader-nav"
           aria-label="Next chapter"
           disabled={cursor.chapter >= book.chapters}
           onClick={() => goTo({ chapter: cursor.chapter + 1, verse: null })}
         >›</button>
+        {picker ? <Picker bookId={cursor.bookId} onDone={() => setPicker(false)} /> : null}
       </header>
 
       {error ? (
@@ -172,7 +215,7 @@ export function Reader() {
           <p className="gx-reader-dark-line">THE PAGE IS DARK — no source could serve this passage.</p>
           <div className="gx-reader-dark-acts">
             <button className="gx-dark-act" onClick={() => setRetry((n) => n + 1)}>⟳ TRY AGAIN</button>
-            <button className="gx-dark-act" onClick={() => setState({ panel: "library" })}>❖ THE SHELVES</button>
+            <button className="gx-dark-act" onClick={() => openPanel("library")}>❖ THE SHELVES</button>
           </div>
           <span className="gx-reader-err">{error}</span>
         </div>

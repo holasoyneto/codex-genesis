@@ -4,14 +4,14 @@
 // the index cannot promise what isn't registered.
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { goTo, closeVeil, setState, openDossier } from "@/kernel/store";
+import { goTo, closeVeil, openPanel, openDossier } from "@/kernel/store";
 import { allFeatures } from "@/kernel/registry";
 import { record } from "@/kernel/witness";
 import { setSearchSeed } from "@/features/search";
 import { getLoadedOntology, searchEntities } from "@/engine/ontology";
 import { parseRef } from "./refparse";
 
-const setPanel = (panel: string) => setState({ panel });
+const setPanel = openPanel;
 import "./omnibar.css";
 
 interface Row {

@@ -9,12 +9,28 @@
 // No feature may position itself fixed; it renders into a region. Chrome
 // that cannot choose its own place cannot collide.
 
-import { useEffect } from "react";
-import { useApp, dismissWhisper, closeVeil, getState, setState } from "@/kernel/store";
+import { useEffect, useState } from "react";
+import {
+  useApp, dismissWhisper, closeVeil, getState, setState,
+  historyBack, historyForward,
+} from "@/kernel/store";
 import { getFeature } from "@/kernel/registry";
 import { bookById } from "@/engine/corpus";
 import { Trace } from "./Trace";
+import { Windows } from "./Windows";
 import "./shell.css";
+
+/** One tree, two postures — the shell decides, features never ask. */
+export function usePalm(): boolean {
+  const [palm, setPalm] = useState(() => window.matchMedia("(max-width: 880px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 880px)");
+    const on = () => setPalm(mq.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  return palm;
+}
 
 function useTheme(): "dark" | "light" {
   const pref = useApp((s) => s.settings.theme);
@@ -50,8 +66,11 @@ function WhisperLane() {
   );
 }
 
-function Instrument() {
+// Palm: the focused instrument as THE sheet. Desk: the window manager.
+function Instruments() {
+  const palm = usePalm();
   const panel = useApp((s) => s.panel);
+  if (!palm) return <Windows />;
   if (!panel) return null;
   const F = getFeature(panel)?.surfaces.main;
   if (!F) return null;
@@ -92,6 +111,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
         setState({ veil: open ? null : { feature: "omnibar" } });
         return;
       }
+      // ⌘[ / ⌘] — the jump ledger, back and forward.
+      if ((e.metaKey || e.ctrlKey) && (e.key === "[" || e.key === "]")) {
+        e.preventDefault();
+        if (e.key === "[") historyBack(); else historyForward();
+        return;
+      }
       const typing = (e.target as HTMLElement)?.closest?.("input, textarea, [contenteditable]");
       if (typing || getState().veil || e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
@@ -113,7 +138,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
     <div className="gx-shell">
       <div className="gx-wallpaper" aria-hidden />
       <main className="gx-scripture">{children}</main>
-      <Instrument />
+      <Instruments />
       <div className="gx-edge">
         <Trace />
       </div>

@@ -70,11 +70,23 @@
 }
 .gx-dos-mention {
   display: inline-flex; align-items: baseline; gap: 6px;
-  border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px;
+  border: 1px solid var(--line); border-radius: 6px;
 }
 .gx-dos-mention:hover { border-color: color-mix(in oklab, var(--gold) 40%, transparent); }
-.gx-dos-mention-ref { font-family: var(--mono); font-size: 10px; color: var(--accent); }
-.gx-dos-mention-form { font-family: var(--serif); font-size: 11.5px; color: var(--fg-dim); }
+.gx-dos-mention .gx-ref-go { padding: 4px 8px; }
+.gx-dos-mention .gx-ref-label { font-size: 10px; }
+.gx-dos-mention .gx-ref-detail { font-family: var(--serif); font-size: 11.5px; }
+
+.gx-dos-more {
+  margin: 6px 0 0;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.gx-dos-more:hover { background: color-mix(in oklab, var(--fg) 7%, transparent); }
 
 .gx-dos-foot {
   display: grid; gap: 2px; margin-top: 18px; padding-top: 10px;

@@ -4,7 +4,7 @@
 // here, not buried.
 
 import { useState } from "react";
-import { useApp, setState } from "@/kernel/store";
+import { useApp, setState, closePanel } from "@/kernel/store";
 import { summary, ledger, exportLedger, clearLedger } from "@/kernel/witness";
 import "./witness.css";
 
@@ -42,7 +42,7 @@ export function Witness() {
       <button
         className="gx-witness-close"
         aria-label="Close witness"
-        onClick={() => setState({ panel: null })}
+        onClick={() => closePanel()}
       >×</button>
     </div>
   );

@@ -2,7 +2,7 @@
 // page answers immediately; there is no "apply". Scripture options only —
 // instrument options live with their instruments.
 
-import { useApp, setState, type Settings as S } from "@/kernel/store";
+import { useApp, setState, type Settings as S, closePanel } from "@/kernel/store";
 import "./settings.css";
 
 function set<K extends keyof S>(key: K, value: S[K]) {
@@ -90,7 +90,7 @@ export function Settings() {
       <button
         className="gx-settings-close"
         aria-label="Close settings"
-        onClick={() => setState({ panel: null })}
+        onClick={() => closePanel()}
       >×</button>
     </div>
   );

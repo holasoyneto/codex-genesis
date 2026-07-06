@@ -1,5 +1,5 @@
 import { registerFeature } from "@/kernel/registry";
-import { setState } from "@/kernel/store";
+import { openPanel } from "@/kernel/store";
 import { Threads } from "./Threads";
 
 registerFeature({
@@ -8,6 +8,6 @@ registerFeature({
   title: "Threads",
   surfaces: { main: Threads },
   commands: [
-    { phrase: "threads", hint: "cross-references for this verse", run: () => setState({ panel: "threads" }) },
+    { phrase: "threads", hint: "cross-references for this verse", run: () => openPanel("threads") },
   ],
 });

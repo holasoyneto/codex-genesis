@@ -1,0 +1,63 @@
+/* The desk's windows — glass, movable, never lost. */
+
+.gx-windows {
+  position: absolute; inset: 0; z-index: var(--z-instruments);
+  pointer-events: none; /* windows re-enable */
+}
+
+.gx-win {
+  position: absolute;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 0.96;
+}
+.gx-win.is-front {
+  opacity: 1;
+  box-shadow: var(--glass-shadow), 0 0 0 1px color-mix(in oklab, var(--accent) 22%, transparent);
+}
+
+.gx-win-bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px;
+  border-bottom: var(--hairline);
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  flex: none;
+}
+.gx-win-bar:active { cursor: grabbing; }
+.gx-win-glyph { font-size: 12px; color: var(--gold); }
+.gx-win-title { flex: 1; }
+.gx-win-x { color: var(--fg-dim); font-size: 15px; padding: 0 4px; }
+.gx-win-x:hover { color: var(--fg); }
+
+.gx-win-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--fg-dim) 35%, transparent) transparent;
+}
+.gx-win-body::-webkit-scrollbar { width: 6px; }
+.gx-win-body::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--fg-dim) 35%, transparent);
+  border-radius: 3px;
+}
+/* the Galaxy fills its window edge-to-edge, no scroll */
+.gx-win[data-win="galaxy"] .gx-win-body { overflow: hidden; display: flex; }
+.gx-win[data-win="galaxy"] .gx-win-body > * { flex: 1; }
+
+/* resize handles — invisible, generous hit areas */
+.gx-win-rz { position: absolute; touch-action: none; }
+.gx-win-rz-n  { top: -3px; left: 10px; right: 10px; height: 7px; cursor: ns-resize; }
+.gx-win-rz-s  { bottom: -3px; left: 10px; right: 10px; height: 7px; cursor: ns-resize; }
+.gx-win-rz-e  { right: -3px; top: 10px; bottom: 10px; width: 7px; cursor: ew-resize; }
+.gx-win-rz-w  { left: -3px; top: 10px; bottom: 10px; width: 7px; cursor: ew-resize; }
+.gx-win-rz-ne { top: -3px; right: -3px; width: 13px; height: 13px; cursor: nesw-resize; }
+.gx-win-rz-sw { bottom: -3px; left: -3px; width: 13px; height: 13px; cursor: nesw-resize; }
+.gx-win-rz-nw { top: -3px; left: -3px; width: 13px; height: 13px; cursor: nwse-resize; }
+.gx-win-rz-se { bottom: -3px; right: -3px; width: 13px; height: 13px; cursor: nwse-resize; }

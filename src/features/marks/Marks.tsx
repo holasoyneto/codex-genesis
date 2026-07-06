@@ -1,7 +1,7 @@
 // Marks — the reader's own gold. Press B on a focused verse (or use the
 // omnibar) to keep it; the panel walks you back to every kept place.
 
-import { useApp, goTo, setState, type Mark } from "@/kernel/store";
+import { useApp, goTo, setState, type Mark, closePanel } from "@/kernel/store";
 import { bookById } from "@/engine/corpus";
 import "./marks.css";
 
@@ -42,7 +42,7 @@ export function Marks() {
       <button
         className="gx-marks-close"
         aria-label="Close marks"
-        onClick={() => setState({ panel: null })}
+        onClick={() => closePanel()}
       >×</button>
     </div>
   );

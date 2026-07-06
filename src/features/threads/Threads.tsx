@@ -2,7 +2,8 @@
 // from Torrey's Treasury. Tap a thread to walk it; the trail is the study.
 
 import { useEffect, useState } from "react";
-import { useApp, goTo, setState } from "@/kernel/store";
+import { useApp, closePanel } from "@/kernel/store";
+import { Ref } from "@/kernel/Ref";
 import { bookById } from "@/engine/corpus";
 import { threadsFor, type ThreadRef } from "@/engine/threads";
 import "./threads.css";
@@ -38,14 +39,10 @@ export function Threads() {
           {refs.map((r, i) => {
             const b = bookById.get(r.bookId);
             const nt = b?.testament === "NT";
+            void b;
             return (
-              <li key={i}>
-                <button
-                  className={"gx-thread" + (nt ? " is-nt" : "")}
-                  onClick={() => goTo({ bookId: r.bookId, chapter: r.chapter, verse: r.verse })}
-                >
-                  {b?.name ?? r.bookId} {r.chapter}:{r.verse}
-                </button>
+              <li key={i} className={"gx-thread" + (nt ? " is-nt" : "")}>
+                <Ref bookId={r.bookId} chapter={r.chapter} verse={r.verse} />
               </li>
             );
           })}
@@ -55,7 +52,7 @@ export function Threads() {
       <button
         className="gx-threads-close"
         aria-label="Close threads"
-        onClick={() => setState({ panel: null })}
+        onClick={() => closePanel()}
       >×</button>
     </div>
   );

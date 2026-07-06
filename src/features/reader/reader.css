@@ -101,3 +101,53 @@
   .gx-reader { padding-top: 10px; }
   .gx-reader-title { font-size: 22px; }
 }
+
+/* The title's grid picker — a glass popover, one gesture to any chapter. */
+.gx-reader-head { position: relative; }
+.gx-reader-title-btn { display: block; }
+.gx-picker {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(520px, calc(100vw - 2 * var(--edge-pad)));
+  max-height: min(420px, 60vh);
+  display: grid;
+  grid-template-columns: 176px 1fr;
+  overflow: hidden;
+  z-index: 2;
+}
+.gx-picker-books {
+  overflow-y: auto;
+  border-right: var(--hairline);
+  padding: 8px 0;
+  scrollbar-width: thin;
+}
+.gx-picker-book {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 4px 14px;
+  font-size: 12.5px;
+  color: var(--fg-dim);
+}
+.gx-picker-book:hover { color: var(--fg); }
+.gx-picker-book.is-active { color: var(--gold); }
+.gx-picker-grid {
+  overflow-y: auto;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
+  gap: 4px;
+  align-content: start;
+  scrollbar-width: thin;
+}
+.gx-picker-ch {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  padding: 6px 0;
+  border-radius: 6px;
+  color: var(--fg-dim);
+  border: 1px solid transparent;
+}
+.gx-picker-ch:hover { color: var(--fg); border-color: var(--line); }

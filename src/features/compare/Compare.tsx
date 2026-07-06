@@ -3,7 +3,7 @@
 // tongues sit beside the English without ceremony.
 
 import { useEffect, useState } from "react";
-import { useApp, setState } from "@/kernel/store";
+import { useApp, closePanel } from "@/kernel/store";
 import { TRANSLATIONS, covers, getChapter, bookById } from "@/engine/corpus";
 import "./compare.css";
 
@@ -57,7 +57,7 @@ export function Compare() {
       <button
         className="gx-compare-close"
         aria-label="Close compare"
-        onClick={() => setState({ panel: null })}
+        onClick={() => closePanel()}
       >×</button>
     </div>
   );

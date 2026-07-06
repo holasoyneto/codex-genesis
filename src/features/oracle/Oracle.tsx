@@ -5,7 +5,8 @@
 // and the panel never pretends a broken engine works.
 
 import { useEffect, useRef, useState } from "react";
-import { useApp, setState, type OracleSettings } from "@/kernel/store";
+import { useApp, setState, type OracleSettings, closePanel } from "@/kernel/store";
+import { takeSeed } from "@/kernel/seeds";
 import { askOracle, probeLocal, cloudProvider, type OracleAnswer } from "@/engine/oracle";
 import "./oracle.css";
 
@@ -112,6 +113,8 @@ export function Oracle() {
   const [busy, setBusy] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   useEffect(() => endRef.current?.scrollIntoView({ block: "end" }), [turns]);
+  // A <Ref> chip may open the panel WITH a question in hand.
+  useEffect(() => { const s = takeSeed("oracle"); if (s) setQ(s); }, []);
 
   const ask = async () => {
     const question = q.trim();
@@ -172,7 +175,7 @@ export function Oracle() {
           </div>
         </>
       )}
-      <button className="gx-oracle-close" aria-label="Close oracle" onClick={() => setState({ panel: null })}>×</button>
+      <button className="gx-oracle-close" aria-label="Close oracle" onClick={() => closePanel()}>×</button>
     </div>
   );
 }

@@ -6,7 +6,7 @@
 // (the reader auto-serves from there) · ○ no known source yet.
 
 import { useMemo, useState } from "react";
-import { useApp, goTo, setState } from "@/kernel/store";
+import { useApp, goTo, closePanel } from "@/kernel/store";
 import { TRANSLATIONS, BOOKS, covers, type Book } from "@/engine/corpus";
 import "./library.css";
 
@@ -131,7 +131,7 @@ export function Library() {
       <button
         className="gx-library-close"
         aria-label="Close library"
-        onClick={() => setState({ panel: null })}
+        onClick={() => closePanel()}
       >×</button>
     </div>
   );
