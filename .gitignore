@@ -2,3 +2,7 @@ node_modules/
 dist/
 smoke-shots/
 *.log
+ios/App/Pods/
+ios/App/App/public/
+ios/DerivedData/
+ios/App/output/
