@@ -14,8 +14,19 @@ export interface FeatureManifest {
     main?: ComponentType;          // primary surface (window / sheet)
     veil?: ComponentType<{ seed?: string }>; // modal surface (omnibar etc.)
   };
-  /** Omnibar commands, generated into the index. */
-  commands?: { phrase: string; hint: string; run: () => void }[];
+  /** Omnibar commands, generated into the index. A command may also carry
+      `match` — a parser for parametrized phrases ("path gen.1.1 rev.21.1",
+      "lemma H430"); when it returns a row the omnibar offers it directly. */
+  commands?: {
+    phrase: string;
+    hint: string;
+    run: () => void;
+    match?: (q: string) => { label: string; hint: string; run: () => void } | null;
+  }[];
+  /** Keybinding shown in generated Help (display only, e.g. "⌘K" or "?"). */
+  keybinding?: string;
+  /** One-line description for the generated Help overlay. */
+  help?: string;
 }
 
 const features = new Map<string, FeatureManifest>();

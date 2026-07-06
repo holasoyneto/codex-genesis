@@ -140,6 +140,12 @@ export function dismissWhisper(id: string): void {
   setState((s) => ({ whispers: s.whispers.filter((w) => w.id !== id) }));
 }
 
+// Panel doors — features open and close through these, never by writing
+// `panel` directly, so the desk can grow a window manager without touching
+// every feature again.
+export function openPanel(id: string): void { setState({ panel: id }); }
+export function closePanel(_id?: string): void { setState({ panel: null }); }
+
 export function openVeil(feature: string, seed?: string): void {
   setState({ veil: { feature, seed } });
 }

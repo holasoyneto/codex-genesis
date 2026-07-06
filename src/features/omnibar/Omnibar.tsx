@@ -47,6 +47,18 @@ export function Omnibar({ seed }: { seed?: string }) {
     const needle = q.trim().toLowerCase();
     for (const f of allFeatures()) {
       for (const c of f.commands ?? []) {
+        // Parametrized commands parse the whole query ("path gen.1.1 rev.21.1").
+        const m = c.match?.(q.trim());
+        if (m) {
+          out.push({
+            key: `${f.id}:${c.phrase}:arg`,
+            glyph: f.glyph,
+            label: m.label,
+            hint: m.hint,
+            run: () => { m.run(); closeVeil(); },
+          });
+          continue;
+        }
         if (!needle || c.phrase.toLowerCase().includes(needle)) {
           out.push({
             key: `${f.id}:${c.phrase}`,
