@@ -225,25 +225,46 @@ export function Galaxy() {
     drawRef.current = draw;
     draw();
 
-    // pan + zoom — the thing itself is the control
-    let dragging = false, lx = 0, ly = 0, moved = 0;
+    // pan + zoom — the thing itself is the control. One finger pans;
+    // two pinch; the wheel zooms about the pointer.
+    const pointers = new Map<number, { x: number; y: number }>();
+    let moved = 0, lastPinch = 0;
     const onDown = (e: PointerEvent) => {
-      dragging = true; moved = 0; lx = e.clientX; ly = e.clientY;
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pointers.size === 1) moved = 0;
       canvas.setPointerCapture(e.pointerId);
       flyRef.current = null;
     };
     const onMove = (e: PointerEvent) => {
-      if (!dragging) return;
+      const p = pointers.get(e.pointerId);
+      if (!p) return;
       const v = viewRef.current;
-      const dx = e.clientX - lx, dy = e.clientY - ly;
+      if (pointers.size === 2) {
+        // pinch: scale about the midpoint
+        const [a, b] = [...pointers.values()];
+        const before = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+        p.x = e.clientX; p.y = e.clientY;
+        const [a2, b2] = [...pointers.values()];
+        const after = Math.hypot(a2.x - b2.x, a2.y - b2.y) || 1;
+        const rect = canvas.getBoundingClientRect();
+        const mx = (a2.x + b2.x) / 2 - rect.left - rect.width / 2;
+        const my = (a2.y + b2.y) / 2 - rect.top - rect.height / 2;
+        const wx = mx / v.s + v.x, wy = my / v.s + v.y;
+        v.s = Math.min(6, Math.max(0.15, v.s * (after / before)));
+        v.x = wx - mx / v.s; v.y = wy - my / v.s;
+        moved = 99; lastPinch = performance.now();
+        requestAnimationFrame(draw);
+        return;
+      }
+      const dx = e.clientX - p.x, dy = e.clientY - p.y;
+      p.x = e.clientX; p.y = e.clientY;
       moved += Math.abs(dx) + Math.abs(dy);
       v.x -= dx / v.s; v.y -= dy / v.s;
-      lx = e.clientX; ly = e.clientY;
       requestAnimationFrame(draw);
     };
     const onUp = (e: PointerEvent) => {
-      dragging = false;
-      if (moved > 5) return;
+      pointers.delete(e.pointerId);
+      if (pointers.size > 0 || moved > 5 || performance.now() - lastPinch < 250) return;
       // a click: the nearest star within reach turns the reader
       const v = viewRef.current;
       const rect = canvas.getBoundingClientRect();
@@ -274,6 +295,7 @@ export function Galaxy() {
     canvas.addEventListener("pointerdown", onDown);
     canvas.addEventListener("pointermove", onMove);
     canvas.addEventListener("pointerup", onUp);
+    canvas.addEventListener("pointercancel", onUp);
     canvas.addEventListener("wheel", onWheel, { passive: false });
     const ro = new ResizeObserver(() => requestAnimationFrame(draw));
     ro.observe(canvas);
@@ -282,6 +304,7 @@ export function Galaxy() {
       canvas.removeEventListener("pointerdown", onDown);
       canvas.removeEventListener("pointermove", onMove);
       canvas.removeEventListener("pointerup", onUp);
+      canvas.removeEventListener("pointercancel", onUp);
       canvas.removeEventListener("wheel", onWheel);
       ro.disconnect();
     };

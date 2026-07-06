@@ -64,21 +64,51 @@
 .gx-whisper-x:hover { color: var(--fg); }
 .gx-whisper-body { margin: 6px 0 0; font-size: 12.5px; color: var(--fg-dim); line-height: 1.5; }
 
-/* The palm's sheet — the focused instrument, height-bounded to the
-   viewport with its own internal scroll so nothing is ever unreachable.
+/* The palm's bottom sheet — drag handle, half/full snap points, its own
+   momentum scroll, safe-area aware. Nothing is ever unreachable.
    (Desk posture renders windows instead — see windows.css.) */
 .gx-instrument {
   position: absolute;
-  left: var(--edge-pad); right: var(--edge-pad); bottom: 12px;
+  left: max(var(--edge-pad), env(safe-area-inset-left, 0px));
+  right: max(var(--edge-pad), env(safe-area-inset-right, 0px));
+  bottom: 0;
   z-index: var(--z-instruments);
-  max-height: calc(100dvh - 60px);
+  display: flex;
+  flex-direction: column;
+  height: 52dvh;
+  max-height: calc(100dvh - 56px - env(safe-area-inset-top, 0px));
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  transition: height var(--dur-enter) var(--ease-enter);
+  touch-action: none;
+}
+.gx-instrument.is-full { height: calc(100dvh - 56px - env(safe-area-inset-top, 0px)); }
+
+.gx-sheet-handle {
+  flex: none;
+  display: grid;
+  place-items: center;
+  min-height: 26px;
+  cursor: grab;
+  touch-action: none;
+}
+.gx-sheet-grip {
+  width: 38px; height: 4px; border-radius: 2px;
+  background: color-mix(in oklab, var(--fg-dim) 45%, transparent);
+}
+.gx-sheet-body {
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   scrollbar-width: thin;
   scrollbar-color: color-mix(in oklab, var(--fg-dim) 35%, transparent) transparent;
 }
-.gx-instrument::-webkit-scrollbar { width: 6px; }
-.gx-instrument::-webkit-scrollbar-thumb {
+.gx-sheet-body::-webkit-scrollbar { width: 6px; }
+.gx-sheet-body::-webkit-scrollbar-thumb {
   background: color-mix(in oklab, var(--fg-dim) 35%, transparent);
   border-radius: 3px;
 }
@@ -95,4 +125,8 @@
 @media (max-width: 880px) {
   .gx-scripture { padding-top: 40px; }
   .gx-whisper-lane { top: auto; bottom: 18px; right: var(--edge-pad); }
+}
+
+@media (max-width: 880px) {
+  .gx-veil { padding-top: calc(8px + env(safe-area-inset-top, 0px)); align-items: start; }
 }

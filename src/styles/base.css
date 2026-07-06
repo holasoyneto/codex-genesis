@@ -18,3 +18,10 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+
+/* touch honesty — no ghost highlights, no hover-only affordances */
+* { -webkit-tap-highlight-color: transparent; }
+@media (pointer: coarse) {
+  .gx-ref-rail { display: flex !important; }
+  input, select, textarea { font-size: 16px !important; } /* no iOS zoom */
+}

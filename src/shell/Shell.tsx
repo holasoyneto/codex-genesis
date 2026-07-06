@@ -11,7 +11,7 @@
 
 import { useEffect, useState } from "react";
 import {
-  useApp, dismissWhisper, closeVeil, getState, setState,
+  useApp, dismissWhisper, closeVeil, closePanel, getState, setState,
   historyBack, historyForward,
 } from "@/kernel/store";
 import { getFeature } from "@/kernel/registry";
@@ -67,19 +67,56 @@ function WhisperLane() {
   );
 }
 
-// Palm: the focused instrument as THE sheet. Desk: the window manager.
+// Palm: the focused instrument as THE bottom sheet — drag handle, snap
+// points (half / full), swipe-down to dismiss. Desk: the window manager.
+function PalmSheet({ panel }: { panel: string }) {
+  const [full, setFull] = useState(false);
+  const ref = { el: null as HTMLElement | null };
+  const F = getFeature(panel)?.surfaces.main;
+  if (!F) return null;
+
+  const onHandle = (e: React.PointerEvent) => {
+    e.preventDefault();
+    const el = (ref.el = (e.currentTarget as HTMLElement).closest(".gx-instrument") as HTMLElement);
+    const sy = e.clientY;
+    let dy = 0;
+    const move = (ev: PointerEvent) => {
+      dy = ev.clientY - sy;
+      if (dy > 0) el.style.transform = `translateY(${dy}px)`;
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      el.style.transform = "";
+      if (dy > 110) closePanel(panel);        // swipe down — dismissed
+      else if (dy < -60) setFull(true);       // pulled up — full
+      else if (dy > 40 && full) setFull(false); // nudged down — half
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
+
+  return (
+    <aside className={"gx-instrument glass gx-enter" + (full ? " is-full" : "")}>
+      <button
+        className="gx-sheet-handle"
+        aria-label={full ? "Collapse sheet" : "Expand sheet"}
+        onPointerDown={onHandle}
+        onDoubleClick={() => setFull((f) => !f)}
+      ><span className="gx-sheet-grip" aria-hidden /></button>
+      <div className="gx-sheet-body">
+        <F />
+      </div>
+    </aside>
+  );
+}
+
 function Instruments() {
   const palm = usePalm();
   const panel = useApp((s) => s.panel);
   if (!palm) return <Windows />;
   if (!panel) return null;
-  const F = getFeature(panel)?.surfaces.main;
-  if (!F) return null;
-  return (
-    <aside className="gx-instrument glass gx-enter">
-      <F />
-    </aside>
-  );
+  return <PalmSheet key={panel} panel={panel} />;
 }
 
 function Veil() {
