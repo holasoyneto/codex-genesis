@@ -82,3 +82,22 @@
   color: var(--fg-dim); font-size: 15px;
 }
 .gx-library-close:hover { color: var(--fg); }
+
+/* tradition filter chips + per-book tradition tags (v0.9.0 fusion) */
+.gx-traditions { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 10px; }
+.gx-tradition {
+  font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.1em;
+  color: var(--fg-dim);
+  border: 1px solid var(--line); border-radius: 999px;
+  padding: 5px 9px; min-height: 28px;
+}
+.gx-tradition:hover { color: var(--fg); }
+.gx-tradition.is-active { color: var(--gold); border-color: color-mix(in oklab, var(--gold) 50%, transparent); }
+.gx-book-tags { display: inline-flex; gap: 2px; margin: 0 6px; }
+.gx-book-tag {
+  font-style: normal;
+  font-family: var(--mono); font-size: 7.5px;
+  color: var(--fg-dim);
+  border: 1px solid var(--line); border-radius: 3px;
+  padding: 0 3px; line-height: 1.5;
+}

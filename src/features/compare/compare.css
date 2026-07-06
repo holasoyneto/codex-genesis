@@ -16,3 +16,12 @@
   color: var(--fg-dim); font-size: 15px;
 }
 .gx-compare-close:hover { color: var(--fg); }
+
+/* synoptic parallels — a quiet row of doors into the sibling gospels */
+.gx-compare-parallels { margin: 0 0 10px; }
+.gx-compare-parallels-name {
+  display: block;
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em;
+  color: var(--gold); margin-bottom: 4px;
+}
+.gx-compare-parallels-row { display: flex; flex-wrap: wrap; gap: 4px; }

@@ -5,9 +5,11 @@
 // translation carries this book · ◐ another corpus in the registry does
 // (the reader auto-serves from there) · ○ no known source yet.
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useApp, goTo, closePanel } from "@/kernel/store";
 import { TRANSLATIONS, BOOKS, covers, type Book } from "@/engine/corpus";
+import { loadTraditions, tagsFor, TRADITION_LABEL, getLoadedTraditions } from "@/engine/traditions";
+import { Provenance } from "@/kernel/Provenance";
 import "./library.css";
 
 const SHELVES: { key: Book["testament"]; label: string }[] = [
@@ -27,6 +29,14 @@ export function Library() {
   const cursor = useApp((s) => s.cursor);
   const [q, setQ] = useState("");
   const [openId, setOpenId] = useState<string | null>(cursor.bookId);
+  const [tradition, setTradition] = useState<string | null>(null);
+  const [tradReady, setTradReady] = useState(false);
+
+  useEffect(() => {
+    let live = true;
+    loadTraditions().then(() => { if (live) setTradReady(true); }).catch(() => { /* shelves stand alone */ });
+    return () => { live = false; };
+  }, []);
 
   const needle = q.trim().toLowerCase();
   const shelves = useMemo(
@@ -36,10 +46,11 @@ export function Library() {
         books: BOOKS.filter(
           (b) =>
             b.testament === shelf.key &&
-            (!needle || b.name.toLowerCase().includes(needle) || b.id.includes(needle))
+            (!needle || b.name.toLowerCase().includes(needle) || b.id.includes(needle)) &&
+            (!tradition || tagsFor(b.id).includes(tradition))
         ),
       })).filter((s) => s.books.length),
-    [needle]
+    [needle, tradition, tradReady]
   );
 
   const jump = (bookId: string, chapter: number) => goTo({ bookId, chapter, verse: null });
@@ -56,6 +67,19 @@ export function Library() {
         aria-label="Filter books"
         spellCheck={false}
       />
+
+      {tradReady ? (
+        <div className="gx-traditions" role="group" aria-label="Tradition filter">
+          {Object.entries(TRADITION_LABEL).map(([tag, label]) => (
+            <button
+              key={tag}
+              className={"gx-tradition" + (tradition === tag ? " is-active" : "")}
+              aria-pressed={tradition === tag}
+              onClick={() => setTradition(tradition === tag ? null : tag)}
+            >{label}</button>
+          ))}
+        </div>
+      ) : null}
 
       <div className="gx-books">
         {shelves.map((shelf) => (
@@ -84,6 +108,15 @@ export function Library() {
                       }
                     />
                     <span className="gx-book-name">{b.name}</span>
+                    {tradReady && tagsFor(b.id).length ? (
+                      <span className="gx-book-tags" aria-hidden>
+                        {tagsFor(b.id).map((t) => (
+                          <i key={t} className="gx-book-tag" title={TRADITION_LABEL[t] ?? t}>
+                            {(TRADITION_LABEL[t] ?? t)[0]}
+                          </i>
+                        ))}
+                      </span>
+                    ) : null}
                     <span className="gx-book-meta">{active ? `${cursor.chapter} / ${b.chapters}` : b.chapters}</span>
                   </button>
                   {open ? (
@@ -128,6 +161,9 @@ export function Library() {
       <p className="gx-library-note">
         ● baked in — read without a connection · ○ fetched, then kept
       </p>
+      {tradReady && getLoadedTraditions() ? (
+        <Provenance label="CANON REGISTRY · OPEN-CANON" meta={getLoadedTraditions()!._meta} />
+      ) : null}
       <button
         className="gx-library-close"
         aria-label="Close library"

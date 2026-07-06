@@ -14,6 +14,8 @@ import "./features/compare";
 import "./features/dossier";
 import "./features/galaxy";
 import "./features/help";
+import "./features/lexicon";
+import "./features/timeline";
 import "./styles/base.css";
 import { getState, setState, whisper } from "./kernel/store";
 import { APP_VERSION, RELEASE_NOTES } from "./kernel/version";

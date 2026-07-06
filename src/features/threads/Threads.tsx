@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { useApp, closePanel } from "@/kernel/store";
 import { Ref } from "@/kernel/Ref";
+import { Provenance } from "@/kernel/Provenance";
 import { bookById } from "@/engine/corpus";
 import { threadsFor, type ThreadRef } from "@/engine/threads";
 import "./threads.css";
@@ -48,7 +49,17 @@ export function Threads() {
           })}
         </ul>
       )}
-      <p className="gx-threads-oath">TREASURY OF SCRIPTURE KNOWLEDGE · TORREY · PUBLIC DOMAIN</p>
+      <p className="gx-threads-oath">
+        <Provenance
+          label="TSK · TORREY 1880"
+          meta={{
+            source: "Treasury of Scripture Knowledge, R. A. Torrey (1880) — 432,898 connections across 29,364 verses",
+            license: "public domain",
+            imported_from: "data/crossrefs.json (baked)",
+            limitations: "a 19th-century Reformed-lens reference; connections reflect its era's reading",
+          }}
+        />
+      </p>
       <button
         className="gx-threads-close"
         aria-label="Close threads"
