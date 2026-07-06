@@ -1,9 +1,37 @@
 // Marks — the reader's own gold. Press B on a focused verse (or use the
 // omnibar) to keep it; the panel walks you back to every kept place.
 
-import { useApp, goTo, setState, type Mark, closePanel } from "@/kernel/store";
+import { useApp, goTo, setState, getState, type Mark, closePanel } from "@/kernel/store";
 import { bookById } from "@/engine/corpus";
 import "./marks.css";
+
+// Export — the study leaves the app as a clean, honest markdown product.
+function exportMarks(): void {
+  const { marks } = getState();
+  const lines = [
+    "# Marks — CODEX GENESIS",
+    "",
+    `_${marks.length} kept verse${marks.length === 1 ? "" : "s"} · exported ${new Date().toISOString().slice(0, 10)}_`,
+    "",
+    ...[...marks].reverse().flatMap((m) => [
+      `## ${refLabel(m)}`,
+      "",
+      m.text ? `> ${m.text}` : "",
+      "",
+      `_kept ${new Date(m.at).toISOString().slice(0, 10)}_`,
+      "",
+    ]),
+    "---",
+    "",
+    "_Scripture text: World English Bible (public domain). Exported from CODEX GENESIS._",
+  ].filter((l, i, a) => l !== "" || a[i - 1] !== "");
+  const blob = new Blob([lines.join("\n")], { type: "text/markdown" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "codex-marks.md";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
 
 export function refLabel(m: Mark): string {
   const b = bookById.get(m.bookId);
@@ -15,6 +43,9 @@ export function Marks() {
   return (
     <div className="gx-marks" role="region" aria-label="Marks">
       <h2 className="gx-marks-title">MARKS</h2>
+      {marks.length ? (
+        <button className="gx-marks-export" onClick={exportMarks}>⇩ EXPORT MARKDOWN</button>
+      ) : null}
       {!marks.length ? (
         <p className="gx-marks-empty">
           Nothing kept yet — focus a verse and press <b>B</b>.

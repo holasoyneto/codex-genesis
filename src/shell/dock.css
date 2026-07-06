@@ -1,0 +1,59 @@
+/* The dock — the edge slot at bottom-center (desk) / the orb (palm). */
+
+.gx-dock {
+  position: absolute;
+  left: 50%; bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: 2px;
+  padding: 5px 8px;
+  border-radius: 16px;
+  pointer-events: auto;
+  opacity: 0.62;
+  transition: opacity var(--fade);
+}
+.gx-dock:hover, .gx-dock:focus-within { opacity: 1; }
+
+.gx-dock-btn {
+  min-width: 34px; min-height: 34px;
+  font-size: 14px;
+  color: var(--fg-dim);
+  border-radius: 10px;
+  position: relative;
+}
+.gx-dock-btn:hover { color: var(--fg); background: color-mix(in oklab, var(--fg) 8%, transparent); }
+.gx-dock-btn.is-active {
+  color: var(--gold);
+  text-shadow: 0 0 12px color-mix(in oklab, var(--gold) 60%, transparent);
+}
+.gx-dock-btn.is-active::after {
+  content: "";
+  position: absolute; left: 50%; bottom: 1px;
+  width: 3px; height: 3px; border-radius: 50%;
+  transform: translateX(-50%);
+  background: var(--gold);
+}
+
+/* palm: the floating orb, thumb-reachable, safe-area aware */
+.gx-dock-orbit {
+  position: absolute;
+  right: calc(14px + env(safe-area-inset-right, 0px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
+  pointer-events: auto;
+}
+.gx-dock-orb {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  font-size: 17px;
+  color: var(--gold);
+}
+.gx-dock-palm {
+  position: static;
+  transform: none;
+  left: auto; bottom: auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: min(300px, calc(100vw - 2 * var(--edge-pad)));
+  opacity: 1;
+}
+.gx-dock-palm .gx-dock-btn { min-width: 44px; min-height: 44px; font-size: 16px; }

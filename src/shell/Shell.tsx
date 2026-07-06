@@ -17,6 +17,7 @@ import {
 import { getFeature } from "@/kernel/registry";
 import { bookById } from "@/engine/corpus";
 import { Trace } from "./Trace";
+import { Dock } from "./Dock";
 import { Windows } from "./Windows";
 import "./shell.css";
 
@@ -119,6 +120,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
       }
       const typing = (e.target as HTMLElement)?.closest?.("input, textarea, [contenteditable]");
       if (typing || getState().veil || e.metaKey || e.ctrlKey || e.altKey) return;
+      // ? — the generated help overlay.
+      if (e.key === "?") {
+        e.preventDefault();
+        setState({ veil: { feature: "help" } });
+        return;
+      }
       if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
         const { cursor } = getState();
         const book = bookById.get(cursor.bookId);
@@ -141,6 +148,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <Instruments />
       <div className="gx-edge">
         <Trace />
+        <Dock />
       </div>
       <WhisperLane />
       <Veil />

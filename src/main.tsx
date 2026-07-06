@@ -13,6 +13,7 @@ import "./features/search";
 import "./features/compare";
 import "./features/dossier";
 import "./features/galaxy";
+import "./features/help";
 import "./styles/base.css";
 import { getState, setState, whisper } from "./kernel/store";
 import { APP_VERSION, RELEASE_NOTES } from "./kernel/version";
@@ -48,6 +49,14 @@ if (seen !== APP_VERSION) {
 }
 
 startWitness();
+
+// First boot: three invitations, not a tutorial. Given once, then never again.
+if (!getState().onboarded) {
+  setState({ onboarded: true });
+  whisper({ kind: "briefing", title: "✦ THE ONE DOOR", body: "Press ⌘K and type anything — John 3:16, a word, a command. The door never dead-ends." });
+  setTimeout(() => whisper({ kind: "briefing", title: "✦ TOUCH THE WORD", body: "Tap any verse to focus it — press B to keep it as a mark." }), 2200);
+  setTimeout(() => whisper({ kind: "briefing", title: "✦ PULL THE THREADS", body: "With a verse focused, type “threads” in the door — every place Scripture answers it." }), 4400);
+}
 
 // The generated service worker (production builds only). When a new
 // version lands, the whisper offers one tap — no double-reload rituals.
