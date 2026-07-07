@@ -149,10 +149,14 @@ export function Omnibar({ seed }: { seed?: string }) {
         onChange={(e) => setQ(e.target.value)}
         onKeyDown={onKey}
         spellCheck={false}
+        role="combobox"
+        aria-expanded={rows.length > 0}
+        aria-controls="gx-omni-listbox"
+        aria-activedescendant={rows[sel] ? `gx-omni-opt-${sel}` : undefined}
       />
-      <ul className="gx-omni-rows" role="listbox">
+      <ul className="gx-omni-rows" id="gx-omni-listbox" role="listbox">
         {rows.map((r, i) => (
-          <li key={r.key} role="option" aria-selected={i === sel}>
+          <li key={r.key} id={`gx-omni-opt-${i}`} role="option" aria-selected={i === sel}>
             <button
               className={"gx-omni-row" + (i === sel ? " is-sel" : "")}
               onMouseEnter={() => setSel(i)}

@@ -9,7 +9,7 @@
 // No feature may position itself fixed; it renders into a region. Chrome
 // that cannot choose its own place cannot collide.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   useApp, dismissWhisper, closeVeil, closePanel, getState, setState,
   historyBack, historyForward,
@@ -134,19 +134,56 @@ function Instruments() {
   return <PalmSheet key={panel} panel={panel} />;
 }
 
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 function Veil() {
   const veil = useApp((s) => s.veil);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const restoreFocus = useRef<HTMLElement | null>(null);
+
   useEffect(() => {
     if (!veil) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") closeVeil(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { closeVeil(); return; }
+      // Focus trap: Tab/Shift+Tab never leave the veil while it's open
+      // (a11y — a modal surface must not leak keyboard focus to the desk
+      // behind it).
+      if (e.key !== "Tab" || !rootRef.current) return;
+      const items = [...rootRef.current.querySelectorAll<HTMLElement>(FOCUSABLE)];
+      if (!items.length) return;
+      const first = items[0], last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [veil]);
+
+  // Focus enters the veil on open and returns to whatever had it on close
+  // — a keyboard user is never dropped back at <body>.
+  useEffect(() => {
+    if (veil) {
+      restoreFocus.current = document.activeElement as HTMLElement | null;
+      const t = setTimeout(() => {
+        const first = rootRef.current?.querySelector<HTMLElement>(FOCUSABLE);
+        first?.focus();
+      }, 0);
+      return () => clearTimeout(t);
+    }
+    restoreFocus.current?.focus?.();
+  }, [veil]);
+
   if (!veil) return null;
   const F = getFeature(veil.feature)?.surfaces.veil;
   if (!F) return null;
   return (
-    <div className="gx-veil" onClick={(e) => { if (e.target === e.currentTarget) closeVeil(); }}>
+    <div
+      ref={rootRef}
+      className="gx-veil"
+      role="dialog"
+      aria-modal="true"
+      onClick={(e) => { if (e.target === e.currentTarget) closeVeil(); }}
+    >
       <F seed={veil.seed} />
     </div>
   );

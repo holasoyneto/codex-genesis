@@ -48,5 +48,10 @@
   font-size: 12px;
   color: var(--fg-dim);
   border-radius: 6px;
+  transition: transform var(--fade), color var(--fade), background var(--fade);
 }
-.gx-ref-rail button:hover { color: var(--fg); background: color-mix(in oklab, var(--fg) 9%, transparent); }
+.gx-ref-rail button:hover { color: var(--fg); background: color-mix(in oklab, var(--fg) 9%, transparent); transform: translateY(-1px); }
+.gx-ref-rail button:active { transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .gx-ref-rail button:hover, .gx-ref-rail button:active { transform: none; }
+}

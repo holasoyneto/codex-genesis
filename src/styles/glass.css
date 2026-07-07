@@ -75,3 +75,15 @@
   border-top: var(--hairline);
   margin: 0;
 }
+
+/* Micro-delight: a quiet hover lift for chip-like controls (pivot rail
+   buttons, tradition/tag chips, dock buttons) — 1px rise within the same
+   180/140ms language as everything else, no new flash, no shadow pop. */
+.gx-lift {
+  transition: transform var(--fade), color var(--fade), background var(--fade), border-color var(--fade);
+}
+.gx-lift:hover { transform: translateY(-1px); }
+.gx-lift:active { transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .gx-lift:hover, .gx-lift:active { transform: none; }
+}

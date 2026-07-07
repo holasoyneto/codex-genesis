@@ -48,15 +48,17 @@ export function Ref({ bookId, chapter, verse, detail, className }: RefProps) {
         {detail ? <span className="gx-ref-detail">{detail}</span> : null}
       </button>
       <span className="gx-ref-rail" aria-label={`Actions for ${label}`}>
-        <button title="Threads" onClick={() => { read(); openPanel("threads"); }}>⛬</button>
-        <button title="Compare" onClick={() => { read(); openPanel("compare"); }}>⇄</button>
-        <button title="Mark" onClick={() => void markIt(bookId, chapter, verse)}>✦</button>
+        <button title="Threads" aria-label={`Threads for ${label}`} onClick={() => { read(); openPanel("threads"); }}>⛬</button>
+        <button title="Compare" aria-label={`Compare ${label}`} onClick={() => { read(); openPanel("compare"); }}>⇄</button>
+        <button title="Mark" aria-label={`Mark ${label}`} onClick={() => void markIt(bookId, chapter, verse)}>✦</button>
         <button
           title="Ask the Oracle"
+          aria-label={`Ask the Oracle about ${label}`}
           onClick={() => { read(); setSeed("oracle", `About ${label} — `); openPanel("oracle"); }}
         >☲</button>
         <button
           title="Add to investigation"
+          aria-label={`Add ${label} to investigation`}
           onClick={() => addToInvestigation("verse", { ref: `${bookId}.${chapter}.${verse ?? 1}` }, "")}
         >🗂</button>
       </span>

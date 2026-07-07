@@ -156,6 +156,7 @@ function Win({ id, index, front }: { id: string; index: number; front: boolean }
           <button
             className={"gx-win-link" + (reader.linked ? " is-linked" : "")}
             title={reader.linked ? "Following the main cursor — click to detach" : "Detached — click to follow the main cursor"}
+            aria-label={reader.linked ? "Detach this reader from the main cursor" : "Link this reader to follow the main cursor"}
             aria-pressed={reader.linked}
             onClick={() => toggleReaderLink(id)}
           >{reader.linked ? "⛓" : "⛓̸"}</button>

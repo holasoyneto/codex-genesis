@@ -641,12 +641,14 @@ try {
     await page.waitForSelector(".gx-missions", { timeout: 5000 });
     const missionsNoEngine = await page.evaluate(() => !!document.querySelector(".gx-mis-none"));
     check("missions: honest no-engine state when the Oracle isn't configured", missionsNoEngine);
+    await shot(page, "desk-mission");
     await page.evaluate(() => window.__CODEX_PANEL__.close("missions"));
 
     await page.evaluate(() => window.__CODEX_PANEL__.open("council"));
     await page.waitForSelector(".gx-council", { timeout: 5000 });
     const councilState = await page.evaluate(() => document.querySelector(".gx-council-none")?.textContent || "");
     check("council: honest readiness state when fewer than two engines are configured", /LOCAL/.test(councilState) && /CLOUD/.test(councilState), councilState);
+    await shot(page, "desk-council");
     await page.evaluate(() => window.__CODEX_PANEL__.close("council"));
 
     // ── PALANTIR §8 — omnibar pipes, share permalinks, store export/import ─
@@ -1133,6 +1135,17 @@ try {
       return b.left >= 0 && b.right <= innerWidth && b.top >= 0 && b.bottom <= innerHeight;
     });
     check(`audit desk ${w}x${h} ${theme}: omnibar fully visible`, omni);
+
+    // A11y: Tab never leaks focus out of the veil while it's open (focus
+    // trap); Escape returns focus sensibly. Checked once, at 1680 dark.
+    if (w === 1680 && theme === "dark") {
+      const trap = await page.evaluate(() => {
+        const veil = document.querySelector(".gx-veil");
+        const items = [...veil.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])')];
+        return { hasVeil: !!veil, isDialog: veil?.getAttribute("role") === "dialog", focusableCount: items.length };
+      });
+      check("a11y: veil is a dialog with focusable content (focus-trap wired)", trap.hasVeil && trap.isDialog && trap.focusableCount > 0, JSON.stringify(trap));
+    }
     await page.keyboard.press("Escape");
     check(`audit desk ${w}x${h} ${theme}: zero js errors`, page.jsErrors.length === 0, JSON.stringify(page.jsErrors.slice(0, 2)));
     if (w === 2560) await shot(page, `studio-${theme}`);
@@ -1172,6 +1185,7 @@ try {
       if (!r.reached) bad.push(`${id}: content unreachable`);
       if (r.hleak > 1) bad.push(`${id}: horizontal leak ${r.hleak}px`);
       if (!r.handle) bad.push(`${id}: no drag handle`);
+      if (id === "investigations" && theme === "light" && w === 390) await shot(page, "palm-investigation");
       await page.evaluate((x) => window.__CODEX_PANEL__.close(x), id);
       await sleep(120);
     }
@@ -1315,6 +1329,33 @@ try {
     );
     check("audit fix #6: tradition tags are dot markers, not letter chips", rowAudit.letterChips === false);
     await page.evaluate(() => window.__CODEX_PANEL__.close("library"));
+
+    // A11y sweep: every registered window opened in turn — no icon-only
+    // button (short/no-letter visible content) may lack an aria-label.
+    // `title` alone is not enough for a screen reader.
+    const a11yFeatures = await page.evaluate(() => window.__CODEX_FEATURES__.filter((f) => f.main).map((f) => f.id));
+    const a11yBad = [];
+    for (const id of a11yFeatures) {
+      await page.evaluate((x) => window.__CODEX_PANEL__.open(x), id);
+      await sleep(120);
+      const bad = await page.evaluate((featureId) => {
+        const win = document.querySelector(`.gx-win[data-win="${featureId}"]`);
+        if (!win) return [];
+        const out = [];
+        for (const b of win.querySelectorAll("button")) {
+          const text = (b.textContent || "").replace(/\s+/g, "");
+          const hasLetters = /[A-Za-z]{2,}/.test(text);
+          const isPlainNumber = /^\d+$/.test(text); // chapter/verse numbers ARE their own label
+          if (hasLetters || isPlainNumber || !text) continue;
+          if (!b.getAttribute("aria-label")) out.push(text.slice(0, 4));
+        }
+        return out;
+      }, id);
+      if (bad.length) a11yBad.push(`${id}: ${bad.join(",")}`);
+      await page.evaluate((x) => window.__CODEX_PANEL__.close(x), id);
+      await sleep(80);
+    }
+    check("a11y: every icon-only button carries an aria-label", a11yBad.length === 0, a11yBad.join(" · "));
 
     check("AUDIT-0.9.0 round 2: zero js errors", page.jsErrors.length === 0, JSON.stringify(page.jsErrors.slice(0, 2)));
     await ctx.close();

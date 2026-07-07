@@ -19,8 +19,13 @@
   color: var(--fg-dim);
   border-radius: 10px;
   position: relative;
+  transition: transform var(--fade), color var(--fade), background var(--fade);
 }
-.gx-dock-btn:hover { color: var(--fg); background: color-mix(in oklab, var(--fg) 8%, transparent); }
+.gx-dock-btn:hover { color: var(--fg); background: color-mix(in oklab, var(--fg) 8%, transparent); transform: translateY(-1px); }
+.gx-dock-btn:active { transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .gx-dock-btn:hover, .gx-dock-btn:active { transform: none; }
+}
 .gx-dock-btn.is-active {
   color: var(--gold);
   text-shadow: 0 0 12px color-mix(in oklab, var(--gold) 60%, transparent);

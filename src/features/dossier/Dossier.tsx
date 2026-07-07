@@ -93,6 +93,7 @@ export function Dossier() {
             <button
               className="gx-dos-inv"
               title="Add to investigation"
+              aria-label={`Add ${entity.names[0]} to investigation`}
               onClick={() => addToInvestigation("entity", { id: entity.id, name: entity.names[0] }, "")}
             >🗂</button>
           </header>
