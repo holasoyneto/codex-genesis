@@ -1,0 +1,255 @@
+{
+  "_meta": {
+    "source": "World English Bible (public domain)",
+    "license": "Public Domain",
+    "extracted_by": "whole-word match over baked WEB · curated by claude-opus-4-8 · 2026-07-03",
+    "method": "seed",
+    "scope": "Distinctive persons & places, each scoped to the books where its name is unambiguous (Torah + OT narrative & prophets).",
+    "limitations": "Exact-name match only, no coreference or pronoun anaphora. Each entity is confined to a curated `books` scope, so recall is deliberately bounded (a figure named outside its scope gets no chip) in exchange for precision. Ambiguous common names the seed cannot safely disambiguate — most of the New Testament (John, Mary, Simon, James, Judas), tribe-vs-person eponyms outside the Torah — are LEFT for the frontier sweep over all 66 books (Session 2), not approximated here. A verified seed, not the sweep.",
+    "contested_policy": "Where a tradition disputes an identity or reading, the entity carries a `contested` block with the competing views and their sources. The app never presents one lens as neutral fact."
+  },
+  "entities": [
+    {
+      "id": "pl.eden",
+      "kind": "place",
+      "names": [
+        "Eden"
+      ],
+      "summary": "The garden God planted eastward, where man was set."
+    },
+    {
+      "id": "pl.ararat",
+      "kind": "place",
+      "names": [
+        "Ararat"
+      ],
+      "summary": "The mountains where the ark came to rest."
+    },
+    {
+      "id": "pl.babel",
+      "kind": "place",
+      "names": [
+        "Babel"
+      ],
+      "summary": "Where the LORD confused the one language of the earth."
+    },
+    {
+      "id": "pl.ur",
+      "kind": "place",
+      "names": [
+        "Ur"
+      ],
+      "summary": "Ur of the Chaldees, Abram's birthplace."
+    },
+    {
+      "id": "pl.haran",
+      "kind": "place",
+      "names": [
+        "Haran"
+      ],
+      "summary": "Where Terah settled and Abram was called onward."
+    },
+    {
+      "id": "pl.canaan",
+      "kind": "place",
+      "names": [
+        "Canaan"
+      ],
+      "summary": "The land promised to Abraham and his seed."
+    },
+    {
+      "id": "pl.shechem",
+      "kind": "place",
+      "names": [
+        "Shechem"
+      ],
+      "summary": "Abram's first altar-site in the land."
+    },
+    {
+      "id": "pl.bethel",
+      "kind": "place",
+      "names": [
+        "Bethel"
+      ],
+      "summary": "'House of God'; Jacob's ladder and vow."
+    },
+    {
+      "id": "pl.hebron",
+      "kind": "place",
+      "names": [
+        "Hebron",
+        "Mamre"
+      ],
+      "summary": "Where Abraham pitched his tent and was buried."
+    },
+    {
+      "id": "pl.beersheba",
+      "kind": "place",
+      "names": [
+        "Beersheba"
+      ],
+      "summary": "'Well of the oath'; a patriarchal boundary."
+    },
+    {
+      "id": "pl.sodom",
+      "kind": "place",
+      "names": [
+        "Sodom"
+      ],
+      "summary": "The city of the plain destroyed with Gomorrah."
+    },
+    {
+      "id": "pl.gomorrah",
+      "kind": "place",
+      "names": [
+        "Gomorrah"
+      ],
+      "summary": "Destroyed with Sodom by fire from heaven."
+    },
+    {
+      "id": "pl.salem",
+      "kind": "place",
+      "names": [
+        "Salem"
+      ],
+      "summary": "Melchizedek's city, later associated with Jerusalem."
+    },
+    {
+      "id": "pl.egypt",
+      "kind": "place",
+      "names": [
+        "Egypt"
+      ],
+      "summary": "The land of bondage and of Joseph's exaltation."
+    },
+    {
+      "id": "pl.goshen",
+      "kind": "place",
+      "names": [
+        "Goshen"
+      ],
+      "summary": "The region of Egypt where Israel dwelt."
+    },
+    {
+      "id": "pl.midian",
+      "kind": "place",
+      "names": [
+        "Midian"
+      ],
+      "summary": "Where Moses fled and kept Jethro's flock."
+    },
+    {
+      "id": "pl.sinai",
+      "kind": "place",
+      "names": [
+        "Sinai"
+      ],
+      "summary": "The mountain of the Law and the covenant."
+    },
+    {
+      "id": "pl.horeb",
+      "kind": "place",
+      "names": [
+        "Horeb"
+      ],
+      "summary": "The mountain of God; the burning bush and the rock."
+    },
+    {
+      "id": "pl.jordan",
+      "kind": "place",
+      "names": [
+        "Jordan"
+      ],
+      "summary": "The river bounding the land of promise."
+    },
+    {
+      "id": "pl.moab",
+      "kind": "place",
+      "names": [
+        "Moab"
+      ],
+      "summary": "The plains where Israel camped before crossing over."
+    },
+    {
+      "id": "pl.nebo",
+      "kind": "place",
+      "names": [
+        "Nebo",
+        "Pisgah"
+      ],
+      "summary": "The height from which Moses saw the land and died."
+    },
+    {
+      "id": "pl.kadesh",
+      "kind": "place",
+      "names": [
+        "Kadesh"
+      ],
+      "summary": "The wilderness camp of Israel's long sojourn."
+    },
+    {
+      "id": "pl.jericho",
+      "kind": "place",
+      "names": [
+        "Jericho"
+      ],
+      "summary": "The city of palms whose walls fell at the shout."
+    },
+    {
+      "id": "pl.shiloh",
+      "kind": "place",
+      "names": [
+        "Shiloh"
+      ],
+      "summary": "Where the tabernacle stood and Samuel was called."
+    },
+    {
+      "id": "pl.gilgal",
+      "kind": "place",
+      "names": [
+        "Gilgal"
+      ],
+      "summary": "Israel's first camp across the Jordan."
+    },
+    {
+      "id": "pl.carmel",
+      "kind": "place",
+      "names": [
+        "Carmel"
+      ],
+      "summary": "The mount of Elijah's contest with the prophets of Baal."
+    },
+    {
+      "id": "pl.samaria",
+      "kind": "place",
+      "names": [
+        "Samaria"
+      ],
+      "summary": "Capital of the northern kingdom of Israel."
+    },
+    {
+      "id": "pl.nineveh",
+      "kind": "place",
+      "names": [
+        "Nineveh"
+      ],
+      "summary": "The great city of Assyria, spared at Jonah's preaching."
+    },
+    {
+      "id": "pl.babylon",
+      "kind": "place",
+      "names": [
+        "Babylon"
+      ],
+      "summary": "The empire and city of Judah's exile."
+    },
+    {
+      "id": "pl.zion",
+      "kind": "place",
+      "names": [
+        "Zion"
+      ],
+      "summary": "The mount of the city of David; the beloved of God."
+    }
+  ]
+}

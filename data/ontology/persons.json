@@ -1,0 +1,799 @@
+{
+  "_meta": {
+    "source": "World English Bible (public domain)",
+    "license": "Public Domain",
+    "extracted_by": "whole-word match over baked WEB · curated by claude-opus-4-8 · 2026-07-03",
+    "method": "seed",
+    "scope": "Distinctive persons & places, each scoped to the books where its name is unambiguous (Torah + OT narrative & prophets).",
+    "limitations": "Exact-name match only, no coreference or pronoun anaphora. Each entity is confined to a curated `books` scope, so recall is deliberately bounded (a figure named outside its scope gets no chip) in exchange for precision. Ambiguous common names the seed cannot safely disambiguate — most of the New Testament (John, Mary, Simon, James, Judas), tribe-vs-person eponyms outside the Torah — are LEFT for the frontier sweep over all 66 books (Session 2), not approximated here. A verified seed, not the sweep.",
+    "contested_policy": "Where a tradition disputes an identity or reading, the entity carries a `contested` block with the competing views and their sources. The app never presents one lens as neutral fact."
+  },
+  "entities": [
+    {
+      "id": "p.adam",
+      "kind": "person",
+      "names": [
+        "Adam"
+      ],
+      "summary": "The first man, formed from the dust of the ground."
+    },
+    {
+      "id": "p.eve",
+      "kind": "person",
+      "names": [
+        "Eve"
+      ],
+      "summary": "The first woman, 'the mother of all living'."
+    },
+    {
+      "id": "p.cain",
+      "kind": "person",
+      "names": [
+        "Cain"
+      ],
+      "summary": "First son of Adam and Eve; killed his brother Abel."
+    },
+    {
+      "id": "p.abel",
+      "kind": "person",
+      "names": [
+        "Abel"
+      ],
+      "summary": "Second son of Adam; a keeper of sheep, slain by Cain."
+    },
+    {
+      "id": "p.seth",
+      "kind": "person",
+      "names": [
+        "Seth"
+      ],
+      "summary": "Third named son of Adam, appointed 'in place of Abel'."
+    },
+    {
+      "id": "p.enoch",
+      "kind": "person",
+      "names": [
+        "Enoch"
+      ],
+      "summary": "Walked with God; 'he was not, for God took him'."
+    },
+    {
+      "id": "p.methuselah",
+      "kind": "person",
+      "names": [
+        "Methuselah"
+      ],
+      "summary": "Longest-lived man recorded in scripture."
+    },
+    {
+      "id": "p.noah",
+      "kind": "person",
+      "names": [
+        "Noah"
+      ],
+      "summary": "Righteous in his generation; built the ark, survived the flood."
+    },
+    {
+      "id": "p.shem",
+      "kind": "person",
+      "names": [
+        "Shem"
+      ],
+      "summary": "Son of Noah; ancestor of the Semitic peoples."
+    },
+    {
+      "id": "p.ham",
+      "kind": "person",
+      "names": [
+        "Ham"
+      ],
+      "summary": "Son of Noah; father of Canaan."
+    },
+    {
+      "id": "p.japheth",
+      "kind": "person",
+      "names": [
+        "Japheth"
+      ],
+      "summary": "Son of Noah."
+    },
+    {
+      "id": "p.terah",
+      "kind": "person",
+      "names": [
+        "Terah"
+      ],
+      "summary": "Father of Abram, of Ur of the Chaldees."
+    },
+    {
+      "id": "p.abraham",
+      "kind": "person",
+      "names": [
+        "Abraham",
+        "Abram"
+      ],
+      "summary": "The patriarch of faith; called from Ur, promised a nation."
+    },
+    {
+      "id": "p.sarah",
+      "kind": "person",
+      "names": [
+        "Sarah",
+        "Sarai"
+      ],
+      "summary": "Wife of Abraham; mother of Isaac in her old age."
+    },
+    {
+      "id": "p.hagar",
+      "kind": "person",
+      "names": [
+        "Hagar"
+      ],
+      "summary": "Sarah's Egyptian handmaid; mother of Ishmael."
+    },
+    {
+      "id": "p.ishmael",
+      "kind": "person",
+      "names": [
+        "Ishmael"
+      ],
+      "summary": "Son of Abraham and Hagar; father of twelve princes."
+    },
+    {
+      "id": "p.lot",
+      "kind": "person",
+      "names": [
+        "Lot"
+      ],
+      "summary": "Abraham's nephew; dwelt in Sodom, delivered from its destruction."
+    },
+    {
+      "id": "p.melchizedek",
+      "kind": "person",
+      "names": [
+        "Melchizedek"
+      ],
+      "summary": "King of Salem and priest of God Most High; blessed Abram.",
+      "contested": {
+        "why": "His origin and identity are read differently across traditions.",
+        "views": [
+          {
+            "view": "A historical Canaanite priest-king of Salem.",
+            "source": "plain sense of Genesis 14"
+          },
+          {
+            "view": "Identified with Shem, son of Noah.",
+            "source": "Targum / rabbinic tradition (b. Nedarim 32b)"
+          },
+          {
+            "view": "A type of the eternal priesthood of Christ, 'without genealogy'.",
+            "source": "Hebrews 7 (Christian reading)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "p.isaac",
+      "kind": "person",
+      "names": [
+        "Isaac"
+      ],
+      "summary": "The son of promise; offered on Moriah, father of Jacob and Esau."
+    },
+    {
+      "id": "p.rebekah",
+      "kind": "person",
+      "names": [
+        "Rebekah"
+      ],
+      "summary": "Wife of Isaac; mother of Esau and Jacob."
+    },
+    {
+      "id": "p.esau",
+      "kind": "person",
+      "names": [
+        "Esau"
+      ],
+      "summary": "Firstborn of Isaac; sold his birthright; father of Edom."
+    },
+    {
+      "id": "p.jacob",
+      "kind": "person",
+      "names": [
+        "Jacob"
+      ],
+      "summary": "Younger son of Isaac, renamed Israel; father of the twelve tribes."
+    },
+    {
+      "id": "p.rachel",
+      "kind": "person",
+      "names": [
+        "Rachel"
+      ],
+      "summary": "Beloved wife of Jacob; mother of Joseph and Benjamin."
+    },
+    {
+      "id": "p.leah",
+      "kind": "person",
+      "names": [
+        "Leah"
+      ],
+      "summary": "Wife of Jacob; mother of six of the tribes incl. Judah and Levi."
+    },
+    {
+      "id": "p.laban",
+      "kind": "person",
+      "names": [
+        "Laban"
+      ],
+      "summary": "Brother of Rebekah; father of Rachel and Leah."
+    },
+    {
+      "id": "p.reuben",
+      "kind": "person",
+      "names": [
+        "Reuben"
+      ],
+      "summary": "Firstborn of Jacob by Leah."
+    },
+    {
+      "id": "p.simeon",
+      "kind": "person",
+      "names": [
+        "Simeon"
+      ],
+      "summary": "Second son of Jacob by Leah."
+    },
+    {
+      "id": "p.levi",
+      "kind": "person",
+      "names": [
+        "Levi"
+      ],
+      "summary": "Third son of Jacob; ancestor of the priestly tribe."
+    },
+    {
+      "id": "p.judah",
+      "kind": "person",
+      "names": [
+        "Judah"
+      ],
+      "summary": "Fourth son of Jacob; ancestor of the royal and Messianic line."
+    },
+    {
+      "id": "p.joseph",
+      "kind": "person",
+      "names": [
+        "Joseph"
+      ],
+      "summary": "Beloved son of Jacob; sold into Egypt, rose to be its ruler."
+    },
+    {
+      "id": "p.benjamin",
+      "kind": "person",
+      "names": [
+        "Benjamin"
+      ],
+      "summary": "Youngest son of Jacob, Rachel's second son."
+    },
+    {
+      "id": "p.ephraim",
+      "kind": "person",
+      "names": [
+        "Ephraim"
+      ],
+      "summary": "Younger son of Joseph, blessed above the firstborn."
+    },
+    {
+      "id": "p.manasseh",
+      "kind": "person",
+      "names": [
+        "Manasseh"
+      ],
+      "summary": "Firstborn son of Joseph."
+    },
+    {
+      "id": "p.potiphar",
+      "kind": "person",
+      "names": [
+        "Potiphar"
+      ],
+      "summary": "Egyptian officer who bought Joseph."
+    },
+    {
+      "id": "p.moses",
+      "kind": "person",
+      "names": [
+        "Moses"
+      ],
+      "summary": "Drawn from the water; led Israel out of Egypt; received the Law."
+    },
+    {
+      "id": "p.aaron",
+      "kind": "person",
+      "names": [
+        "Aaron"
+      ],
+      "summary": "Brother of Moses; first high priest of Israel."
+    },
+    {
+      "id": "p.miriam",
+      "kind": "person",
+      "names": [
+        "Miriam"
+      ],
+      "summary": "Sister of Moses and Aaron; prophetess."
+    },
+    {
+      "id": "p.jethro",
+      "kind": "person",
+      "names": [
+        "Jethro",
+        "Reuel"
+      ],
+      "summary": "Priest of Midian; father-in-law of Moses."
+    },
+    {
+      "id": "p.zipporah",
+      "kind": "person",
+      "names": [
+        "Zipporah"
+      ],
+      "summary": "Wife of Moses, daughter of Jethro."
+    },
+    {
+      "id": "p.joshua",
+      "kind": "person",
+      "names": [
+        "Joshua"
+      ],
+      "summary": "Moses' minister; one of the two faithful spies; his successor."
+    },
+    {
+      "id": "p.caleb",
+      "kind": "person",
+      "names": [
+        "Caleb"
+      ],
+      "summary": "The other faithful spy; 'he wholly followed the LORD'."
+    },
+    {
+      "id": "p.korah",
+      "kind": "person",
+      "names": [
+        "Korah"
+      ],
+      "summary": "Led a rebellion against Moses and Aaron; swallowed by the earth."
+    },
+    {
+      "id": "p.balaam",
+      "kind": "person",
+      "names": [
+        "Balaam"
+      ],
+      "summary": "The Mesopotamian seer hired to curse Israel, made to bless."
+    },
+    {
+      "id": "p.eleazar",
+      "kind": "person",
+      "names": [
+        "Eleazar"
+      ],
+      "summary": "Son of Aaron; succeeded him as high priest."
+    },
+    {
+      "id": "p.phinehas",
+      "kind": "person",
+      "names": [
+        "Phinehas"
+      ],
+      "summary": "Son of Eleazar; his zeal turned away the plague."
+    },
+    {
+      "id": "p.rahab",
+      "kind": "person",
+      "names": [
+        "Rahab"
+      ],
+      "summary": "The Canaanite of Jericho who hid the spies and was spared."
+    },
+    {
+      "id": "p.achan",
+      "kind": "person",
+      "names": [
+        "Achan"
+      ],
+      "summary": "Took of the devoted things at Jericho; brought defeat on Israel."
+    },
+    {
+      "id": "p.deborah",
+      "kind": "person",
+      "names": [
+        "Deborah"
+      ],
+      "summary": "Prophetess and judge who summoned Barak against Sisera."
+    },
+    {
+      "id": "p.barak",
+      "kind": "person",
+      "names": [
+        "Barak"
+      ],
+      "summary": "Captain who, with Deborah, routed Sisera's army."
+    },
+    {
+      "id": "p.gideon",
+      "kind": "person",
+      "names": [
+        "Gideon"
+      ],
+      "summary": "Judge who broke Midian with three hundred men."
+    },
+    {
+      "id": "p.samson",
+      "kind": "person",
+      "names": [
+        "Samson"
+      ],
+      "summary": "The Nazirite of prodigious strength; judge against the Philistines."
+    },
+    {
+      "id": "p.delilah",
+      "kind": "person",
+      "names": [
+        "Delilah"
+      ],
+      "summary": "The woman of Sorek who coaxed out Samson's secret."
+    },
+    {
+      "id": "p.ruth",
+      "kind": "person",
+      "names": [
+        "Ruth"
+      ],
+      "summary": "The Moabite who clung to Naomi and to her God; great-grandmother of David."
+    },
+    {
+      "id": "p.naomi",
+      "kind": "person",
+      "names": [
+        "Naomi"
+      ],
+      "summary": "Widow of Bethlehem, mother-in-law of Ruth."
+    },
+    {
+      "id": "p.boaz",
+      "kind": "person",
+      "names": [
+        "Boaz"
+      ],
+      "summary": "The kinsman-redeemer of Bethlehem who married Ruth."
+    },
+    {
+      "id": "p.samuel",
+      "kind": "person",
+      "names": [
+        "Samuel"
+      ],
+      "summary": "Last of the judges; the prophet who anointed Saul and David."
+    },
+    {
+      "id": "p.jesse",
+      "kind": "person",
+      "names": [
+        "Jesse"
+      ],
+      "summary": "The Bethlehemite, father of David."
+    },
+    {
+      "id": "p.saul-king",
+      "kind": "person",
+      "names": [
+        "Saul"
+      ],
+      "summary": "First king of Israel, of the tribe of Benjamin."
+    },
+    {
+      "id": "p.jonathan",
+      "kind": "person",
+      "names": [
+        "Jonathan"
+      ],
+      "summary": "Saul's son; David's covenant friend."
+    },
+    {
+      "id": "p.david",
+      "kind": "person",
+      "names": [
+        "David"
+      ],
+      "summary": "Shepherd, psalmist and king; the man after God's own heart."
+    },
+    {
+      "id": "p.goliath",
+      "kind": "person",
+      "names": [
+        "Goliath"
+      ],
+      "summary": "The Philistine champion of Gath, felled by David's sling."
+    },
+    {
+      "id": "p.abner",
+      "kind": "person",
+      "names": [
+        "Abner"
+      ],
+      "summary": "Saul's captain of the host."
+    },
+    {
+      "id": "p.joab",
+      "kind": "person",
+      "names": [
+        "Joab"
+      ],
+      "summary": "David's fierce and ruthless captain of the host."
+    },
+    {
+      "id": "p.absalom",
+      "kind": "person",
+      "names": [
+        "Absalom"
+      ],
+      "summary": "David's son who rebelled and seized the kingdom for a season."
+    },
+    {
+      "id": "p.bathsheba",
+      "kind": "person",
+      "names": [
+        "Bathsheba"
+      ],
+      "summary": "Wife of Uriah, then of David; mother of Solomon."
+    },
+    {
+      "id": "p.nathan",
+      "kind": "person",
+      "names": [
+        "Nathan"
+      ],
+      "summary": "The prophet who confronted David and named Solomon."
+    },
+    {
+      "id": "p.solomon",
+      "kind": "person",
+      "names": [
+        "Solomon"
+      ],
+      "summary": "David's son; builder of the Temple; the wise king."
+    },
+    {
+      "id": "p.jeroboam",
+      "kind": "person",
+      "names": [
+        "Jeroboam"
+      ],
+      "summary": "First king of the northern ten tribes; set up the golden calves."
+    },
+    {
+      "id": "p.rehoboam",
+      "kind": "person",
+      "names": [
+        "Rehoboam"
+      ],
+      "summary": "Solomon's son whose folly split the kingdom."
+    },
+    {
+      "id": "p.ahab",
+      "kind": "person",
+      "names": [
+        "Ahab"
+      ],
+      "summary": "King of Israel who married Jezebel and served Baal."
+    },
+    {
+      "id": "p.jezebel",
+      "kind": "person",
+      "names": [
+        "Jezebel"
+      ],
+      "summary": "Ahab's queen, patroness of Baal, foe of Elijah."
+    },
+    {
+      "id": "p.elijah",
+      "kind": "person",
+      "names": [
+        "Elijah"
+      ],
+      "summary": "The Tishbite; called down fire on Carmel; taken up in a whirlwind."
+    },
+    {
+      "id": "p.elisha",
+      "kind": "person",
+      "names": [
+        "Elisha"
+      ],
+      "summary": "Elijah's successor, who received a double portion of his spirit."
+    },
+    {
+      "id": "p.jehu",
+      "kind": "person",
+      "names": [
+        "Jehu"
+      ],
+      "summary": "The furious charioteer anointed to end the house of Ahab."
+    },
+    {
+      "id": "p.hezekiah",
+      "kind": "person",
+      "names": [
+        "Hezekiah"
+      ],
+      "summary": "King of Judah who trusted the LORD against Assyria."
+    },
+    {
+      "id": "p.josiah",
+      "kind": "person",
+      "names": [
+        "Josiah"
+      ],
+      "summary": "The reforming king who restored the Book of the Law."
+    },
+    {
+      "id": "p.nebuchadnezzar",
+      "kind": "person",
+      "names": [
+        "Nebuchadnezzar"
+      ],
+      "summary": "King of Babylon who razed Jerusalem and carried Judah away."
+    },
+    {
+      "id": "p.daniel",
+      "kind": "person",
+      "names": [
+        "Daniel"
+      ],
+      "summary": "The exile in Babylon's court, keeper of visions, spared in the lions' den."
+    },
+    {
+      "id": "p.ezra",
+      "kind": "person",
+      "names": [
+        "Ezra"
+      ],
+      "summary": "The scribe who brought the Law back to the returned exiles."
+    },
+    {
+      "id": "p.nehemiah",
+      "kind": "person",
+      "names": [
+        "Nehemiah"
+      ],
+      "summary": "The cupbearer who rebuilt Jerusalem's wall."
+    },
+    {
+      "id": "p.esther",
+      "kind": "person",
+      "names": [
+        "Esther",
+        "Hadassah"
+      ],
+      "summary": "The Jewish queen of Persia who saved her people."
+    },
+    {
+      "id": "p.mordecai",
+      "kind": "person",
+      "names": [
+        "Mordecai"
+      ],
+      "summary": "Esther's guardian cousin who would not bow to Haman."
+    },
+    {
+      "id": "p.haman",
+      "kind": "person",
+      "names": [
+        "Haman"
+      ],
+      "summary": "The Agagite whose plot against the Jews recoiled on himself."
+    },
+    {
+      "id": "p.cyrus",
+      "kind": "person",
+      "names": [
+        "Cyrus"
+      ],
+      "summary": "The Persian king whose decree sent the exiles home."
+    },
+    {
+      "id": "p.job",
+      "kind": "person",
+      "names": [
+        "Job"
+      ],
+      "summary": "The blameless man of Uz tried in the crucible of suffering."
+    },
+    {
+      "id": "p.isaiah",
+      "kind": "person",
+      "names": [
+        "Isaiah"
+      ],
+      "summary": "The prophet of the Holy One of Israel and the Suffering Servant.",
+      "contested": {
+        "why": "The unity of the book of Isaiah is disputed.",
+        "views": [
+          {
+            "view": "One prophet, Isaiah of Jerusalem, wrote the whole book (8th c. BC).",
+            "source": "traditional / conservative view"
+          },
+          {
+            "view": "Chapters 40–66 come from later hands ('Deutero-' and 'Trito-Isaiah').",
+            "source": "critical scholarship (Duhm 1892 and after)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "p.jeremiah",
+      "kind": "person",
+      "names": [
+        "Jeremiah"
+      ],
+      "summary": "The weeping prophet of Judah's last days."
+    },
+    {
+      "id": "p.ezekiel",
+      "kind": "person",
+      "names": [
+        "Ezekiel"
+      ],
+      "summary": "Priest-prophet of the exile; seer of the chariot and the dry bones."
+    },
+    {
+      "id": "p.hosea",
+      "kind": "person",
+      "names": [
+        "Hosea"
+      ],
+      "summary": "Prophet whose marriage figured God's love for faithless Israel."
+    },
+    {
+      "id": "p.amos",
+      "kind": "person",
+      "names": [
+        "Amos"
+      ],
+      "summary": "The herdsman of Tekoa, prophet of justice."
+    },
+    {
+      "id": "p.jonah",
+      "kind": "person",
+      "names": [
+        "Jonah"
+      ],
+      "summary": "The prophet who fled to Tarshish and preached to Nineveh."
+    },
+    {
+      "id": "p.micah",
+      "kind": "person",
+      "names": [
+        "Micah"
+      ],
+      "summary": "Prophet who foretold the ruler to come from Bethlehem."
+    },
+    {
+      "id": "p.habakkuk",
+      "kind": "person",
+      "names": [
+        "Habakkuk"
+      ],
+      "summary": "Prophet who learned that the just shall live by faith."
+    },
+    {
+      "id": "p.zechariah",
+      "kind": "person",
+      "names": [
+        "Zechariah"
+      ],
+      "summary": "Post-exilic prophet of the coming King on a donkey."
+    }
+  ]
+}
