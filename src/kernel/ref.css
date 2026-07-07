@@ -43,15 +43,32 @@
 }
 .gx-ref:hover .gx-ref-rail,
 .gx-ref:focus-within .gx-ref-rail { display: flex; }
-.gx-ref-rail button {
-  width: 24px; height: 24px;
-  font-size: 12px;
+.gx-ref-rail button,
+.gx-ref-pill {
+  height: 24px;
+  padding: 0 7px;
+  font-size: 11px;
   color: var(--fg-dim);
   border-radius: 6px;
   transition: transform var(--fade), color var(--fade), background var(--fade);
 }
-.gx-ref-rail button:hover { color: var(--fg); background: color-mix(in oklab, var(--fg) 9%, transparent); transform: translateY(-1px); }
-.gx-ref-rail button:active { transform: translateY(0); }
+.gx-ref-rail button:hover,
+.gx-ref-pill:hover { color: var(--fg); background: color-mix(in oklab, var(--fg) 9%, transparent); transform: translateY(-1px); }
+.gx-ref-rail button:active,
+.gx-ref-pill:active { transform: translateY(0); }
+/* DESIGN §II.8 — labeled pill: glyph + small-caps verb word, not a rune. */
+.gx-ref-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.gx-ref-pill b {
+  font: inherit;
+  font-variant: small-caps;
+  letter-spacing: 0.03em;
+  font-weight: 600;
+}
 @media (prefers-reduced-motion: reduce) {
   .gx-ref-rail button:hover, .gx-ref-rail button:active { transform: none; }
 }

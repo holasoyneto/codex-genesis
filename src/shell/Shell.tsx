@@ -11,7 +11,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  useApp, dismissWhisper, closeVeil, closePanel, getState, setState,
+  useApp, dismissWhisper, closeVeil, closePanel, panelBack, getState, setState,
   historyBack, historyForward,
 } from "@/kernel/store";
 import { runWhisperCommand } from "@/kernel/whisperCommands";
@@ -82,17 +82,24 @@ function WhisperLane() {
   );
 }
 
-// Palm: the focused instrument as THE bottom sheet — drag handle, snap
-// points (half / full), swipe-down to dismiss. Desk: the window manager.
+// Palm: the focused instrument as THE bottom sheet — full-height by
+// default (DESIGN §IV.11: "one surface at a time, full attention"), a
+// universal back affordance top-left of every sheet, swipe-down to
+// dismiss. Only pickers (the reader's own book/chapter/translation veil,
+// which is a VEIL not a panel) may keep the half-snap gesture. Desk: the
+// window manager.
 function PalmSheet({ panel }: { panel: string }) {
-  const [full, setFull] = useState(false);
-  const ref = { el: null as HTMLElement | null };
-  const F = getFeature(panel)?.surfaces.main;
+  const [full, setFull] = useState(true);
+  const stack = useApp((s) => s.panelStack);
+  const hasBack = stack.length > 0;
+  const backTitle = hasBack ? getFeature(stack[stack.length - 1])?.title : undefined;
+  const f = getFeature(panel);
+  const F = f?.surfaces.main;
   if (!F) return null;
 
   const onHandle = (e: React.PointerEvent) => {
     e.preventDefault();
-    const el = (ref.el = (e.currentTarget as HTMLElement).closest(".gx-instrument") as HTMLElement);
+    const el = (e.currentTarget as HTMLElement).closest(".gx-instrument") as HTMLElement;
     const sy = e.clientY;
     let dy = 0;
     const move = (ev: PointerEvent) => {
@@ -103,7 +110,7 @@ function PalmSheet({ panel }: { panel: string }) {
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", up);
       el.style.transform = "";
-      if (dy > 110) closePanel(panel);        // swipe down — dismissed
+      if (dy > 110) (hasBack ? panelBack() : closePanel(panel)); // swipe down — back, or dismissed at root
       else if (dy < -60) setFull(true);       // pulled up — full
       else if (dy > 40 && full) setFull(false); // nudged down — half
     };
@@ -117,8 +124,19 @@ function PalmSheet({ panel }: { panel: string }) {
         className="gx-sheet-handle"
         aria-label={full ? "Collapse sheet" : "Expand sheet"}
         onPointerDown={onHandle}
-        onDoubleClick={() => setFull((f) => !f)}
+        onDoubleClick={() => setFull((v) => !v)}
       ><span className="gx-sheet-grip" aria-hidden /></button>
+      <header className="gx-sheet-bar">
+        <button
+          className="gx-sheet-back"
+          aria-label={hasBack ? `Back to ${backTitle ?? "previous"}` : "Close"}
+          onClick={() => (hasBack ? panelBack() : closePanel(panel))}
+        >{hasBack ? "‹ back" : "× close"}</button>
+        <span className="gx-sheet-title">
+          {f.glyph} <b>{f.title}</b>
+          {f.purpose ? <i className="gx-sheet-purpose"> · {f.purpose}</i> : null}
+        </span>
+      </header>
       <div className="gx-sheet-body">
         <F />
       </div>

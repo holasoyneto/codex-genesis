@@ -5,7 +5,7 @@
 // directly (transform / width / height) and commit to the store once, on
 // release. No dependency, no re-layout during motion.
 
-import { createContext, useContext, useEffect, useRef } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import {
   useApp, focusPanel, closePanel, setPanelGeo, getState, toggleReaderLink, type WinGeo,
 } from "@/kernel/store";
@@ -17,13 +17,25 @@ import "./windows.css";
     center (the main reader outside any window). */
 export const WinContext = createContext<string | null>(null);
 
-/** True when rendering inside a desk WM window, which already owns a
-    title bar and the ONE close control. Features must not render their
-    own close chrome there (audit defect #1 — double close buttons); on
-    the palm sheet (no WinContext) the feature's own close/back affordance
-    is still needed since the sheet chrome is just a drag handle. */
+/** True when the SHELL already owns the close/back control for this
+    surface — a desk WM window (its own title bar) OR a palm sheet (the
+    universal back/close bar added per DESIGN §IV.11). Either way the
+    feature must not render its own close chrome (audit defect #1 —
+    double close buttons; DESIGN §III.9 — one control per surface). The
+    name stays `useInWindow` for minimal call-site churn; it now means
+    "chrome is owned above me," desk or palm alike. */
 export function useInWindow(): boolean {
-  return useContext(WinContext) !== null;
+  const inDeskWindow = useContext(WinContext) !== null;
+  // Inline posture check (mirrors Shell's usePalm) — kept local to avoid a
+  // Shell↔Windows import cycle; both read the same media query.
+  const [palm, setPalm] = useState(() => window.matchMedia("(max-width: 880px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 880px)");
+    const on = () => setPalm(mq.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  return inDeskWindow || palm;
 }
 
 const PAD = 8;            // breathing room to the shell's edges
@@ -151,7 +163,12 @@ function Win({ id, index, front }: { id: string; index: number; front: boolean }
         onDoubleClick={() => setPanelGeo(id, defaultGeo(id, index))}
       >
         <span className="gx-win-glyph" aria-hidden>{f.glyph}</span>
-        <span className="gx-instrument-title gx-win-title">{title}</span>
+        <span className="gx-instrument-title gx-win-title">
+          {title}
+          {/* DESIGN §I.3 — every window title bar carries a purpose subtitle,
+              dim mono, after the name: the poetry stays, the meaning is free. */}
+          {f.purpose ? <span className="gx-win-purpose"> · {f.purpose}</span> : null}
+        </span>
         {reader ? (
           <button
             className={"gx-win-link" + (reader.linked ? " is-linked" : "")}

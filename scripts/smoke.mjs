@@ -530,13 +530,25 @@ try {
     await sleep(300);
 
     // The dock is GENERATED from the registry — every main-surface feature.
+    // DESIGN §I.3 — the aria-label now carries "TITLE — purpose"; the dock
+    // is still complete iff every registered title PREFIXES some button.
     const dock = await page.evaluate(() => ({
       buttons: [...document.querySelectorAll(".gx-dock-btn")].map((b) => b.getAttribute("aria-label")),
       expected: window.__CODEX_FEATURES__.filter((f) => f.main).map((f) => f.title),
     }));
     check("dock lists every registered feature",
-      dock.buttons.length === dock.expected.length && dock.expected.every((t) => dock.buttons.includes(t)),
+      dock.buttons.length === dock.expected.length &&
+        dock.expected.every((t) => dock.buttons.some((b) => b.startsWith(t))),
       JSON.stringify(dock));
+
+    // DESIGN §VI — dock items render VISIBLE text labels, not just an
+    // aria-label reachable only by assistive tech or hover.
+    const dockLabels = await page.evaluate(() =>
+      [...document.querySelectorAll(".gx-dock-btn")].map((b) => b.querySelector(".gx-dock-label")?.textContent?.trim())
+    );
+    check("dock: every button shows a visible text label (DESIGN §I.2)",
+      dockLabels.length > 0 && dockLabels.every((t) => !!t),
+      JSON.stringify(dockLabels));
 
     // The kernel executes tool calls locally (EXOGRAMMAR law 5).
     const kernel = await page.evaluate(async () => {
@@ -917,9 +929,18 @@ try {
       const items = [...document.querySelectorAll(".gx-vmenu > button")].map((x) => x.textContent);
       return { inView: b.top >= 0 && b.bottom <= innerHeight && b.left >= 0 && b.right <= innerWidth, items };
     });
+    // DESIGN §II.6 — the lexicon's small-caps verb words (Compare/Threads/
+    // Mark/Copy/Ask/Case), not the old lowercase ad hoc phrasing.
     check("verse menu: opens in-viewport with the full verb set",
-      vm.inView && ["compare", "threads", "mark", "copy", "Oracle", "new reader"].every((k) => vm.items.some((i) => i.includes(k))),
+      vm.inView && ["Compare", "Threads", "Mark", "Copy", "Oracle", "New reader"].every((k) => vm.items.some((i) => i.includes(k))),
       JSON.stringify(vm.items));
+    // DESIGN §I.4 — every menu item carries a dim hint, not a bare verb.
+    const hintCounts = await page.evaluate(() => ({
+      buttons: document.querySelectorAll(".gx-vmenu > button").length,
+      hints: document.querySelectorAll(".gx-vmenu > button .gx-vmenu-hint").length,
+    }));
+    check("verse menu: every item carries a hint (DESIGN §I.4)",
+      hintCounts.hints > 0 && hintCounts.hints === hintCounts.buttons, JSON.stringify(hintCounts));
     await page.keyboard.press("Escape");
     await sleep(200);
     const vmGone = await page.evaluate(() => !document.querySelector(".gx-vmenu"));
@@ -1191,11 +1212,19 @@ try {
     }
     check(`audit palm ${w}x${h} ${theme}: sheets reachable, no leaks`, bad.length === 0, bad.slice(0, 3).join(" · "));
 
-    // the dock orb unfolds the registry
+    // the dock orb unfolds the registry — DESIGN §I.2: a full labeled menu
+    // sheet, each row glyph + NAME + purpose (renamed from .gx-dock-palm).
     await page.tap(".gx-dock-orb");
-    await page.waitForSelector(".gx-dock-palm", { timeout: 5000 });
-    const orbCount = await page.evaluate(() => document.querySelectorAll(".gx-dock-palm .gx-dock-btn").length);
-    check(`audit palm ${w}x${h} ${theme}: orb unfolds the dock`, orbCount >= 10, `${orbCount} instruments`);
+    await page.waitForSelector(".gx-dock-menu", { timeout: 5000 });
+    const orbRows = await page.evaluate(() =>
+      [...document.querySelectorAll(".gx-dock-menu .gx-dock-row")].map((r) => ({
+        name: r.querySelector(".gx-dock-row-text b")?.textContent,
+        purpose: r.querySelector(".gx-dock-row-text i")?.textContent,
+      }))
+    );
+    check(`audit palm ${w}x${h} ${theme}: orb unfolds the dock`, orbRows.length >= 10, `${orbRows.length} instruments`);
+    check(`audit palm ${w}x${h} ${theme}: every orb row carries glyph+NAME+purpose`,
+      orbRows.every((r) => r.name && r.purpose), JSON.stringify(orbRows.slice(0, 3)));
     await page.tap(".gx-dock-orb");
     check(`audit palm ${w}x${h} ${theme}: zero js errors`, page.jsErrors.length === 0, JSON.stringify(page.jsErrors.slice(0, 2)));
     if (theme === "light") await shot(page, `palm-${w}-light`);

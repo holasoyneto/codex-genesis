@@ -7,6 +7,7 @@ import {
   useApp, goTo, setState, openDossier, openPanel, openReader, whisper, addToInvestigation, type Cursor,
 } from "@/kernel/store";
 import { setSeed } from "@/kernel/seeds";
+import { verb } from "@/kernel/lexicon";
 import { WinContext } from "@/shell/Windows";
 import { getChapter, bookById, BOOKS, TRANSLATIONS, covers, type Chapter } from "@/engine/corpus";
 import { record } from "@/kernel/witness";
@@ -123,10 +124,18 @@ function VerseMenu({ refc, text, entityIds, flip, onClose, onNav }: {
   const label = `${bookById.get(refc.bookId)?.name ?? refc.bookId} ${refc.chapter}:${refc.verse}`;
   const go = () => goTo({ ...refc });
   const act = (fn: () => void) => () => { fn(); onClose(); };
+  const compareV = verb("compare"), threadsV = verb("threads"), markV = verb("mark"),
+    copyV = verb("copy"), askV = verb("ask"), caseV = verb("case"), dossierV = verb("dossier"),
+    readerV = verb("openReader");
+  // DESIGN §I.4 — every menu item = glyph + verb + dim hint. No bare rows.
   return (
     <span ref={rootRef} className={"gx-vmenu glass gx-enter" + (flip ? " is-flip" : "")} role="menu" aria-label={`Verse ${refc.verse}`}>
-      <button role="menuitem" onClick={act(() => { go(); openPanel("compare"); })}>⇄ compare translations</button>
-      <button role="menuitem" onClick={act(() => { go(); openPanel("threads"); })}>⛬ threads</button>
+      <button role="menuitem" onClick={act(() => { go(); openPanel("compare"); })}>
+        <span aria-hidden>⇄</span> {compareV.word}<i className="gx-vmenu-hint">{compareV.hint}</i>
+      </button>
+      <button role="menuitem" onClick={act(() => { go(); openPanel("threads"); })}>
+        <span aria-hidden>{threadsV.glyph}</span> {threadsV.word}<i className="gx-vmenu-hint">{threadsV.hint}</i>
+      </button>
       <button role="menuitem" onClick={act(() => {
         setState((s) => {
           const dup = s.marks.find((m) => m.bookId === refc.bookId && m.chapter === refc.chapter && m.verse === refc.verse);
@@ -134,18 +143,31 @@ function VerseMenu({ refc, text, entityIds, flip, onClose, onNav }: {
           return { marks: [...s.marks, { id: "m" + Math.random().toString(36).slice(2, 9), ...refc, text: text.slice(0, 90), at: Date.now() }] };
         });
         record("mark", `${refc.bookId}.${refc.chapter}.${refc.verse}`);
-      })}>✦ mark</button>
-      <button role="menuitem" onClick={act(() => { void navigator.clipboard?.writeText(`“${text}” — ${label}`); })}>⧉ copy</button>
-      <button role="menuitem" onClick={act(() => { go(); setSeed("oracle", `About ${label} — `); openPanel("oracle"); })}>☲ ask the Oracle</button>
-      <button role="menuitem" onClick={act(() => addToInvestigation("verse", { ref: `${refc.bookId}.${refc.chapter}.${refc.verse}` }, ""))}>🗂 add to investigation</button>
+        whisper({ kind: "toast", title: `Marked ${label}` });
+      })}>
+        <span aria-hidden>{markV.glyph}</span> {markV.word}<i className="gx-vmenu-hint">{markV.hint}</i>
+      </button>
+      <button role="menuitem" onClick={act(() => { void navigator.clipboard?.writeText(`"${text}" — ${label}`); whisper({ kind: "toast", title: `Copied ${label}` }); })}>
+        <span aria-hidden>{copyV.glyph}</span> {copyV.word}<i className="gx-vmenu-hint">{copyV.hint}</i>
+      </button>
+      <button role="menuitem" onClick={act(() => { go(); setSeed("oracle", `About ${label} — `); openPanel("oracle"); })}>
+        <span aria-hidden>{askV.glyph}</span> {askV.word} the Oracle<i className="gx-vmenu-hint">{askV.hint}</i>
+      </button>
+      <button role="menuitem" onClick={act(() => { addToInvestigation("verse", { ref: `${refc.bookId}.${refc.chapter}.${refc.verse}` }, ""); whisper({ kind: "toast", title: `Added ${label} to case` }); })}>
+        <span aria-hidden>{caseV.glyph}</span> {caseV.word}<i className="gx-vmenu-hint">{caseV.hint}</i>
+      </button>
       {entityIds.length ? (
-        <button role="menuitem" onClick={act(() => openDossier(entityIds[0]))}>☖ dossier</button>
+        <button role="menuitem" onClick={act(() => openDossier(entityIds[0]))}>
+          <span aria-hidden>{dossierV.glyph}</span> {dossierV.word}<i className="gx-vmenu-hint">{dossierV.hint}</i>
+        </button>
       ) : null}
       <button
         role="menuitem"
         aria-expanded={readers}
         onClick={() => setReaders((r) => !r)}
-      >☰ open in new reader…</button>
+      >
+        <span aria-hidden>{readerV.glyph}</span> {readerV.word}<i className="gx-vmenu-hint">{readerV.hint}</i>
+      </button>
       {readers ? (
         <span className="gx-vmenu-sub" role="menu">
           {TRANSLATIONS.filter((t) => t.bundled).map((t) => (

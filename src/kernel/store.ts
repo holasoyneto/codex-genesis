@@ -101,6 +101,10 @@ export interface AppState {
   /** Windowed readers pinned to a translation ("reader@wlc"). Linked ones
       follow the global cursor; unlinked ones keep their own place. */
   readers: Record<string, { translation: string; linked: boolean; bookId: string; chapter: number }>;
+  /** DESIGN §IV.11 — the palm's back stack: sheets the analyst opened
+      before the current one, walkable by the universal back affordance.
+      Desk ignores this entirely (it has real windows instead). */
+  panelStack: string[];
   /** PALANTIR §3 — every case file the analyst has opened. */
   investigations: Investigation[];
   /** The investigation new evidence lands in ("add to investigation"
@@ -144,6 +148,7 @@ const DEFAULTS: AppState = {
   zen: false,
   hideReader: false,
   readers: {},
+  panelStack: [],
   investigations: [],
   activeInvestigation: null,
   trail: [],
@@ -186,6 +191,7 @@ function load(): AppState {
         oracle: { ...DEFAULTS.settings.oracle, ...saved.settings?.oracle },
       },
       wm: { open: saved.wm?.open ?? [], geo: saved.wm?.geo ?? {} },
+      panelStack: [], // ephemeral — a fresh boot starts with no back-history
       history: saved.history ?? [],
       historyAt: saved.historyAt ?? (saved.history?.length ?? 0) - 1,
       investigations: saved.investigations ?? [],
@@ -277,10 +283,13 @@ export function dismissWhisper(id: string): void {
 
 // Panel doors — features open and close through these, never by writing
 // `panel` directly. Desk: several instruments at once as windows (wm.open,
-// back-to-front). Palm: `panel` is THE sheet. One tree, two postures.
+// back-to-front). Palm: `panel` is THE sheet, monotasking (DESIGN §IV.11)
+// — opening B pushes A onto panelStack and replaces it; back() pops the
+// stack. Desk ignores panelStack (it has real windows instead).
 export function openPanel(id: string): void {
   setState((s) => ({
     panel: id,
+    panelStack: s.panel && s.panel !== id ? [...s.panelStack, s.panel] : s.panelStack,
     wm: { ...s.wm, open: [...s.wm.open.filter((x) => x !== id), id] },
   }));
 }
@@ -292,6 +301,22 @@ export function closePanel(id?: string): void {
     return {
       wm: { ...s.wm, open },
       panel: s.panel === gone ? (open[open.length - 1] ?? null) : s.panel,
+      panelStack: s.panel === gone ? s.panelStack.filter((x) => x !== gone) : s.panelStack,
+    };
+  });
+}
+
+/** DESIGN §IV.11 — the palm's universal back affordance: return to the
+    sheet that was open before this one (or close entirely, at the root). */
+export function panelBack(): void {
+  setState((s) => {
+    if (!s.panelStack.length) return { panel: null, wm: { ...s.wm, open: [] } };
+    const stack = [...s.panelStack];
+    const prev = stack.pop()!;
+    return {
+      panel: prev,
+      panelStack: stack,
+      wm: { ...s.wm, open: [...s.wm.open.filter((x) => x !== prev), prev] },
     };
   });
 }

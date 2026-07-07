@@ -32,7 +32,8 @@ export function Help() {
             >
               <span className="gx-help-glyph" aria-hidden>{f.glyph}</span>
               <span className="gx-help-name">{f.title}</span>
-              <span className="gx-help-what">{f.help ?? (f.commands?.[0]?.hint ?? "")}</span>
+              {/* DESIGN §I.3 — the SAME purpose line, reused verbatim here. */}
+              <span className="gx-help-what">{f.purpose}</span>
               {f.keybinding ? <kbd className="gx-help-kbd">{f.keybinding}</kbd> : null}
             </button>
           </li>

@@ -21,19 +21,28 @@ export function Dock() {
   const active = (id: string) => (palm ? panel === id : open.includes(id));
   const toggle = (id: string) => (active(id) ? closePanel(id) : openPanel(id));
 
+  // Palm: the orb opens a full menu SHEET (DESIGN §I.2) — each row is
+  // glyph + NAME + one-line purpose, never a bare-glyph strip.
   if (palm) {
     return (
       <div className="gx-dock-orbit">
         {unfolded ? (
-          <div className="gx-dock gx-dock-palm glass gx-enter" role="toolbar" aria-label="Instruments">
+          <div className="gx-dock-menu glass gx-enter" role="menu" aria-label="Instruments">
+            <p className="gx-dock-menu-title">INSTRUMENTS</p>
             {items().map((f) => (
               <button
                 key={f.id}
-                className={"gx-dock-btn" + (active(f.id) ? " is-active" : "")}
-                title={f.title}
-                aria-label={f.title}
+                role="menuitem"
+                className={"gx-dock-row" + (active(f.id) ? " is-active" : "")}
                 onClick={() => { toggle(f.id); setUnfolded(false); }}
-              >{f.glyph}</button>
+              >
+                <span className="gx-dock-row-glyph" aria-hidden>{f.glyph}</span>
+                <span className="gx-dock-row-text">
+                  <b>{f.title.toUpperCase()}</b>
+                  <i>{f.purpose}</i>
+                </span>
+                {active(f.id) ? <span className="gx-dock-row-dot" aria-hidden /> : null}
+              </button>
             ))}
           </div>
         ) : null}
@@ -47,16 +56,24 @@ export function Dock() {
     );
   }
 
+  // Desk: labels under glyphs, always visible — no hover required to know
+  // what a button is (DESIGN §I.2). The open-state dot marks multitasking
+  // orientation (DESIGN §IV.12): open features carry a visible dot + a
+  // brighter label, not just a color shift on the glyph.
   return (
     <div className="gx-dock glass" role="toolbar" aria-label="Instruments">
       {items().map((f) => (
         <button
           key={f.id}
           className={"gx-dock-btn" + (active(f.id) ? " is-active" : "")}
-          title={f.title}
-          aria-label={f.title}
+          title={`${f.title} — ${f.purpose}`}
+          aria-label={`${f.title} — ${f.purpose}`}
           onClick={() => toggle(f.id)}
-        >{f.glyph}</button>
+        >
+          <span className="gx-dock-glyph" aria-hidden>{f.glyph}</span>
+          <span className="gx-dock-label">{f.title}</span>
+          {active(f.id) ? <span className="gx-dock-dot" aria-hidden /> : null}
+        </button>
       ))}
     </div>
   );

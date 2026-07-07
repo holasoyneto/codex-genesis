@@ -46,7 +46,9 @@
 }
 .gx-win-bar:active { cursor: grabbing; }
 .gx-win-glyph { font-size: 12px; color: var(--gold); }
-.gx-win-title { flex: 1; }
+.gx-win-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* DESIGN §I.3 — the purpose subtitle: dim mono, after the name. */
+.gx-win-purpose { font-family: var(--mono); font-size: 10.5px; color: var(--fg-dim); font-weight: 400; }
 .gx-win-x { color: var(--fg-dim); font-size: 15px; padding: 0 4px; }
 .gx-win-x:hover { color: var(--fg); }
 
