@@ -18,6 +18,22 @@
   box-shadow: var(--glass-shadow), 0 0 0 1px color-mix(in oklab, var(--accent) 22%, transparent);
 }
 
+/* Text-dense windows sit on the most opaque glass tier — the base .glass
+   (glass-2) reads as ghostly once a window is full of small serif/mono
+   prose (audit defect #5, verified against the dossier). Contrast for
+   --fg / --fg-dim against --glass-3 holds comfortably above 4.5:1 in both
+   themes (glass-3 is 82%/84% opaque toward --bg-raise). */
+.gx-win[data-win="dossier"],
+.gx-win[data-win="lexicon"],
+.gx-win[data-win="threads"],
+.gx-win[data-win="timeline"],
+.gx-win[data-win="marks"],
+.gx-win[data-win^="oracle"] {
+  background: var(--glass-3);
+  -webkit-backdrop-filter: var(--glass-blur-lg);
+  backdrop-filter: var(--glass-blur-lg);
+}
+
 .gx-win-bar {
   display: flex; align-items: center; gap: 8px;
   padding: 8px 12px;

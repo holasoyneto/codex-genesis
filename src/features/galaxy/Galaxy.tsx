@@ -7,10 +7,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useApp, goTo, getState } from "@/kernel/store";
 import { closePanel } from "@/kernel/store";
+import { useInWindow } from "@/shell/Windows";
 import { bookById } from "@/engine/corpus";
 import { loadGraph, path as graphPath, near as graphNear, type Graph, type PathHop } from "@/engine/graph";
 import { loadOntology, type Ontology } from "@/engine/ontology";
-import { starField, bookArcs, entityBodies, verseKeyPos, spiral, type Star, type Body } from "./layout";
+import { starField, bookArcs, entityBodies, verseKeyPos, spiral, ringBBox, type Star, type Body } from "./layout";
 import { subscribeGalaxyQuery, getGalaxyQuery, type GalaxyQuery } from "./query";
 import "./galaxy.css";
 
@@ -37,6 +38,10 @@ export function Galaxy() {
   const viewRef = useRef<View>({ x: 0, y: 0, s: 0.55 });
   const flyRef = useRef<{ tx: number; ty: number; ts: number } | null>(null);
   const drawRef = useRef<() => void>(() => {});
+  // True once the user has manually panned/zoomed — auto-fit then stops
+  // fighting their input (defect #3: initial view was off-center; the
+  // canon ring bbox now drives the fit, re-applied on resize until touched).
+  const userMovedRef = useRef(false);
   const [result, setResult] = useState<{ trail?: PathHop[]; glow?: Map<string, number>; note: string } | null>(null);
 
   // Build the scene once — graph + ontology + deterministic star field.
@@ -84,12 +89,25 @@ export function Galaxy() {
     requestAnimationFrame(() => drawRef.current());
   }, [cursor.bookId, cursor.chapter, cursor.verse]);
 
+  // Auto-fit: center the canon ring's own bbox in the window and pick a
+  // scale that lets it breathe. Runs once per scene load and again on
+  // every canvas resize, until the user's own pan/zoom takes over.
+  const fit = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const { cx, cy, r } = ringBBox();
+    const w = canvas.clientWidth || 800, h = canvas.clientHeight || 600;
+    const s = Math.min(6, Math.max(0.15, (Math.min(w, h) * 0.42) / (r || 1)));
+    viewRef.current = { x: cx, y: cy, s };
+  };
+
   // The renderer — DPR-aware, draws on demand (and during flight).
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || !scene) return;
     const ctx = canvas.getContext("2d")!;
     let raf = 0;
+    if (!userMovedRef.current) fit();
 
     const css = () => getComputedStyle(document.documentElement);
     const draw = () => {
@@ -200,13 +218,36 @@ export function Galaxy() {
         ctx.globalAlpha = 0.85;
         ctx.beginPath(); ctx.arc(p.x, p.y, rad * Math.min(1.4, v.s + 0.4), 0, Math.PI * 2); ctx.fill();
       }
+      // Entity labels — zoom-dependent culling + simple collision avoidance
+      // (audit defect #4: labels clumped into an unreadable knot near dense
+      // regions like Joseph/Moses/Egypt). Strategy: at low zoom show only
+      // the top-N most-mentioned bodies IN VIEW; as the view zooms in, both
+      // the cap relaxes and the minimum on-screen spacing shrinks, so more
+      // names appear only once there's room for them. A label that would
+      // land within its neighbor's footprint is skipped outright rather
+      // than overlapping — legibility over completeness.
       if (v.s > 0.5) {
-        ctx.globalAlpha = 0.8; ctx.fillStyle = gold;
         ctx.font = "10px ui-monospace, Menlo, monospace";
-        for (const b of scene.bodies.slice(0, v.s > 1.1 ? 80 : 24)) {
-          const p = toScreen(b);
-          if (p.x > -60 && p.x < w + 60 && p.y > -10 && p.y < h + 10)
-            ctx.fillText(b.name, p.x + 6, p.y + 3);
+        const cap = v.s > 1.6 ? 300 : v.s > 1.1 ? 80 : v.s > 0.75 ? 36 : 16;
+        const minGap = v.s > 1.6 ? 16 : v.s > 1.1 ? 22 : 30; // px between label anchors
+        const inView = scene.bodies
+          .map((b) => ({ b, p: toScreen(b) }))
+          .filter(({ p }) => p.x > -60 && p.x < w + 60 && p.y > -10 && p.y < h + 10)
+          // already weight-sorted from entityBodies(); top-N by importance first
+          .slice(0, cap);
+        const placed: { x: number; y: number }[] = [];
+        const fade = Math.min(1, (v.s - 0.5) / 0.4); // fades in as you zoom past 0.5
+        ctx.globalAlpha = 0.8 * fade;
+        ctx.fillStyle = gold;
+        for (const { b, p } of inView) {
+          const lx = p.x + 6, ly = p.y + 3;
+          let collide = false;
+          for (const q of placed) {
+            if (Math.abs(q.x - lx) < minGap && Math.abs(q.y - ly) < 12) { collide = true; break; }
+          }
+          if (collide) continue;
+          placed.push({ x: lx, y: ly });
+          ctx.fillText(b.name, lx, ly);
         }
       }
 
@@ -253,6 +294,7 @@ export function Galaxy() {
         v.s = Math.min(6, Math.max(0.15, v.s * (after / before)));
         v.x = wx - mx / v.s; v.y = wy - my / v.s;
         moved = 99; lastPinch = performance.now();
+        userMovedRef.current = true;
         requestAnimationFrame(draw);
         return;
       }
@@ -260,6 +302,7 @@ export function Galaxy() {
       p.x = e.clientX; p.y = e.clientY;
       moved += Math.abs(dx) + Math.abs(dy);
       v.x -= dx / v.s; v.y -= dy / v.s;
+      if (moved > 5) userMovedRef.current = true;
       requestAnimationFrame(draw);
     };
     const onUp = (e: PointerEvent) => {
@@ -290,6 +333,7 @@ export function Galaxy() {
       const wx = mx / v.s + v.x, wy = my / v.s + v.y;
       v.s = Math.min(6, Math.max(0.15, v.s * Math.exp(-e.deltaY * 0.0016)));
       v.x = wx - mx / v.s; v.y = wy - my / v.s;
+      userMovedRef.current = true;
       requestAnimationFrame(draw);
     };
     canvas.addEventListener("pointerdown", onDown);
@@ -297,7 +341,11 @@ export function Galaxy() {
     canvas.addEventListener("pointerup", onUp);
     canvas.addEventListener("pointercancel", onUp);
     canvas.addEventListener("wheel", onWheel, { passive: false });
-    const ro = new ResizeObserver(() => requestAnimationFrame(draw));
+    const ro = new ResizeObserver(() => {
+      // re-fit on resize (defect #3) until the user has taken the wheel
+      if (!userMovedRef.current) fit();
+      requestAnimationFrame(draw);
+    });
     ro.observe(canvas);
     return () => {
       cancelAnimationFrame(raf);
@@ -325,7 +373,9 @@ export function Galaxy() {
         </span>
         <span className="gx-galaxy-prov">TSK · TORREY 1880 + CODEX ONTOLOGY</span>
       </div>
-      <button className="gx-galaxy-close" aria-label="Close galaxy" onClick={() => closePanel("galaxy")}>×</button>
+      {useInWindow() ? null : (
+        <button className="gx-galaxy-close" aria-label="Close galaxy" onClick={() => closePanel("galaxy")}>×</button>
+      )}
     </div>
   );
 }

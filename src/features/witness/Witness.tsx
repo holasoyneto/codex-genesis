@@ -5,6 +5,7 @@
 
 import { useState } from "react";
 import { useApp, setState, closePanel } from "@/kernel/store";
+import { useInWindow } from "@/shell/Windows";
 import { summary, ledger, exportLedger, clearLedger } from "@/kernel/witness";
 import "./witness.css";
 
@@ -39,11 +40,13 @@ export function Witness() {
           onClick={() => setState((s) => ({ settings: { ...s.settings, witness: !on } }))}
         >{on ? "◼ SILENCE" : "● LISTEN"}</button>
       </div>
-      <button
-        className="gx-witness-close"
-        aria-label="Close witness"
-        onClick={() => closePanel()}
-      >×</button>
+      {useInWindow() ? null : (
+        <button
+          className="gx-witness-close"
+          aria-label="Close witness"
+          onClick={() => closePanel()}
+        >×</button>
+      )}
     </div>
   );
 }

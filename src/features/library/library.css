@@ -22,9 +22,12 @@
 }
 .gx-book { border-radius: 8px; }
 .gx-book-row {
-  display: grid; grid-template-columns: 14px 1fr auto; align-items: center;
+  display: grid; grid-template-columns: 14px 1fr auto auto; align-items: center;
   column-gap: 9px; width: 100%; text-align: left;
-  padding: 8px 8px; border-radius: 8px; border: 1px solid transparent;
+  /* single-line rows (audit defect #7 — rows previously read tall because
+     the tag cluster could wrap under the name); a fixed row height and a
+     dedicated grid column for the tag cluster keep every row one line. */
+  height: 34px; padding: 0 8px; border-radius: 8px; border: 1px solid transparent;
   transition: background var(--fade);
 }
 .gx-book-row:hover { background: color-mix(in oklab, var(--fg) 5%, transparent); }
@@ -36,7 +39,9 @@
 .gx-book-light.is-own { background: var(--gold); }
 .gx-book-light.is-other { background: var(--accent); opacity: 0.7; }
 .gx-book-light.is-none { background: var(--fg-dim); opacity: 0.35; }
-.gx-book-name { font-size: 13.5px; }
+.gx-book-name {
+  font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .gx-book-meta { font-family: var(--mono); font-size: 10px; color: var(--fg-dim); }
 .gx-chs {
   display: flex; flex-wrap: wrap; gap: 5px;
@@ -93,11 +98,18 @@
 }
 .gx-tradition:hover { color: var(--fg); }
 .gx-tradition.is-active { color: var(--gold); border-color: color-mix(in oklab, var(--gold) 50%, transparent); }
-.gx-book-tags { display: inline-flex; gap: 2px; margin: 0 6px; }
+/* A single subtle dot cluster replaces the old per-letter chip row (audit
+   defect #6 — "C O T L P T" read as noise). Each dot just marks that a
+   tradition includes this book; the tag name lives in the title tooltip
+   (hover/long-press) and in the legend row above the shelves, never as
+   inline letters competing with the book name. */
+.gx-book-tags { display: inline-flex; gap: 3px; align-items: center; }
 .gx-book-tag {
-  font-style: normal;
-  font-family: var(--mono); font-size: 7.5px;
-  color: var(--fg-dim);
-  border: 1px solid var(--line); border-radius: 3px;
-  padding: 0 3px; line-height: 1.5;
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--fg-dim); opacity: 0.55;
+  flex: none;
+}
+.gx-book-tags-legend {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.04em;
+  color: var(--fg-dim); opacity: 0.7; margin: 2px 2px 8px;
 }

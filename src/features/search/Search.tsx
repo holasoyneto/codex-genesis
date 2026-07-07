@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useApp, closePanel } from "@/kernel/store";
+import { useInWindow } from "@/shell/Windows";
 import { Ref } from "@/kernel/Ref";
 import { searchScripture, type SearchHit } from "@/engine/search";
 import { record } from "@/kernel/witness";
@@ -72,11 +73,13 @@ export function Search() {
           ))}
         </ul>
       )}
-      <button
-        className="gx-search-close"
-        aria-label="Close search"
-        onClick={() => closePanel()}
-      >×</button>
+      {useInWindow() ? null : (
+        <button
+          className="gx-search-close"
+          aria-label="Close search"
+          onClick={() => closePanel()}
+        >×</button>
+      )}
     </div>
   );
 }

@@ -7,6 +7,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useApp, goTo, closePanel } from "@/kernel/store";
+import { useInWindow } from "@/shell/Windows";
 import { TRANSLATIONS, BOOKS, covers, type Book } from "@/engine/corpus";
 import { loadTraditions, tagsFor, TRADITION_LABEL, getLoadedTraditions } from "@/engine/traditions";
 import { Provenance } from "@/kernel/Provenance";
@@ -69,16 +70,21 @@ export function Library() {
       />
 
       {tradReady ? (
-        <div className="gx-traditions" role="group" aria-label="Tradition filter">
-          {Object.entries(TRADITION_LABEL).map(([tag, label]) => (
-            <button
-              key={tag}
-              className={"gx-tradition" + (tradition === tag ? " is-active" : "")}
-              aria-pressed={tradition === tag}
-              onClick={() => setTradition(tradition === tag ? null : tag)}
-            >{label}</button>
-          ))}
-        </div>
+        <>
+          <div className="gx-traditions" role="group" aria-label="Tradition filter">
+            {Object.entries(TRADITION_LABEL).map(([tag, label]) => (
+              <button
+                key={tag}
+                className={"gx-tradition" + (tradition === tag ? " is-active" : "")}
+                aria-pressed={tradition === tag}
+                onClick={() => setTradition(tradition === tag ? null : tag)}
+              >{label}</button>
+            ))}
+          </div>
+          <p className="gx-book-tags-legend">
+            ⚬ each dot on a book row = one tradition includes it — hover for names
+          </p>
+        </>
       ) : null}
 
       <div className="gx-books">
@@ -109,14 +115,13 @@ export function Library() {
                     />
                     <span className="gx-book-name">{b.name}</span>
                     {tradReady && tagsFor(b.id).length ? (
-                      <span className="gx-book-tags" aria-hidden>
-                        {tagsFor(b.id).map((t) => (
-                          <i key={t} className="gx-book-tag" title={TRADITION_LABEL[t] ?? t}>
-                            {(TRADITION_LABEL[t] ?? t)[0]}
-                          </i>
-                        ))}
+                      <span
+                        className="gx-book-tags"
+                        title={tagsFor(b.id).map((t) => TRADITION_LABEL[t] ?? t).join(" · ")}
+                      >
+                        {tagsFor(b.id).map((t) => <i key={t} className="gx-book-tag" />)}
                       </span>
-                    ) : null}
+                    ) : <span />}
                     <span className="gx-book-meta">{active ? `${cursor.chapter} / ${b.chapters}` : b.chapters}</span>
                   </button>
                   {open ? (
@@ -164,11 +169,13 @@ export function Library() {
       {tradReady && getLoadedTraditions() ? (
         <Provenance label="CANON REGISTRY · OPEN-CANON" meta={getLoadedTraditions()!._meta} />
       ) : null}
-      <button
-        className="gx-library-close"
-        aria-label="Close library"
-        onClick={() => closePanel()}
-      >×</button>
+      {useInWindow() ? null : (
+        <button
+          className="gx-library-close"
+          aria-label="Close library"
+          onClick={() => closePanel()}
+        >×</button>
+      )}
     </div>
   );
 }

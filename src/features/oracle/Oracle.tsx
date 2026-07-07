@@ -6,6 +6,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useApp, setState, type OracleSettings, closePanel } from "@/kernel/store";
+import { useInWindow } from "@/shell/Windows";
 import { takeSeed } from "@/kernel/seeds";
 import { askOracleStream, listModels, probeLocal, cloudProvider, type OracleAnswer, type ChatTurn } from "@/engine/oracle";
 import { gradeClaims, type Citation } from "@/engine/claims";
@@ -269,7 +270,9 @@ export function Oracle() {
           </div>
         </>
       )}
-      <button className="gx-oracle-close" aria-label="Close oracle" onClick={() => closePanel()}>×</button>
+      {useInWindow() ? null : (
+        <button className="gx-oracle-close" aria-label="Close oracle" onClick={() => closePanel()}>×</button>
+      )}
     </div>
   );
 }

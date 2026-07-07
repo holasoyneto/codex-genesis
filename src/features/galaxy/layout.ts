@@ -65,6 +65,22 @@ export function verseKeyPos(id: string): { x: number; y: number } | null {
   return m ? versePos(m[1], +m[2], +m[3]) : null;
 }
 
+/** The canon ring's own center and radius, from the arc geometry itself
+    (not assumed to be world-origin — the spiral's start angle and turn
+    count make it asymmetric). Used to auto-fit the initial view and on
+    resize so the ring is always centered in the window (audit defect #3:
+    the ring rendered off-center, dead space top-left). */
+export function ringBBox(): { cx: number; cy: number; r: number } {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  const steps = 240;
+  for (let i = 0; i <= steps; i++) {
+    const p = spiral(i / steps, 46);
+    if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x;
+    if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
+  }
+  return { cx: (minX + maxX) / 2, cy: (minY + maxY) / 2, r: Math.max(maxX - minX, maxY - minY) / 2 };
+}
+
 export function bookArcs(): BookArc[] {
   return CANON.map((b) => {
     const { t0, t1 } = bookT.get(b.id)!;

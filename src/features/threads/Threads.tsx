@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useApp, closePanel } from "@/kernel/store";
+import { useInWindow } from "@/shell/Windows";
 import { Ref } from "@/kernel/Ref";
 import { Provenance } from "@/kernel/Provenance";
 import { bookById } from "@/engine/corpus";
@@ -60,11 +61,13 @@ export function Threads() {
           }}
         />
       </p>
-      <button
-        className="gx-threads-close"
-        aria-label="Close threads"
-        onClick={() => closePanel()}
-      >×</button>
+      {useInWindow() ? null : (
+        <button
+          className="gx-threads-close"
+          aria-label="Close threads"
+          onClick={() => closePanel()}
+        >×</button>
+      )}
     </div>
   );
 }

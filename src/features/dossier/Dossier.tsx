@@ -5,6 +5,7 @@
 
 import { useEffect, useState } from "react";
 import { useApp, goTo, openDossier, closePanel } from "@/kernel/store";
+import { useInWindow } from "@/shell/Windows";
 import { Ref } from "@/kernel/Ref";
 import { bookById } from "@/engine/corpus";
 import {
@@ -145,7 +146,9 @@ export function Dossier() {
           </footer>
         </>
       )}
-      <button className="gx-dossier-close" aria-label="Close dossier" onClick={() => closePanel()}>×</button>
+      {useInWindow() ? null : (
+        <button className="gx-dossier-close" aria-label="Close dossier" onClick={() => closePanel()}>×</button>
+      )}
     </div>
   );
 }

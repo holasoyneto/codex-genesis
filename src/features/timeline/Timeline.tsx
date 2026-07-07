@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { goTo, closePanel } from "@/kernel/store";
+import { useInWindow } from "@/shell/Windows";
 import { Provenance, type ProvenanceMeta } from "@/kernel/Provenance";
 import {
   loadTimeline, eventRef, yearLabel, ERA_LABEL, CONTESTED_ERAS, type TimelineEvent,
@@ -77,7 +78,9 @@ export function Timeline() {
           ) : null}
         </>
       )}
-      <button className="gx-tl-close" aria-label="Close timeline" onClick={() => closePanel()}>×</button>
+      {useInWindow() ? null : (
+        <button className="gx-tl-close" aria-label="Close timeline" onClick={() => closePanel()}>×</button>
+      )}
     </div>
   );
 }

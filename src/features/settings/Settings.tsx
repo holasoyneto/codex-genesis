@@ -3,6 +3,7 @@
 // instrument options live with their instruments.
 
 import { useApp, setState, type Settings as S, closePanel } from "@/kernel/store";
+import { useInWindow } from "@/shell/Windows";
 import "./settings.css";
 
 function set<K extends keyof S>(key: K, value: S[K]) {
@@ -87,11 +88,13 @@ export function Settings() {
         ><i /></button>
       </div>
 
-      <button
-        className="gx-settings-close"
-        aria-label="Close settings"
-        onClick={() => closePanel()}
-      >×</button>
+      {useInWindow() ? null : (
+        <button
+          className="gx-settings-close"
+          aria-label="Close settings"
+          onClick={() => closePanel()}
+        >×</button>
+      )}
     </div>
   );
 }

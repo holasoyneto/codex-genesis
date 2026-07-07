@@ -5,7 +5,7 @@
 // directly (transform / width / height) and commit to the store once, on
 // release. No dependency, no re-layout during motion.
 
-import { createContext, useEffect, useRef } from "react";
+import { createContext, useContext, useEffect, useRef } from "react";
 import {
   useApp, focusPanel, closePanel, setPanelGeo, getState, toggleReaderLink, type WinGeo,
 } from "@/kernel/store";
@@ -16,6 +16,15 @@ import "./windows.css";
     spawned more than once read their pin from here. null = the sacred
     center (the main reader outside any window). */
 export const WinContext = createContext<string | null>(null);
+
+/** True when rendering inside a desk WM window, which already owns a
+    title bar and the ONE close control. Features must not render their
+    own close chrome there (audit defect #1 — double close buttons); on
+    the palm sheet (no WinContext) the feature's own close/back affordance
+    is still needed since the sheet chrome is just a drag handle. */
+export function useInWindow(): boolean {
+  return useContext(WinContext) !== null;
+}
 
 const PAD = 8;            // breathing room to the shell's edges
 const TOP = 44;           // the trace strip stays sovereign

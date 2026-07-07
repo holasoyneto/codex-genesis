@@ -3,7 +3,10 @@
 .gx-reader {
   width: 100%;
   max-width: var(--scripture-measure);
-  padding: 28px 8px 64px;
+  /* .gx-scripture already reserves --chrome-bottom so the dock/pill can
+     never occlude the last verse (audit defect #2); this is just the
+     reader's own breathing room on top of that reserved clearance. */
+  padding: 28px 8px 24px;
 }
 
 .gx-reader-head {

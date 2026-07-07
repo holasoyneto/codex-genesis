@@ -3,6 +3,7 @@
 
 import { useApp, goTo, setState, getState, type Mark, closePanel } from "@/kernel/store";
 import { bookById } from "@/engine/corpus";
+import { useInWindow } from "@/shell/Windows";
 import "./marks.css";
 
 // Export — the study leaves the app as a clean, honest markdown product.
@@ -70,11 +71,13 @@ export function Marks() {
           ))}
         </ul>
       )}
-      <button
-        className="gx-marks-close"
-        aria-label="Close marks"
-        onClick={() => closePanel()}
-      >×</button>
+      {useInWindow() ? null : (
+        <button
+          className="gx-marks-close"
+          aria-label="Close marks"
+          onClick={() => closePanel()}
+        >×</button>
+      )}
     </div>
   );
 }

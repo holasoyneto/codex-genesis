@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { useApp, closePanel } from "@/kernel/store";
+import { useInWindow } from "@/shell/Windows";
 import { Ref } from "@/kernel/Ref";
 import { TRANSLATIONS, covers, getChapter, bookById } from "@/engine/corpus";
 import { parallelsAt, type ParallelHit } from "@/engine/synoptic";
@@ -77,11 +78,13 @@ export function Compare() {
           ))}
         </ul>
       )}
-      <button
-        className="gx-compare-close"
-        aria-label="Close compare"
-        onClick={() => closePanel()}
-      >×</button>
+      {useInWindow() ? null : (
+        <button
+          className="gx-compare-close"
+          aria-label="Close compare"
+          onClick={() => closePanel()}
+        >×</button>
+      )}
     </div>
   );
 }

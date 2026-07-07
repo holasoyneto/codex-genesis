@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { closePanel } from "@/kernel/store";
+import { useInWindow } from "@/shell/Windows";
 import { Provenance } from "@/kernel/Provenance";
 import { lemma, type LexResult } from "@/engine/lexicon";
 import { subscribeLemma, getLemma } from "./query";
@@ -67,7 +68,9 @@ export function Lexicon() {
           </footer>
         </article>
       )}
-      <button className="gx-lex-close" aria-label="Close lexicon" onClick={() => closePanel()}>×</button>
+      {useInWindow() ? null : (
+        <button className="gx-lex-close" aria-label="Close lexicon" onClick={() => closePanel()}>×</button>
+      )}
     </div>
   );
 }

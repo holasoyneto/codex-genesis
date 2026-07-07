@@ -30,6 +30,12 @@
 
   /* geometry */
   --edge-pad: 16px;
+  /* clearance the scripture column must reserve above the bottom edge
+     chrome (desk dock / palm pill) so the final verse is never occluded
+     (audit defect #2). Desk dock sits ~54px tall including its padding;
+     the palm pill is taller (44px min-height row + margins) and must
+     also clear the safe-area inset. */
+  --chrome-bottom: calc(54px + env(safe-area-inset-bottom, 0px));
   --radius: 10px;
   --radius-glass: 18px;
   --hairline: 1px solid var(--line);

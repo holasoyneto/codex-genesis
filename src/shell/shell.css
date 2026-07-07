@@ -21,8 +21,12 @@
   display: grid; justify-items: center; align-items: stretch;
   overflow-y: auto;
   /* reserve the edge strip so scripture chrome and the Trace can NEVER
-     collide — the clash class dies here, by layout */
-  padding: 44px var(--edge-pad) 0;
+     collide — the clash class dies here, by layout. The bottom reserves
+     --chrome-bottom so the dock/pill can never occlude the last verse
+     (audit defect #2); .gx-reader adds its own inner padding on top so
+     the final line always clears the chrome with room to breathe. */
+  padding: 44px var(--edge-pad) var(--chrome-bottom);
+  scroll-padding-bottom: var(--chrome-bottom);
 }
 
 .gx-edge {
@@ -123,7 +127,13 @@
 
 /* palm posture — same tree, tighter edges */
 @media (max-width: 880px) {
-  .gx-scripture { padding-top: 40px; }
+  .gx-scripture {
+    padding-top: 40px;
+    /* the palm pill is taller than the desk dock and floats above the
+       home-indicator safe area — reserve more room below. */
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    scroll-padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  }
   .gx-whisper-lane { top: auto; bottom: 18px; right: var(--edge-pad); }
 }
 
