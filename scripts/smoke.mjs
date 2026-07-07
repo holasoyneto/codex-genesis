@@ -1421,6 +1421,7 @@ try {
       [...document.querySelectorAll(".gx-dock-btn")].every((b) => !!b.querySelector(".gx-dock-label")?.textContent?.trim())
     );
     check("DESIGN §VI: dock items render visible text labels", dockLabelAudit);
+    await shot(page, "desk-dock-labels");
 
     // §VI — every window title bar carries the purpose subtitle.
     await page.evaluate(() => window.__CODEX_PANEL__.open("oracle"));
@@ -1431,6 +1432,12 @@ try {
     });
     check("DESIGN §VI: window title bar carries the purpose subtitle", titleAudit.hasPurposeNode, titleAudit.text);
     await page.evaluate(() => window.__CODEX_PANEL__.close("oracle"));
+
+    // desk-verse-menu — the labeled verb menu with hints, per DESIGN §I.4/§II.6.
+    await page.click(".gx-verse");
+    await page.waitForSelector(".gx-vmenu", { timeout: 5000 });
+    await shot(page, "desk-verse-menu");
+    await page.keyboard.press("Escape");
 
     await ctx.close();
   }
@@ -1488,6 +1495,12 @@ try {
     const { ctx, page } = await boot(390, 844, true);
     await page.waitForFunction(() => document.querySelectorAll(".gx-verse").length > 0, { timeout: 30000 });
     await sleep(200);
+    // palm-menu — the orb's full labeled menu sheet (glyph + NAME + purpose).
+    await page.click(".gx-dock-orb");
+    await page.waitForSelector(".gx-dock-menu", { timeout: 5000 });
+    await shot(page, "palm-menu");
+    await page.click(".gx-dock-orb");
+    await sleep(150);
     await page.evaluate(() => window.__CODEX_PANEL__.open("oracle"));
     await sleep(150);
     await page.evaluate(() => window.__CODEX_PANEL__.open("threads"));
@@ -1497,6 +1510,8 @@ try {
     }));
     check("DESIGN §VI: palm — opening sheet B replaces A, back bar shown",
       afterB.barText.includes("back") && afterB.barText.includes("Threads"), JSON.stringify(afterB));
+    // palm-back-stack — the universal back affordance, top-left, before use.
+    await shot(page, "palm-back-stack");
     await page.click(".gx-sheet-back");
     await sleep(150);
     const afterBack = await page.evaluate(() => document.querySelector(".gx-sheet-bar")?.textContent ?? "");
