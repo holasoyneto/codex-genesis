@@ -27,7 +27,10 @@ export function Settings() {
       <h2 className="gx-settings-title">SETTINGS</h2>
 
       <div className="gx-set-row">
-        <span className="gx-set-label">Theme</span>
+        <span className="gx-set-label">
+          Theme
+          <i className="gx-set-hint">auto follows your system; day and night are fixed</i>
+        </span>
         <div className="gx-seg" role="radiogroup" aria-label="Theme">
           {THEMES.map((t) => (
             <button
@@ -42,7 +45,10 @@ export function Settings() {
       </div>
 
       <div className="gx-set-row">
-        <label className="gx-set-label" htmlFor="gx-scale">Scripture size</label>
+        <label className="gx-set-label" htmlFor="gx-scale">
+          Scripture size
+          <i className="gx-set-hint">the reading column's text size, in pixels</i>
+        </label>
         <input
           id="gx-scale"
           type="range" min={16} max={26} step={1}
@@ -53,7 +59,10 @@ export function Settings() {
       </div>
 
       <div className="gx-set-row">
-        <span className="gx-set-label">Red letters</span>
+        <span className="gx-set-label">
+          Red letters
+          <i className="gx-set-hint">words attributed to Jesus render in red</i>
+        </span>
         <button
           className={"gx-switch" + (s.redLetter ? " is-on" : "")}
           role="switch" aria-checked={s.redLetter}
@@ -63,7 +72,10 @@ export function Settings() {
       </div>
 
       <div className="gx-set-row">
-        <span className="gx-set-label">The golden Name</span>
+        <span className="gx-set-label">
+          The golden Name
+          <i className="gx-set-hint">LORD/GOD render as יהוה in reverent gold</i>
+        </span>
         <button
           className={"gx-switch" + (s.divineName ? " is-on" : "")}
           role="switch" aria-checked={s.divineName}
@@ -73,7 +85,10 @@ export function Settings() {
       </div>
 
       <div className="gx-set-row">
-        <span className="gx-set-label">Entity names — quiet underlines</span>
+        <span className="gx-set-label">
+          Entity names — quiet underlines
+          <i className="gx-set-hint">named people and places open their Dossier on click</i>
+        </span>
         <button
           className={"gx-switch" + (s.entities ? " is-on" : "")}
           role="switch" aria-checked={s.entities}
@@ -83,7 +98,10 @@ export function Settings() {
       </div>
 
       <div className="gx-set-row">
-        <span className="gx-set-label">The Witness — local use ledger</span>
+        <span className="gx-set-label">
+          The Witness — local use ledger
+          <i className="gx-set-hint">records what you do, on this device only, never sent anywhere</i>
+        </span>
         <button
           className={"gx-switch" + (s.witness ? " is-on" : "")}
           role="switch" aria-checked={s.witness}
@@ -93,7 +111,10 @@ export function Settings() {
       </div>
 
       <div className="gx-set-row gx-set-sync">
-        <span className="gx-set-label">Your data — a file, not a wire (#72)</span>
+        <span className="gx-set-label">
+          Your data — a file, not a wire (#72)
+          <i className="gx-set-hint">export everything to a file, or restore from one — no account, no server</i>
+        </span>
         <div className="gx-set-sync-acts">
           <button className="gx-set-sync-btn" onClick={exportStore}>⇩ export store</button>
           <button className="gx-set-sync-btn" onClick={() => fileRef.current?.click()}>⇧ import store</button>
