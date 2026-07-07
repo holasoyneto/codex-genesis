@@ -397,6 +397,15 @@ provenance footers; a share URL rehydrates an investigation read-only.
 | 9 | Oracle-as-analyst II: missions + artifacts + council + claim grading; model/effort picker | #44, #48–49, #53–55, #90 |
 | 10 | Honesty layer hard gate (provenance panels, bias tags, banners, harness law) + dock + generated help + onboarding | #83–88, #96 |
 
+**Progress note (2026-07-07, v0.9.0 "The Glass Cathedral"):** sessions
+4–10 landed in one pass — fused graph + Galaxy (§2), workbench windows +
+<Ref> + history + grid picker (§3, investigations/trail deferred), the
+Oracle as analyst with kernel tools, streaming, transcript memory,
+visible tool chips, claim grading and a model/effort picker (§4; missions,
+artifacts and council deferred), dock/help/onboarding/export (§8
+essentials), plus the first §5 datasets: Strong's lexicon, timeline,
+synoptic parallels, canon-tradition tags — all provenance-stamped.
+
 Phases 5, 6 and 8 continue from session 11 onward, one dataset or one
 instrument per session, each landing with its smoke specs — the moat
 deepens weekly, under the same laws, until the name is earned.

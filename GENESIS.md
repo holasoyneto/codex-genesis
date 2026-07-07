@@ -100,16 +100,31 @@ What v1 got RIGHT — these are the crown jewels, and they port:
   as the reference until GENESIS surpasses it feature-by-feature).
 
 ## Port order (each step lands with smoke + screenshot proof)
-1. **Foundation** — tokens, Shell + regions, store + persistence, feature registry.
-2. **The Word** — corpus engine (registry, mirror chain, IndexedDB cache, baked
+1. ✅ **Foundation** — tokens, Shell + regions, store + persistence, feature registry.
+2. ✅ **The Word** — corpus engine (registry, mirror chain, IndexedDB cache, baked
    corpora) + the Reader (desk window + palm sheet, red-letter, divine name).
-3. **The door** — omnibar: ref parse → jump, verbs, feature index (generated).
-4. **The shelves** — library/translations (source lights, canons incl. beyond).
-5. **The instruments** — settings-from-registry, oracle + kernel tools, then
-   galaxy / sword / mirror / crossref web / map / timeline, one per session,
-   each molted per EXOGRAMMAR (instruments, not documents).
-6. **The skin** — PWA, Tauri shell (reuse v1's src-tauri lessons), MLX/New Siri
-   engines via the same server.js proxy pattern.
+3. ✅ **The door** — omnibar: ref parse → jump, verbs, feature index (generated).
+4. ✅ **The shelves** — library/translations (source lights, canons incl. beyond,
+   canon-tradition tags · v0.9.0).
+5. ◐ **The instruments** — settings-from-registry ✅, oracle + kernel tools ✅
+   (v0.9.0: streaming tool-use analyst with claim grading), galaxy ✅ (v0.9.0:
+   fused graph + canvas sky), timeline ✅, lexicon ✅ (v0.9.0); sword / mirror /
+   crossref web / map still to come, one per session, each molted per
+   EXOGRAMMAR (instruments, not documents).
+6. ◐ **The skin** — PWA ✅, iOS shell via Capacitor ✅ (v0.9.0 — `npx cap open
+   ios`); Tauri desk skin and MLX/New Siri engines still to come.
+
+### PALANTIR progress (v0.9.0 "The Glass Cathedral")
+Sessions 4–10 of ./PALANTIR.md landed in one pass: the fused graph
+(engine/graph.ts) + THE GALAXY; the analyst workbench (window manager,
+pivot-everywhere <Ref>, cursor history, grid picker); the Oracle as
+analyst (kernel tools, SSE streaming both engine families, transcript
+memory, visible tool chips, claim grading, model/effort picker); reach
+(registry-generated dock + help, onboarding whispers, marks export); and
+the fusion datasets (Strong's lexicon, timeline, synoptic parallels,
+canon traditions) — every dataset with a _meta provenance block and a
+provenance chip in the UI. Investigations/trails, council mode, missions
+with artifacts, and share-URLs remain open (PALANTIR §3/§4/§8).
 
 ## What we deliberately do NOT rebuild
 - BabelForge (v1 README vaporware) — stays unbuilt until it can be real.
