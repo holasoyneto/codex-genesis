@@ -53,7 +53,36 @@ palm, both themes, plus one shot per new instrument: `desk-dark` /
 `desk-light`, `studio-dark` / `studio-light`, `desk-omnibar`,
 `desk-library`, `desk-dossier`, `desk-galaxy`, `desk-investigation`,
 `desk-investigation-share`, `desk-mission`, `desk-council`, `palm-pill`,
-`palm-dark`, `palm-390-light`, `palm-investigation`.
+`palm-dark`, `palm-390-light`, `palm-investigation`, and (v1.1.0, "the
+legible cathedral") `desk-dock-labels`, `desk-verse-menu`, `palm-menu`,
+`palm-back-stack`.
+
+## The vocabulary (v1.1.0)
+
+v1.0 spoke in glyphs alone; a beautiful mark with no word under it is a
+hieroglyph, not an interface. [DESIGN.md](./DESIGN.md) is the usability
+constitution that fixes this — every rule in it is enforced by a smoke
+spec, not just written down:
+
+- **One verb lexicon** (`src/kernel/lexicon.ts`) — Read · Threads ·
+  Compare · Mark · Ask · Case · Copy · Share · Export · Settings ·
+  Dossier, each a fixed glyph + small-caps word + hint, imported by every
+  surface that offers the act (Ref pills, the verse menu, the dossier,
+  the omnibar). The same act never has two names again.
+- **Every feature declares a `purpose`** (≤ 60 plain words, e.g. Threads
+  — "what other verses say about this one") in its manifest — reused
+  verbatim by the dock, the window title bar, Help, and the omnibar
+  index. A feature without one is a build error; two features sharing a
+  glyph is a build error (`src/kernel/registry.ts`).
+- **The dock is labeled** — desk: glyph + name always visible beneath
+  it, plus an open-state dot; palm: the orb opens a full glass menu
+  sheet, one row per instrument (glyph + NAME + purpose).
+- **The palm is monotasking** — one sheet at a time; opening a second
+  pushes the first onto a back stack, and a universal `‹ back`/`× close`
+  bar sits top-left of every sheet, always.
+- **Empty states teach** — one sentence + one concrete action, never a
+  blank pane; destructive acts (clear the Witness ledger, delete a case)
+  confirm in place, two steps, no browser `confirm()`.
 
 ## Bring your own frontier key
 
@@ -103,6 +132,7 @@ not. No signing or store setup is attempted by the repo.
 | Timeline (206 events) | conventional scholarly dating (Thiele; consensus NT) | curated, redistributed; CONTESTED-stamped where traditional |
 | Synoptic parallels (79 pericopes) | traditional pericope alignment | curated, redistributed |
 | Canon-tradition tags (104 books) | open-canon registry (metadata only) | factual metadata |
+| CODEX · The Open Canon (Gen 1, Jhn 1 — 82 verses) | `codex-open-canon` project, public-safe subset only (`scripts/import-open-canon.mjs`) | public-domain/CC-BY witnesses underneath; gated/ungated honesty rendering in-app |
 
 Every dataset ships with a `_meta` provenance block, rendered in-app as a
 provenance chip. Scripture is sacred; the Oracle can err — Scripture is

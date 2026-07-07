@@ -141,6 +141,27 @@ mark`). Also: every AUDIT-0.9.0 defect fixed (see
 scratch_audit/AUDIT-0.9.0.md § RESOLVED), plus a focus trap, aria-labels
 on every icon-only control, and a hover-lift micro-delight pass.
 
+### v1.1.0 "The Legible Cathedral" — DESIGN.md, the usability constitution
+v1.0.0 was beautiful and spoke in hieroglyphs: bare glyphs with no word
+under them, a duplicated ❖ (Desk/Library), no purpose anywhere, palm
+sheets with no way back to the one you just left. DESIGN.md (./DESIGN.md)
+is the new law this session applies whole: the one verb lexicon
+(`src/kernel/lexicon.ts`), a required `purpose` on every manifest with
+build-time glyph-uniqueness and purpose-length enforcement in
+`registry.ts`, a labeled dock (desk: name under glyph + open-state dot;
+palm: the orb opens a full glass menu sheet), window title purpose
+subtitles, hinted menus everywhere, teaching empty states, two-step
+in-place confirms on every destructive act, and — the load-bearing fix —
+a real palm back-stack (`panelStack` in the one store) so monotasking
+means what it says: one sheet, ever, with a universal `‹ back`/`× close`
+top-left. A live audit (scratch_audit/AUDIT-1.0-usability.md) found
+`openDossier`/`openReader` bypassing that stack entirely; both are fixed
+and the harness now checks "exactly one sheet on palm" after every single
+open, from every documented door, as a standing invariant — not a one-off
+spec. Also new: CODEX · The Open Canon, a small honestly-gated
+translation (`scripts/import-open-canon.mjs`) proving the gate/ungated/
+gap rendering pattern for future canon work.
+
 ## What we deliberately do NOT rebuild
 - BabelForge (v1 README vaporware) — stays unbuilt until it can be real.
 - Canon Loop — blueprint still awaits explicit user approval.
