@@ -19,6 +19,7 @@ import { bookById } from "@/engine/corpus";
 import { Trace } from "./Trace";
 import { Dock } from "./Dock";
 import { Windows } from "./Windows";
+import { PalmNav } from "./PalmNav";
 import { dispatchKey } from "./keymap";
 import "./shell.css";
 
@@ -140,6 +141,24 @@ function Veil() {
 
 export function Shell({ children }: { children: React.ReactNode }) {
   useTheme();
+  const palm = usePalm();
+  const [immersed, setImmersed] = useState(false);
+  // Immersive reading (palm): chrome yields on scroll-down, returns on
+  // scroll-up or a touch. Scripture fills the screen.
+  useEffect(() => {
+    if (!palm) { setImmersed(false); return; }
+    const el = document.querySelector(".gx-scripture");
+    if (!el) return;
+    let last = el.scrollTop;
+    const onScroll = () => {
+      const y = el.scrollTop;
+      if (y > last + 6 && y > 64) setImmersed(true);
+      else if (y < last - 6 || y <= 64) setImmersed(false);
+      last = y;
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [palm]);
   const zen = useApp((s) => s.zen);
   const hideReader = useApp((s) => s.hideReader);
   // Zen restores the Word — a hidden reader and zen cannot coexist.
@@ -202,13 +221,20 @@ export function Shell({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div className={"gx-shell" + (zen ? " is-zen" : "") + (hideReader ? " is-noreader" : "")}>
+    <div
+      className={
+        "gx-shell" + (zen ? " is-zen" : "") + (hideReader ? " is-noreader" : "") +
+        (immersed && !zen ? " is-immersed" : "")
+      }
+      onPointerDown={immersed ? () => setImmersed(false) : undefined}
+    >
       <div className="gx-wallpaper" aria-hidden />
       <main className="gx-scripture">{children}</main>
       <Instruments />
       <div className="gx-edge">
         <Trace />
         <Dock />
+        {palm ? <PalmNav /> : null}
       </div>
       <WhisperLane />
       <Veil />

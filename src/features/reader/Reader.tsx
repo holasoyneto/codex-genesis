@@ -110,7 +110,7 @@ function VerseMenu({ refc, text, entityIds, flip, onClose, onNav }: {
   onNav: (patch: Partial<Cursor>) => void;
 }) {
   const [readers, setReaders] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLSpanElement>(null);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     const onDown = (e: PointerEvent) => {
@@ -124,7 +124,7 @@ function VerseMenu({ refc, text, entityIds, flip, onClose, onNav }: {
   const go = () => goTo({ ...refc });
   const act = (fn: () => void) => () => { fn(); onClose(); };
   return (
-    <div ref={rootRef} className={"gx-vmenu glass gx-enter" + (flip ? " is-flip" : "")} role="menu" aria-label={`Verse ${refc.verse}`}>
+    <span ref={rootRef} className={"gx-vmenu glass gx-enter" + (flip ? " is-flip" : "")} role="menu" aria-label={`Verse ${refc.verse}`}>
       <button role="menuitem" onClick={act(() => { go(); openPanel("compare"); })}>⇄ compare translations</button>
       <button role="menuitem" onClick={act(() => { go(); openPanel("threads"); })}>⛬ threads</button>
       <button role="menuitem" onClick={act(() => {
@@ -146,15 +146,15 @@ function VerseMenu({ refc, text, entityIds, flip, onClose, onNav }: {
         onClick={() => setReaders((r) => !r)}
       >☰ open in new reader…</button>
       {readers ? (
-        <div className="gx-vmenu-sub" role="menu">
+        <span className="gx-vmenu-sub" role="menu">
           {TRANSLATIONS.filter((t) => t.bundled).map((t) => (
             <button key={t.id} role="menuitem" onClick={act(() => { onNav({ ...refc }); openReader(t.id); })}>
               {t.name} <span className="gx-vmenu-lang">{t.lang}</span>
             </button>
           ))}
-        </div>
+        </span>
       ) : null}
-    </div>
+    </span>
   );
 }
 
@@ -238,6 +238,22 @@ export function Reader() {
   const [ontReady, setOntReady] = useState(false);
   const book = bookById.get(cursor.bookId);
 
+  // Swipe turns the chapter (touch, main reader) — a page under the thumb.
+  const swipe = useRef<{ x: number; y: number; id: number } | null>(null);
+  const onSwipeStart = (e: React.PointerEvent) => {
+    if (winId || e.pointerType !== "touch") return;
+    swipe.current = { x: e.clientX, y: e.clientY, id: e.pointerId };
+  };
+  const onSwipeEnd = (e: React.PointerEvent) => {
+    const sw = swipe.current;
+    swipe.current = null;
+    if (!sw || sw.id !== e.pointerId || !book) return;
+    const dx = e.clientX - sw.x, dy = e.clientY - sw.y;
+    if (Math.abs(dx) < 64 || Math.abs(dx) < Math.abs(dy) * 1.6) return;
+    const next = cursor.chapter + (dx < 0 ? 1 : -1);
+    if (next >= 1 && next <= book.chapters) nav({ chapter: next, verse: null });
+  };
+
   // Warm the ontology once; a re-render swaps text for chips when it lands.
   useEffect(() => {
     if (!entities) return;
@@ -320,6 +336,8 @@ export function Reader() {
       className="gx-reader"
       style={{ ["--scripture-size" as string]: `${scriptureScale}px` }}
       aria-label={`${book.name} ${cursor.chapter}`}
+      onPointerDown={onSwipeStart}
+      onPointerUp={onSwipeEnd}
     >
       <header className="gx-reader-head">
         <button

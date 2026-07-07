@@ -2,6 +2,7 @@ import { registerFeature } from "@/kernel/registry";
 import { getState, goTo, setState, openReader } from "@/kernel/store";
 import { TRANSLATIONS } from "@/engine/corpus";
 import { Reader } from "./Reader";
+import { NavSheet } from "./NavSheet";
 
 // T — cycle the main reader through the registry's voices.
 const cycleTranslation = () => {
@@ -17,7 +18,7 @@ registerFeature({
   title: "Reader",
   keybinding: "← → · B · ⌘[ ⌘]",
   help: "the sacred center — arrows turn chapters, B keeps a verse, ⌘[ ⌘] walk the ledger",
-  surfaces: { main: Reader },
+  surfaces: { main: Reader, veil: NavSheet },
   commands: [
     {
       phrase: "translation",

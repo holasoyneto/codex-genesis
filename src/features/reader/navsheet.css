@@ -1,0 +1,78 @@
+.gx-navsheet {
+  width: min(560px, calc(100vw - 2 * var(--edge-pad)));
+  max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.gx-navsheet-top {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: var(--hairline);
+}
+.gx-navsheet-top .gx-instrument-title { flex: 1; }
+.gx-navsheet-size { display: flex; align-items: center; gap: 6px; }
+.gx-navsheet-size button {
+  min-width: 40px; min-height: 40px;
+  font-size: 13px;
+  color: var(--fg-dim);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.gx-navsheet-size button:hover { color: var(--fg); }
+.gx-navsheet-px { font-family: var(--mono); font-size: 10px; color: var(--fg-dim); }
+.gx-navsheet-x { min-width: 40px; min-height: 40px; font-size: 18px; color: var(--fg-dim); }
+
+.gx-navsheet-list {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px 8px calc(10px + env(safe-area-inset-bottom, 0px));
+  scrollbar-width: thin;
+}
+.gx-navsheet-shelf {
+  margin: 12px 8px 4px;
+  font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.16em;
+  color: var(--gold);
+}
+.gx-navsheet-row {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; text-align: left;
+  min-height: 46px;
+  padding: 0 10px;
+  border-radius: 10px;
+  font-size: 15px;
+}
+.gx-navsheet-row:active, .gx-navsheet-row:hover { background: color-mix(in oklab, var(--fg) 7%, transparent); }
+.gx-navsheet-row.is-active .gx-navsheet-name { color: var(--gold); }
+.gx-navsheet-name { flex: 1; }
+.gx-navsheet-lang { font-family: var(--mono); font-size: 9.5px; color: var(--fg-dim); }
+.gx-navsheet-dot { color: var(--gold); font-size: 8px; }
+
+.gx-navsheet-back {
+  flex: none;
+  text-align: left;
+  padding: 10px 16px;
+  min-height: 44px;
+  font-size: 13px;
+  color: var(--accent);
+}
+.gx-navsheet-grid {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+  gap: 6px;
+  padding: 10px 14px calc(14px + env(safe-area-inset-bottom, 0px));
+}
+.gx-navsheet-ch {
+  min-height: 46px;
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.gx-navsheet-ch.is-active { color: var(--gold); border-color: color-mix(in oklab, var(--gold) 50%, transparent); }

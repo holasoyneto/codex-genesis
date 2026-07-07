@@ -1,0 +1,37 @@
+/* the pill — bottom-center, above the home indicator, always reachable */
+.gx-pill {
+  position: absolute;
+  left: 50%;
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: stretch;
+  border-radius: 999px;
+  pointer-events: auto;
+  overflow: hidden;
+}
+.gx-pill-place, .gx-pill-voice {
+  min-height: 44px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg);
+  white-space: nowrap;
+}
+.gx-pill-voice {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  padding: 0 14px;
+}
+.gx-pill-sep { width: 1px; background: var(--line); margin: 8px 0; }
+
+/* immersive reading — chrome yields to the Word on scroll-down */
+.gx-shell.is-immersed .gx-edge,
+.gx-shell.is-immersed .gx-whisper-lane {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-exit) var(--ease-enter);
+}
+.gx-edge { transition: opacity var(--dur-enter) var(--ease-enter); }

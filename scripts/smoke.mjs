@@ -779,6 +779,141 @@ try {
     await ctx.close();
   }
 
+  // ── the verse's menu · readers · voices · hide (v0.9.0 late molt) ────
+  {
+    const { ctx, page } = await boot(1680, 1050);
+    await page.waitForFunction(() => document.querySelectorAll(".gx-verse").length > 0, { timeout: 30000 });
+    await sleep(300);
+
+    // clicking a verse opens its glass menu, fully inside the viewport
+    await page.click(".gx-verse");
+    await page.waitForSelector(".gx-vmenu", { timeout: 5000 });
+    const vm = await page.evaluate(() => {
+      const b = document.querySelector(".gx-vmenu").getBoundingClientRect();
+      const items = [...document.querySelectorAll(".gx-vmenu > button")].map((x) => x.textContent);
+      return { inView: b.top >= 0 && b.bottom <= innerHeight && b.left >= 0 && b.right <= innerWidth, items };
+    });
+    check("verse menu: opens in-viewport with the full verb set",
+      vm.inView && ["compare", "threads", "mark", "copy", "Oracle", "new reader"].every((k) => vm.items.some((i) => i.includes(k))),
+      JSON.stringify(vm.items));
+    await page.keyboard.press("Escape");
+    await sleep(200);
+    const vmGone = await page.evaluate(() => !document.querySelector(".gx-vmenu"));
+    check("verse menu: escape dismisses", vmGone);
+
+    // a menu near the fold flips upward and stays visible
+    await page.evaluate(() => {
+      const vv = document.querySelectorAll(".gx-verse");
+      vv[vv.length - 1].scrollIntoView({ block: "end" });
+    });
+    await sleep(200);
+    await page.evaluate(() => {
+      const vv = document.querySelectorAll(".gx-verse");
+      vv[vv.length - 1].click();
+    });
+    await page.waitForSelector(".gx-vmenu", { timeout: 5000 });
+    const flipped = await page.evaluate(() => {
+      const b = document.querySelector(".gx-vmenu").getBoundingClientRect();
+      return b.top >= 0 && b.bottom <= innerHeight;
+    });
+    check("verse menu: flips near the fold, never clipped", flipped);
+    await page.keyboard.press("Escape");
+
+    // "reader wlc": a second reader pinned to the Hebrew, link toggle live
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "reader wlc");
+    await sleep(250);
+    await page.keyboard.press("Enter");
+    await page.waitForSelector('.gx-win[data-win="reader@wlc"]', { timeout: 10000 });
+    const pinned = await page.evaluate(() => ({
+      title: document.querySelector('.gx-win[data-win="reader@wlc"] .gx-win-title')?.textContent,
+      linked: document.querySelector('.gx-win[data-win="reader@wlc"] .gx-win-link')?.classList.contains("is-linked"),
+    }));
+    check("readers: 'reader wlc' spawns a pinned window with a link toggle",
+      /WLC/.test(pinned.title || "") && pinned.linked === true, JSON.stringify(pinned));
+    // detach, walk the main reader, the pinned window stays put
+    await page.click('.gx-win[data-win="reader@wlc"] .gx-win-link');
+    await sleep(200);
+    const beforeWalk = await page.evaluate(() => document.querySelector('.gx-win[data-win="reader@wlc"] .gx-reader-title')?.textContent);
+    await page.keyboard.press("ArrowRight");
+    await sleep(700);
+    const afterWalk = await page.evaluate(() => document.querySelector('.gx-win[data-win="reader@wlc"] .gx-reader-title')?.textContent);
+    check("readers: unlinked window keeps its own place", beforeWalk === afterWalk, JSON.stringify({ beforeWalk, afterWalk }));
+    await page.evaluate(() => window.__CODEX_PANEL__.close("reader@wlc"));
+
+    // the translation chip switches the voice in place
+    await page.click(".gx-scripture .gx-trans-chip");
+    await page.waitForSelector(".gx-trans-pop", { timeout: 5000 });
+    await page.evaluate(() => [...document.querySelectorAll(".gx-trans-row")].find((r) => /World English/.test(r.textContent)).click());
+    await page.waitForFunction(() => /WEB/.test(document.querySelector(".gx-served")?.textContent || ""), { timeout: 20000 });
+    check("reader: the translation chip switches voices in place", true);
+
+    // hide reader: the sacred center yields, then returns
+    for (const _ of [1, 2]) {
+      await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+      await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+      await page.type(".gx-omni-input", "hide reader");
+      await sleep(250);
+      await page.keyboard.press("Enter");
+      await sleep(250);
+      if (_ === 1) {
+        const hidden = await page.evaluate(() => getComputedStyle(document.querySelector(".gx-scripture")).opacity === "0");
+        check("hide reader: the column yields the desk", hidden);
+      }
+    }
+    const restored = await page.evaluate(() => getComputedStyle(document.querySelector(".gx-scripture")).opacity !== "0");
+    check("hide reader: toggling back restores the Word", restored);
+
+    check("late molt desk: zero js errors", page.jsErrors.length === 0, JSON.stringify(page.jsErrors.slice(0, 3)));
+    await ctx.close();
+  }
+
+  // ── the palm pill — YouVersion-bar navigation ─────────────────────────
+  {
+    const { ctx, page } = await boot(390, 844, true);
+    await page.waitForFunction(() => document.querySelectorAll(".gx-verse").length > 0, { timeout: 30000 });
+    await sleep(300);
+    const pill = await page.evaluate(() => {
+      const b = document.querySelector(".gx-pill")?.getBoundingClientRect();
+      return b ? { bottomGap: innerHeight - b.bottom, inView: b.left >= 0 && b.right <= innerWidth } : null;
+    });
+    check("palm pill: present, centered, above the home indicator", !!pill && pill.bottomGap >= 8 && pill.inView, JSON.stringify(pill));
+
+    // two taps to any chapter: pill → book → chapter
+    await page.tap(".gx-pill-place");
+    await page.waitForSelector(".gx-navsheet", { timeout: 5000 });
+    const shelves = await page.evaluate(() => document.querySelectorAll(".gx-navsheet-shelf").length);
+    check("palm pill: the book sheet opens with canon sections", shelves >= 3, `${shelves} shelves`);
+    await page.evaluate(() => [...document.querySelectorAll(".gx-navsheet-row")].find((r) => /^Psalms/.test(r.textContent)).click());
+    await page.waitForSelector(".gx-navsheet-ch", { timeout: 5000 });
+    await page.evaluate(() => [...document.querySelectorAll(".gx-navsheet-ch")].find((c) => c.textContent === "23").click());
+    await page.waitForFunction(() => /Psalms\s*23/.test(document.querySelector(".gx-reader-title")?.textContent?.replace(/\s+/g, " ") || ""), { timeout: 20000 });
+    check("palm pill: two taps reach Psalm 23", true);
+
+    // one tap to any voice
+    await page.tap(".gx-pill-voice");
+    await page.waitForSelector(".gx-navsheet", { timeout: 5000 });
+    const voices = await page.evaluate(() => document.querySelectorAll(".gx-navsheet-row").length);
+    check("palm pill: the voices sheet lists every translation", voices >= 8, `${voices} voices`);
+    await page.evaluate(() => [...document.querySelectorAll(".gx-navsheet-row")].find((r) => /World English/.test(r.textContent)).click());
+    await page.waitForFunction(() => /WEB/.test(document.querySelector(".gx-pill-voice")?.textContent || ""), { timeout: 20000 });
+    check("palm pill: one tap switches the voice", true);
+
+    // A+ grows the type
+    await page.tap(".gx-pill-place");
+    await page.waitForSelector(".gx-navsheet-size", { timeout: 5000 });
+    const s1 = await page.evaluate(() => Number(document.querySelector(".gx-navsheet-px").textContent));
+    await page.tap('.gx-navsheet-size button[aria-label="Larger text"]');
+    await sleep(200);
+    const s2 = await page.evaluate(() => Number(document.querySelector(".gx-navsheet-px").textContent));
+    check("palm pill: A+ grows the type", s2 === s1 + 1, `${s1} → ${s2}`);
+    await page.tap(".gx-navsheet-x");
+    check("palm pill: zero js errors", page.jsErrors.length === 0, JSON.stringify(page.jsErrors.slice(0, 3)));
+    await shot(page, "palm-pill");
+    await ctx.close();
+  }
+
   // ── onboarding: three invitations on a genuinely fresh boot ───────────
   {
     const { ctx, page } = await boot(1680, 1050, false, { freshOnboarding: true });
