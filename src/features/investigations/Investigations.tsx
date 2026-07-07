@@ -111,12 +111,30 @@ function CaseList({ cases, onOpen }: { cases: Investigation[]; onOpen: (id: stri
                 <span className="gx-inv-row-title">{c.title}</span>
                 <span className="gx-inv-row-meta">{c.items.length} item{c.items.length === 1 ? "" : "s"} · {new Date(c.created).toLocaleDateString()}</span>
               </button>
-              <button className="gx-inv-row-del" aria-label={`Delete case ${c.title}`} onClick={() => deleteInvestigation(c.id)}>✕</button>
+              <CaseDeleteButton c={c} />
             </li>
           ))}
         </ul>
       )}
     </div>
+  );
+}
+
+// DESIGN §V.15 — destructive acts are two-step, confirmed IN PLACE (no
+// browser confirm()). A second click within the same row commits; a
+// click elsewhere or a second look cancels via the CANCEL button.
+function CaseDeleteButton({ c }: { c: Investigation }) {
+  const [confirm, setConfirm] = useState(false);
+  if (confirm) {
+    return (
+      <span className="gx-inv-row-del-confirm">
+        <button className="gx-inv-row-del is-danger" aria-label={`Confirm delete case ${c.title}`} onClick={() => deleteInvestigation(c.id)}>DELETE</button>
+        <button className="gx-inv-row-del-cancel" aria-label="Cancel delete" onClick={() => setConfirm(false)}>CANCEL</button>
+      </span>
+    );
+  }
+  return (
+    <button className="gx-inv-row-del" aria-label={`Delete case ${c.title}`} onClick={() => setConfirm(true)}>✕</button>
   );
 }
 

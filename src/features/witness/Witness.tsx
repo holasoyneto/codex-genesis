@@ -12,6 +12,7 @@ import "./witness.css";
 export function Witness() {
   const on = useApp((s) => s.settings.witness);
   const [, bump] = useState(0);
+  const [confirmClear, setConfirmClear] = useState(false);
   const rows = summary();
   const total = ledger().length;
   return (
@@ -30,11 +31,28 @@ export function Witness() {
             <span className="gx-witness-last">{r.last}</span>
           </li>
         ))}
-        {!rows.length ? <li className="gx-witness-row"><span className="gx-witness-last">nothing yet</span></li> : null}
+        {!rows.length ? (
+          <li className="gx-witness-row gx-witness-empty">
+            {/* DESIGN §I.5 — one sentence + one concrete action, never blank. */}
+            <span className="gx-witness-last">
+              Nothing recorded yet — read a chapter or open an instrument and
+              this ledger will start filling in.
+            </span>
+          </li>
+        ) : null}
       </ul>
       <div className="gx-witness-acts">
         <button className="gx-witness-act" onClick={() => exportLedger()}>⬇ EXPORT</button>
-        <button className="gx-witness-act" onClick={() => { clearLedger(); bump((n) => n + 1); }}>⌫ CLEAR</button>
+        {/* DESIGN §V.15 — destructive acts are two-step, confirmed in place. */}
+        {confirmClear ? (
+          <span className="gx-witness-confirm">
+            <span className="gx-witness-confirm-q">Clear the whole ledger?</span>
+            <button className="gx-witness-act is-danger" onClick={() => { clearLedger(); bump((n) => n + 1); setConfirmClear(false); }}>⌫ YES, CLEAR</button>
+            <button className="gx-witness-act" onClick={() => setConfirmClear(false)}>CANCEL</button>
+          </span>
+        ) : (
+          <button className="gx-witness-act" onClick={() => setConfirmClear(true)}>⌫ CLEAR</button>
+        )}
         <button
           className="gx-witness-act"
           onClick={() => setState((s) => ({ settings: { ...s.settings, witness: !on } }))}

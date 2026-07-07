@@ -352,11 +352,16 @@ export function resetLayout(): void {
   setState((s) => ({ wm: { ...s.wm, geo: {} } }));
 }
 
-/** Spawn (or focus) a reader window pinned to a translation. */
+/** Spawn (or focus) a reader window pinned to a translation. DESIGN §IV.11
+    — this is still just "open a panel," so it must go through the SAME
+    back-stack bookkeeping as openPanel(), or palm ends up with two sheets
+    alive and no way back to the first (the exact bug class this law
+    exists to prevent). */
 export function openReader(translation: string): void {
   const id = `reader@${translation}`;
   setState((s) => ({
     panel: id,
+    panelStack: s.panel && s.panel !== id ? [...s.panelStack, s.panel] : s.panelStack,
     readers: {
       ...s.readers,
       [id]: s.readers[id] ?? {
@@ -390,12 +395,14 @@ export function openVeil(feature: string, seed?: string): void {
 export function closeVeil(): void { setState({ veil: null }); }
 
 // Open the Dossier on an entity — the one gesture that makes a name a door.
-// The veil (omnibar) yields; an instrument takes the floor.
+// The veil (omnibar) yields; an instrument takes the floor. Same back-stack
+// bookkeeping as openPanel() — DESIGN §IV.11 (see openReader's note above).
 export function openDossier(entityId: string): void {
   setState((s) => ({
     entity: entityId,
     veil: null,
     panel: "dossier",
+    panelStack: s.panel && s.panel !== "dossier" ? [...s.panelStack, s.panel] : s.panelStack,
     wm: { ...s.wm, open: [...s.wm.open.filter((x) => x !== "dossier"), "dossier"] },
   }));
 }

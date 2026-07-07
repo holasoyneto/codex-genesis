@@ -142,7 +142,11 @@ export function Dossier() {
                 ) : null}
               </>
             ) : (
-              <p className="gx-dos-none">No mentions in the seeded books yet.</p>
+              <p className="gx-dos-none">
+                {/* DESIGN §I.5 */}
+                No mentions found in the books scanned so far — try Search
+                to look for this name across the whole canon.
+              </p>
             )}
           </section>
 

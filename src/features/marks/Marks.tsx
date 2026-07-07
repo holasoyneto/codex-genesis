@@ -49,7 +49,10 @@ export function Marks() {
       ) : null}
       {!marks.length ? (
         <p className="gx-marks-empty">
-          Nothing kept yet — focus a verse and press <b>B</b>.
+          {/* DESIGN §I.5 — one sentence teaching what this is, one concrete
+              action, never a blank pane. */}
+          Marks are verses you keep for later — open any verse's menu and
+          choose <b>Mark</b>, or focus a verse in the reader and press <b>B</b>.
         </p>
       ) : (
         <ul className="gx-marks-rows">

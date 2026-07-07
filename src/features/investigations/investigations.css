@@ -30,6 +30,18 @@
 .gx-inv-row-meta { font-family: var(--mono); font-size: 9.5px; color: var(--fg-dim); }
 .gx-inv-row-del { width: 26px; height: 26px; border-radius: 6px; color: var(--fg-dim); font-size: 11px; flex: none; }
 .gx-inv-row-del:hover { color: var(--red-letter); }
+/* DESIGN §V.15 — two-step delete confirm, in place. */
+.gx-inv-row-del-confirm { display: flex; gap: 4px; flex: none; }
+.gx-inv-row-del.is-danger {
+  width: auto; padding: 0 8px;
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em;
+  color: var(--red-letter); border: 1px solid color-mix(in oklab, var(--red-letter) 50%, transparent);
+}
+.gx-inv-row-del-cancel {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em;
+  color: var(--fg-dim); padding: 0 8px; height: 26px; border-radius: 6px;
+}
+.gx-inv-row-del-cancel:hover { color: var(--fg); }
 
 .gx-inv-case-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
 .gx-inv-back { font-family: var(--mono); font-size: 10.5px; color: var(--fg-dim); padding: 4px 6px; }

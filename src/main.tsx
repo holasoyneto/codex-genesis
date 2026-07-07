@@ -40,7 +40,7 @@ declare global {
   interface Window {
     __CODEX_READY__?: boolean;
     CODEX_KERNEL?: { call: typeof callTool; tools: string[] };
-    __CODEX_FEATURES__?: { id: string; title: string; main: boolean }[];
+    __CODEX_FEATURES__?: { id: string; title: string; glyph: string; purpose: string; main: boolean }[];
     __CODEX_PANEL__?: { open: (id: string) => void; close: (id?: string) => void };
     CODEX_SHARE?: { shareUrl: typeof shareUrl; decodeShare: typeof decodeShare };
   }
@@ -120,5 +120,5 @@ if ("serviceWorker" in navigator && import.meta.env.PROD) {
   }
 }
 
-window.__CODEX_FEATURES__ = allFeatures().map((f) => ({ id: f.id, title: f.title, main: !!f.surfaces.main }));
+window.__CODEX_FEATURES__ = allFeatures().map((f) => ({ id: f.id, title: f.title, glyph: f.glyph, purpose: f.purpose, main: !!f.surfaces.main }));
 window.__CODEX_READY__ = true;
