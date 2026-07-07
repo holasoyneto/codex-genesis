@@ -2,9 +2,13 @@
 // console chrome inside the column: navigation is quiet marginal arrows,
 // instruments live at the edges, the omnibar is the door.
 
-import { useEffect, useState } from "react";
-import { useApp, goTo, setState, openDossier, openPanel } from "@/kernel/store";
-import { getChapter, bookById, BOOKS, type Chapter } from "@/engine/corpus";
+import { useContext, useEffect, useRef, useState } from "react";
+import {
+  useApp, goTo, setState, openDossier, openPanel, openReader, whisper, type Cursor,
+} from "@/kernel/store";
+import { setSeed } from "@/kernel/seeds";
+import { WinContext } from "@/shell/Windows";
+import { getChapter, bookById, BOOKS, TRANSLATIONS, covers, type Chapter } from "@/engine/corpus";
 import { record } from "@/kernel/witness";
 import { loadOntology, getLoadedOntology, chapterMentions, type Mention } from "@/engine/ontology";
 import { redLetterVerses } from "./redletter";
@@ -64,7 +68,7 @@ function VerseBody({ text, mentions, divineName }: {
 
 // The grid picker — one gesture from the title to any chapter of any book.
 // A glass popover inside the reader's own header (the shell still owns space).
-function Picker({ bookId, onDone }: { bookId: string; onDone: () => void }) {
+function Picker({ bookId, onDone, onGo = goTo }: { bookId: string; onDone: () => void; onGo?: (p: Partial<Cursor>) => void }) {
   const [pick, setPick] = useState(bookId);
   const book = bookById.get(pick);
   useEffect(() => {
@@ -88,7 +92,7 @@ function Picker({ bookId, onDone }: { bookId: string; onDone: () => void }) {
           <button
             key={i}
             className="gx-picker-ch"
-            onClick={() => { goTo({ bookId: pick, chapter: i + 1, verse: null }); onDone(); }}
+            onClick={() => { onGo({ bookId: pick, chapter: i + 1, verse: null }); onDone(); }}
           >{i + 1}</button>
         )) : null}
       </div>
@@ -96,11 +100,139 @@ function Picker({ bookId, onDone }: { bookId: string; onDone: () => void }) {
   );
 }
 
+// The verse's glass menu — every gesture the verse affords, one click deep.
+function VerseMenu({ refc, text, entityIds, flip, onClose, onNav }: {
+  refc: { bookId: string; chapter: number; verse: number };
+  text: string;
+  entityIds: string[];
+  flip: boolean;
+  onClose: () => void;
+  onNav: (patch: Partial<Cursor>) => void;
+}) {
+  const [readers, setReaders] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const onDown = (e: PointerEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("pointerdown", onDown);
+    return () => { window.removeEventListener("keydown", onKey); window.removeEventListener("pointerdown", onDown); };
+  }, [onClose]);
+  const label = `${bookById.get(refc.bookId)?.name ?? refc.bookId} ${refc.chapter}:${refc.verse}`;
+  const go = () => goTo({ ...refc });
+  const act = (fn: () => void) => () => { fn(); onClose(); };
+  return (
+    <div ref={rootRef} className={"gx-vmenu glass gx-enter" + (flip ? " is-flip" : "")} role="menu" aria-label={`Verse ${refc.verse}`}>
+      <button role="menuitem" onClick={act(() => { go(); openPanel("compare"); })}>⇄ compare translations</button>
+      <button role="menuitem" onClick={act(() => { go(); openPanel("threads"); })}>⛬ threads</button>
+      <button role="menuitem" onClick={act(() => {
+        setState((s) => {
+          const dup = s.marks.find((m) => m.bookId === refc.bookId && m.chapter === refc.chapter && m.verse === refc.verse);
+          if (dup) return { marks: s.marks.filter((m) => m.id !== dup.id) };
+          return { marks: [...s.marks, { id: "m" + Math.random().toString(36).slice(2, 9), ...refc, text: text.slice(0, 90), at: Date.now() }] };
+        });
+        record("mark", `${refc.bookId}.${refc.chapter}.${refc.verse}`);
+      })}>✦ mark</button>
+      <button role="menuitem" onClick={act(() => { void navigator.clipboard?.writeText(`“${text}” — ${label}`); })}>⧉ copy</button>
+      <button role="menuitem" onClick={act(() => { go(); setSeed("oracle", `About ${label} — `); openPanel("oracle"); })}>☲ ask the Oracle</button>
+      {entityIds.length ? (
+        <button role="menuitem" onClick={act(() => openDossier(entityIds[0]))}>☖ dossier</button>
+      ) : null}
+      <button
+        role="menuitem"
+        aria-expanded={readers}
+        onClick={() => setReaders((r) => !r)}
+      >☰ open in new reader…</button>
+      {readers ? (
+        <div className="gx-vmenu-sub" role="menu">
+          {TRANSLATIONS.filter((t) => t.bundled).map((t) => (
+            <button key={t.id} role="menuitem" onClick={act(() => { onNav({ ...refc }); openReader(t.id); })}>
+              {t.name} <span className="gx-vmenu-lang">{t.lang}</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+// The translation chip's popover — one click to any voice, position kept.
+function TransPopover({ current, bookId, onPick, onClose }: {
+  current: string; bookId: string; onPick: (id: string) => void; onClose: () => void;
+}) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const onDown = (e: PointerEvent) => { if (!rootRef.current?.contains(e.target as Node)) onClose(); };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("pointerdown", onDown);
+    return () => { window.removeEventListener("keydown", onKey); window.removeEventListener("pointerdown", onDown); };
+  }, [onClose]);
+  return (
+    <div ref={rootRef} className="gx-trans-pop glass gx-enter" role="menu" aria-label="Translation">
+      {TRANSLATIONS.map((t) => (
+        <button
+          key={t.id}
+          role="menuitemradio"
+          aria-checked={t.id === current}
+          className={"gx-trans-row" + (t.id === current ? " is-active" : "")}
+          onClick={() => {
+            if (!covers(t, bookId)) {
+              whisper({ kind: "toast", title: `◇ ${t.name}`, body: `${bookById.get(bookId)?.name ?? bookId} lives outside this corpus — the reader will serve it from the nearest voice that carries it.` });
+            }
+            onPick(t.id);
+            onClose();
+          }}
+        >
+          <span className="gx-trans-name">{t.name}</span>
+          <span className="gx-trans-lang">{t.lang}</span>
+          {t.id === current ? <span className="gx-trans-dot" aria-hidden>●</span> : null}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function Reader() {
-  const cursor = useApp((s) => s.cursor);
+  // A windowed reader ("reader@wlc") is pinned to a translation; linked
+  // ones follow the global cursor, unlinked ones keep their own place.
+  const winId = useContext(WinContext);
+  const pin = useApp((s) => (winId && winId.startsWith("reader@") ? s.readers[winId] : undefined));
+  const gcursor = useApp((s) => s.cursor);
+  const cursor: Cursor = pin
+    ? pin.linked
+      ? { ...gcursor, translation: pin.translation }
+      : { bookId: pin.bookId, chapter: pin.chapter, verse: null, translation: pin.translation }
+    : gcursor;
+  // Navigation respects the pin: an unlinked window walks alone.
+  const nav = (patch: Partial<Cursor>) => {
+    if (pin && winId && !pin.linked) {
+      setState((s) => ({
+        readers: {
+          ...s.readers,
+          [winId]: {
+            ...s.readers[winId],
+            bookId: patch.bookId ?? s.readers[winId].bookId,
+            chapter: patch.chapter ?? s.readers[winId].chapter,
+            translation: patch.translation ?? s.readers[winId].translation,
+          },
+        },
+      }));
+    } else if (pin && winId && patch.translation) {
+      setState((s) => ({
+        readers: { ...s.readers, [winId]: { ...s.readers[winId], translation: patch.translation! } },
+      }));
+    } else {
+      goTo(patch);
+    }
+  };
   const { redLetter, divineName, entities, scriptureScale } = useApp((s) => s.settings);
   const [ch, setCh] = useState<Chapter | null>(null);
   const [picker, setPicker] = useState(false);
+  const [transPop, setTransPop] = useState(false);
+  const [menu, setMenu] = useState<{ verse: number; flip: boolean } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [retry, setRetry] = useState(0);
   const [ontReady, setOntReady] = useState(false);
@@ -128,21 +260,27 @@ export function Reader() {
     return () => { live = false; };
   }, [cursor.translation, cursor.bookId, cursor.chapter, retry]);
 
-  // The eye goes up on a chapter turn; the machine follows.
+  // The eye goes up on a chapter turn; the machine follows. (The main
+  // column only — windowed readers scroll their own glass.)
   useEffect(() => {
-    document.querySelector(".gx-scripture")?.scrollTo({ top: 0 });
-  }, [cursor.bookId, cursor.chapter]);
+    if (!winId) document.querySelector(".gx-scripture")?.scrollTo({ top: 0 });
+  }, [winId, cursor.bookId, cursor.chapter]);
+
+  // The menu dies on any move.
+  useEffect(() => setMenu(null), [cursor.bookId, cursor.chapter, cursor.verse]);
 
   // A jump that names a verse carries the eye TO that verse once the
   // chapter arrives — a focus that lands below the fold is a dead end.
   useEffect(() => {
-    if (ch && cursor.verse != null) {
-      document.querySelector(".gx-verse.is-focus")?.scrollIntoView({ block: "center" });
+    if (!winId && ch && cursor.verse != null) {
+      document.querySelector(".gx-scripture .gx-verse.is-focus")?.scrollIntoView({ block: "center" });
     }
-  }, [ch, cursor.verse]);
+  }, [winId, ch, cursor.verse]);
 
   // B keeps the focused verse (a mark). Quiet when typing or veiled.
+  // Registered by the MAIN reader alone — pinned windows stay quiet.
   useEffect(() => {
+    if (winId) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() !== "b" || e.metaKey || e.ctrlKey || e.altKey) return;
       if ((e.target as HTMLElement)?.closest?.("input, textarea, [contenteditable]")) return;
@@ -188,7 +326,7 @@ export function Reader() {
           className="gx-reader-nav"
           aria-label="Previous chapter"
           disabled={cursor.chapter <= 1}
-          onClick={() => goTo({ chapter: cursor.chapter - 1, verse: null })}
+          onClick={() => nav({ chapter: cursor.chapter - 1, verse: null })}
         >‹</button>
         <button
           className="gx-reader-title-btn"
@@ -205,9 +343,24 @@ export function Reader() {
           className="gx-reader-nav"
           aria-label="Next chapter"
           disabled={cursor.chapter >= book.chapters}
-          onClick={() => goTo({ chapter: cursor.chapter + 1, verse: null })}
+          onClick={() => nav({ chapter: cursor.chapter + 1, verse: null })}
         >›</button>
-        {picker ? <Picker bookId={cursor.bookId} onDone={() => setPicker(false)} /> : null}
+        <button
+          className="gx-trans-chip"
+          aria-label="Translation"
+          aria-expanded={transPop}
+          title="Switch translation"
+          onClick={() => setTransPop((t) => !t)}
+        >{cursor.translation.toUpperCase()}</button>
+        {picker ? <Picker bookId={cursor.bookId} onDone={() => setPicker(false)} onGo={nav} /> : null}
+        {transPop ? (
+          <TransPopover
+            current={cursor.translation}
+            bookId={cursor.bookId}
+            onPick={(id) => nav({ translation: id })}
+            onClose={() => setTransPop(false)}
+          />
+        ) : null}
       </header>
 
       {error ? (
@@ -229,12 +382,27 @@ export function Reader() {
               className={
                 "gx-verse" +
                 (red?.has(v.n) ? " is-red" : "") +
-                (current && cursor.verse === v.n ? " is-focus" : "")
+                (current && cursor.verse === v.n ? " is-focus" : "") +
+                (menu?.verse === v.n ? " has-menu" : "")
               }
-              onClick={() => goTo({ verse: cursor.verse === v.n ? null : v.n })}
+              onClick={(e) => {
+                if (!winId) goTo({ verse: v.n });
+                const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                setTimeout(() => setMenu({ verse: v.n, flip: r.bottom > innerHeight * 0.62 }), 0);
+              }}
             >
               <span className="gx-vn" aria-hidden>{v.n}</span>
               <VerseBody text={v.text} mentions={chMentions?.get(v.n)} divineName={divineName} />
+              {menu?.verse === v.n ? (
+                <VerseMenu
+                  refc={{ bookId: cursor.bookId, chapter: cursor.chapter, verse: v.n }}
+                  text={v.text}
+                  entityIds={[...new Set((chMentions?.get(v.n) ?? []).map((m) => m.entityId))]}
+                  flip={menu.flip}
+                  onClose={() => setMenu(null)}
+                  onNav={nav}
+                />
+              ) : null}
             </p>
           ))}
         </div>

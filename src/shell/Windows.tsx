@@ -5,12 +5,17 @@
 // directly (transform / width / height) and commit to the store once, on
 // release. No dependency, no re-layout during motion.
 
-import { useEffect, useRef } from "react";
+import { createContext, useEffect, useRef } from "react";
 import {
-  useApp, focusPanel, closePanel, setPanelGeo, getState, type WinGeo,
+  useApp, focusPanel, closePanel, setPanelGeo, getState, toggleReaderLink, type WinGeo,
 } from "@/kernel/store";
 import { getFeature } from "@/kernel/registry";
 import "./windows.css";
+
+/** The window instance id ("threads", "reader@wlc") — surfaces that can be
+    spawned more than once read their pin from here. null = the sacred
+    center (the main reader outside any window). */
+export const WinContext = createContext<string | null>(null);
 
 const PAD = 8;            // breathing room to the shell's edges
 const TOP = 44;           // the trace strip stays sovereign
@@ -41,8 +46,9 @@ export function clamp(g: WinGeo): WinGeo {
   const { vw, vh } = viewport();
   const w = Math.min(Math.max(g.w, MIN_W), vw - 2 * PAD);
   const h = Math.min(Math.max(g.h, MIN_H), vh - TOP - PAD);
-  const x = Math.min(Math.max(g.x, PAD - w + 80), vw - 80);
-  const y = Math.min(Math.max(g.y, TOP), vh - 40);
+  // Fully contained: no window may hang off-screen — content is never cut.
+  const x = Math.min(Math.max(g.x, PAD), vw - PAD - w);
+  const y = Math.min(Math.max(g.y, TOP), vh - PAD - h);
   return { x, y, w, h };
 }
 
@@ -60,11 +66,15 @@ type Handle = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
 const HANDLES: Handle[] = ["n", "s", "e", "w", "ne", "nw", "se", "sw"];
 
 function Win({ id, index, front }: { id: string; index: number; front: boolean }) {
-  const f = getFeature(id);
+  // "reader@wlc" is an instance of the reader feature pinned to WLC.
+  const featureId = id.split("@")[0];
+  const f = getFeature(featureId);
   const geo = useApp((s) => s.wm.geo[id]) ?? defaultGeo(id, index);
+  const reader = useApp((s) => s.readers[id]);
   const ref = useRef<HTMLDivElement>(null);
   const F = f?.surfaces.main;
   if (!f || !F) return null;
+  const title = reader ? `${f.title} · ${reader.translation.toUpperCase()}` : f.title;
 
   const commit = (g: WinGeo) => setPanelGeo(id, clamp(snap(g)));
 
@@ -132,11 +142,21 @@ function Win({ id, index, front }: { id: string; index: number; front: boolean }
         onDoubleClick={() => setPanelGeo(id, defaultGeo(id, index))}
       >
         <span className="gx-win-glyph" aria-hidden>{f.glyph}</span>
-        <span className="gx-instrument-title gx-win-title">{f.title}</span>
+        <span className="gx-instrument-title gx-win-title">{title}</span>
+        {reader ? (
+          <button
+            className={"gx-win-link" + (reader.linked ? " is-linked" : "")}
+            title={reader.linked ? "Following the main cursor — click to detach" : "Detached — click to follow the main cursor"}
+            aria-pressed={reader.linked}
+            onClick={() => toggleReaderLink(id)}
+          >{reader.linked ? "⛓" : "⛓̸"}</button>
+        ) : null}
         <button className="gx-win-x" aria-label={`Close ${f.title}`} onClick={() => closePanel(id)}>×</button>
       </header>
       <div className="gx-win-body">
-        <F />
+        <WinContext.Provider value={id}>
+          <F />
+        </WinContext.Provider>
       </div>
       {HANDLES.map((h) => (
         <div key={h} className={`gx-win-rz gx-win-rz-${h}`} onPointerDown={onResize(h)} />

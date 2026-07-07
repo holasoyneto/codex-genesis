@@ -5,15 +5,19 @@ import { closeVeil, openPanel } from "@/kernel/store";
 import { allFeatures } from "@/kernel/registry";
 import "./help.css";
 
-// The shell's own keys — owned here because the shell has no manifest.
-const SHELL_KEYS: { keys: string; what: string }[] = [
-  { keys: "⌘K", what: "the one door — a verse, a book, a command" },
-  { keys: "← →", what: "turn the chapter" },
-  { keys: "B", what: "keep the focused verse (a mark)" },
-  { keys: "⌘[ ⌘]", what: "walk the jump ledger back / forward" },
-  { keys: "?", what: "this overlay" },
-  { keys: "esc", what: "close the veil" },
-];
+// Every key below is read from the registry — feature-level keybindings
+// and command-level keys. Nothing hand-written; nothing promised that
+// isn't wired.
+function registryKeys(): { keys: string; what: string }[] {
+  const out: { keys: string; what: string }[] = [];
+  for (const f of allFeatures()) {
+    if (f.keybinding) out.push({ keys: f.keybinding, what: f.help ?? f.title });
+    for (const c of f.commands ?? []) {
+      if (c.keys) out.push({ keys: c.keys, what: c.hint });
+    }
+  }
+  return out;
+}
 
 export function Help() {
   return (
@@ -36,7 +40,7 @@ export function Help() {
       </ul>
       <h3 className="gx-instrument-title gx-help-title">THE KEYS</h3>
       <ul className="gx-help-keys">
-        {SHELL_KEYS.map((k) => (
+        {registryKeys().map((k) => (
           <li key={k.keys} className="gx-help-key">
             <kbd className="gx-help-kbd">{k.keys}</kbd>
             <span className="gx-help-what">{k.what}</span>

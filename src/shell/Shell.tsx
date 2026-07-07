@@ -19,6 +19,7 @@ import { bookById } from "@/engine/corpus";
 import { Trace } from "./Trace";
 import { Dock } from "./Dock";
 import { Windows } from "./Windows";
+import { dispatchKey } from "./keymap";
 import "./shell.css";
 
 /** One tree, two postures — the shell decides, features never ask. */
@@ -139,6 +140,17 @@ function Veil() {
 
 export function Shell({ children }: { children: React.ReactNode }) {
   useTheme();
+  const zen = useApp((s) => s.zen);
+  const hideReader = useApp((s) => s.hideReader);
+  // Zen restores the Word — a hidden reader and zen cannot coexist.
+  useEffect(() => { if (zen && getState().hideReader) setState({ hideReader: false }); }, [zen]);
+  // Zen leaves on any touch, too.
+  useEffect(() => {
+    if (!zen) return;
+    const out = () => setState({ zen: false });
+    window.addEventListener("pointerdown", out);
+    return () => window.removeEventListener("pointerdown", out);
+  }, [zen]);
   // Shell-level keys: ⌘K opens the one door; ←/→ turn chapters when the
   // reader has the floor (no veil, not typing).
   useEffect(() => {
@@ -155,7 +167,18 @@ export function Shell({ children }: { children: React.ReactNode }) {
         if (e.key === "[") historyBack(); else historyForward();
         return;
       }
-      const typing = (e.target as HTMLElement)?.closest?.("input, textarea, [contenteditable]");
+      const typing = !!(e.target as HTMLElement)?.closest?.("input, textarea, [contenteditable]");
+      // Zen: ANY key returns the desk (the Word keeps the room until touched).
+      if (!typing && getState().zen && e.key.toLowerCase() !== "z") {
+        setState({ zen: false });
+        return;
+      }
+      // The registry's declared keybindings — one listener, one truth.
+      // Never inside inputs; never under a veil (esc there belongs to it).
+      if (!typing && !getState().veil && dispatchKey(e)) {
+        e.preventDefault();
+        return;
+      }
       if (typing || getState().veil || e.metaKey || e.ctrlKey || e.altKey) return;
       // ? — the generated help overlay.
       if (e.key === "?") {
@@ -179,7 +202,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div className="gx-shell">
+    <div className={"gx-shell" + (zen ? " is-zen" : "") + (hideReader ? " is-noreader" : "")}>
       <div className="gx-wallpaper" aria-hidden />
       <main className="gx-scripture">{children}</main>
       <Instruments />

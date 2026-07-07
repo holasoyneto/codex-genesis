@@ -22,6 +22,12 @@ export interface FeatureManifest {
     hint: string;
     run: () => void;
     match?: (q: string) => { label: string; hint: string; run: () => void } | null;
+    /** Keybinding, declared here so the shell's ONE key listener and the
+        generated Help both read the same truth (no scattered listeners).
+        `keys` is the display form ("⇧esc", "⌘\`", "⌥T", "Z"); `keyMatch`
+        overrides parsing for ranges like ⌘1–9. */
+    keys?: string;
+    keyMatch?: (e: KeyboardEvent) => boolean;
   }[];
   /** Keybinding shown in generated Help (display only, e.g. "⌘K" or "?"). */
   keybinding?: string;

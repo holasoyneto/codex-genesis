@@ -6,7 +6,10 @@ declare const __APP_VERSION__: string;
 export const APP_VERSION = __APP_VERSION__;
 
 export const RELEASE_NOTES: string[] = [
-  "THE ONTOLOGY REACHES THE KINGDOMS. The seed grows from the Torah out through the OT narrative and the prophets — 124 persons and places across 30 books. David and Solomon, Elijah and Elisha, Ruth and Boaz, Esther and Mordecai, Daniel and Nebuchadnezzar now light up as gold underlines, each opening a Dossier of summary, walkable relations, and every mention.",
-  "Precision by design: each figure is scoped to the books where its name is unambiguous, so the patriarch Joseph is never confused with Joseph the husband of Mary. The names the seed cannot safely resolve — most of the New Testament — are left honestly for the frontier sweep, not faked.",
-  "All 6,366 mentions and 74 relations are verified against real scripture by the harness. The Shelves also regain their book & chapter grid — browse to any chapter in one gesture.",
+  "THE GLASS CATHEDRAL. The chrome molts into layered liquid glass — frosted windows, a glowing door, aurora walls — while scripture stays serif and serene, untouched.",
+  "THE GALAXY: the whole canon as a sky. Books as arcs, verses as stars, entities as gold bodies; `path gen.1.1 rev.21.1` burns a gold trail, `near isa.53.5` ignites a neighborhood, and every star turns the reader.",
+  "The desk becomes a workbench: instruments open as movable, resizable windows that remember their places; ⌘[ and ⌘] walk your jump ledger; the title opens a chapter grid.",
+  "The Oracle becomes an analyst: it streams, remembers the conversation, drives the app's own engines through visible tool calls, and every quoted reference is checked verbatim — mismatches wear ⚠ UNVERIFIED.",
+  "The moat deepens: Strong's Hebrew & Greek (lemma H430), a 206-event timeline honestly stamped CONTESTED where dating is traditional, synoptic parallels inside Compare, and canon-tradition tags on the shelves — every dataset with provenance one tap away.",
+  "A dock generated from the registry, ? for generated help, three first-boot invitations, marks export to markdown — and the palm gets true bottom sheets, pinch-zoom in the Galaxy, and an iOS (Capacitor) shell.",
 ];

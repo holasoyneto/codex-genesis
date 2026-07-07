@@ -58,6 +58,11 @@ export interface AppState {
   history: Cursor[];    // the reader's jump ledger (⌘[ back · ⌘] forward)
   historyAt: number;    // index into history of "now"
   onboarded: boolean;   // the three first-boot invitations were given
+  zen: boolean;         // chrome hidden, scripture alone (ephemeral)
+  hideReader: boolean;  // the sacred center yields the desk to the windows
+  /** Windowed readers pinned to a translation ("reader@wlc"). Linked ones
+      follow the global cursor; unlinked ones keep their own place. */
+  readers: Record<string, { translation: string; linked: boolean; bookId: string; chapter: number }>;
 }
 
 export interface Whisper {
@@ -87,6 +92,9 @@ const DEFAULTS: AppState = {
   history: [],
   historyAt: -1,
   onboarded: false,
+  zen: false,
+  hideReader: false,
+  readers: {},
 };
 
 type Listener = () => void;
@@ -124,6 +132,7 @@ function load(): AppState {
       historyAt: saved.historyAt ?? (saved.history?.length ?? 0) - 1,
       veil: null,      // ephemeral — never persisted open
       whispers: [],    // ephemeral
+      zen: false,      // ephemeral
     };
   } catch {
     return DEFAULTS;
@@ -138,7 +147,7 @@ function persist() {
   clearTimeout(persistTimer);
   persistTimer = setTimeout(() => {
     try {
-      const { veil: _v, whispers: _w, ...durable } = state;
+      const { veil: _v, whispers: _w, zen: _z, ...durable } = state;
       localStorage.setItem(KEY, JSON.stringify(durable));
     } catch { /* private mode */ }
   }, 150);
@@ -231,6 +240,57 @@ export function focusPanel(id: string): void {
 
 export function setPanelGeo(id: string, geo: WinGeo): void {
   setState((s) => ({ wm: { ...s.wm, geo: { ...s.wm.geo, [id]: geo } } }));
+}
+
+/** ⇧esc — the desk clears in one stroke. */
+export function closeAllPanels(): void {
+  setState((s) => ({ panel: null, wm: { ...s.wm, open: [] } }));
+}
+
+/** ⌘\` — cycle focus through the open windows (back window comes forward). */
+export function cyclePanels(): void {
+  setState((s) => {
+    if (s.wm.open.length < 2) return {};
+    const [back, ...rest] = s.wm.open;
+    return { panel: back, wm: { ...s.wm, open: [...rest, back] } };
+  });
+}
+
+/** "reset layout" — geometry forgotten; windows re-derive their defaults. */
+export function resetLayout(): void {
+  setState((s) => ({ wm: { ...s.wm, geo: {} } }));
+}
+
+/** Spawn (or focus) a reader window pinned to a translation. */
+export function openReader(translation: string): void {
+  const id = `reader@${translation}`;
+  setState((s) => ({
+    panel: id,
+    readers: {
+      ...s.readers,
+      [id]: s.readers[id] ?? {
+        translation, linked: true,
+        bookId: s.cursor.bookId, chapter: s.cursor.chapter,
+      },
+    },
+    wm: { ...s.wm, open: [...s.wm.open.filter((x) => x !== id), id] },
+  }));
+}
+
+export function toggleReaderLink(id: string): void {
+  setState((s) => {
+    const r = s.readers[id];
+    if (!r) return {};
+    // Re-linking snaps the window back onto the global cursor.
+    return {
+      readers: {
+        ...s.readers,
+        [id]: r.linked
+          ? { ...r, linked: false }
+          : { ...r, linked: true, bookId: s.cursor.bookId, chapter: s.cursor.chapter },
+      },
+    };
+  });
 }
 
 export function openVeil(feature: string, seed?: string): void {

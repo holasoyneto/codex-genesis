@@ -1,5 +1,8 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
+// Base styles (tokens + glass utilities) FIRST — component styles must be
+// able to override the shared utilities, so they load after.
+import "./styles/base.css";
 import { Shell } from "./shell/Shell";
 import { Reader } from "./features/reader";
 import "./features/omnibar";
@@ -16,15 +19,28 @@ import "./features/galaxy";
 import "./features/help";
 import "./features/lexicon";
 import "./features/timeline";
-import "./styles/base.css";
+import "./features/desk";
 import { getState, setState, whisper } from "./kernel/store";
 import { APP_VERSION, RELEASE_NOTES } from "./kernel/version";
 import { startWitness } from "./kernel/witness";
 
-// Boot signal for the smoke harness.
+import { callTool, KERNEL_TOOLS } from "./engine/kernel";
+import { allFeatures } from "./kernel/registry";
+import { openPanel, closePanel } from "./kernel/store";
+
+// Boot signal for the smoke harness — and the kernel door (EXOGRAMMAR law
+// 5: every capability callable without any DOM; the interface is mortal,
+// the engines are not).
 declare global {
-  interface Window { __CODEX_READY__?: boolean }
+  interface Window {
+    __CODEX_READY__?: boolean;
+    CODEX_KERNEL?: { call: typeof callTool; tools: string[] };
+    __CODEX_FEATURES__?: { id: string; title: string; main: boolean }[];
+    __CODEX_PANEL__?: { open: (id: string) => void; close: (id?: string) => void };
+  }
 }
+window.CODEX_KERNEL = { call: callTool, tools: KERNEL_TOOLS.map((t) => t.name) };
+window.__CODEX_PANEL__ = { open: openPanel, close: closePanel };
 
 function App() {
   return (
@@ -77,4 +93,5 @@ if ("serviceWorker" in navigator && import.meta.env.PROD) {
   });
 }
 
+window.__CODEX_FEATURES__ = allFeatures().map((f) => ({ id: f.id, title: f.title, main: !!f.surfaces.main }));
 window.__CODEX_READY__ = true;

@@ -130,3 +130,16 @@
 @media (max-width: 880px) {
   .gx-veil { padding-top: calc(8px + env(safe-area-inset-top, 0px)); align-items: start; }
 }
+
+/* zen — only the Word. Chrome fades; any key or touch restores. */
+.gx-shell.is-zen .gx-windows,
+.gx-shell.is-zen .gx-instrument,
+.gx-shell.is-zen .gx-edge,
+.gx-shell.is-zen .gx-whisper-lane {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-exit) var(--ease-enter);
+}
+
+/* hide reader — the sacred center yields the desk to the windows */
+.gx-shell.is-noreader .gx-scripture { opacity: 0; pointer-events: none; }

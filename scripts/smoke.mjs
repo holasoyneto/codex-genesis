@@ -57,9 +57,18 @@ const browser = await puppeteer.launch({
   args: ["--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage"],
 });
 
-async function boot(w, h, mobile = false) {
+async function boot(w, h, mobile = false, opts = {}) {
   const ctx = await browser.createBrowserContext();
   const page = await ctx.newPage();
+  if (!opts.freshOnboarding) {
+    // The three first-boot invitations are tested once, in their own spec;
+    // every other context boots already-onboarded so the lane stays clear.
+    await page.evaluateOnNewDocument(() => {
+      const KEY = "codex-genesis.v2";
+      const cur = JSON.parse(localStorage.getItem(KEY) || "{}");
+      localStorage.setItem(KEY, JSON.stringify({ ...cur, onboarded: true }));
+    });
+  }
   await page.setViewport({ width: w, height: h, deviceScaleFactor: 2, isMobile: mobile, hasTouch: mobile });
   page.jsErrors = [];
   page.on("pageerror", (e) => { if (!EXTERNAL.test(e.message)) page.jsErrors.push("pageerror: " + e.message); });
@@ -255,9 +264,10 @@ try {
     await page.waitForSelector(".gx-thread", { timeout: 15000 });
     const threads = await page.evaluate(() => document.querySelectorAll(".gx-thread").length);
     check("threads: Gen 1:1 has many", threads > 5, `${threads} threads`);
-    await page.evaluate(() => document.querySelector(".gx-thread").click());
+    await page.evaluate(() => document.querySelector(".gx-thread .gx-ref-go").click());
     await page.waitForFunction(() => !/Genesis 1/.test(document.querySelector(".gx-reader-title")?.textContent || ""), { timeout: 20000 });
     check("threads: clicking a thread walks there", true);
+    await page.evaluate(() => window.__CODEX_PANEL__.close("threads"));
 
     // MARKS: B keeps the focused verse; the panel lists it.
     await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
@@ -367,7 +377,7 @@ try {
     await page.type(".gx-omni-input", "library");
     await sleep(250);
     await page.keyboard.press("Enter");
-    await page.waitForSelector(".gx-instrument .gx-shelf", { timeout: 5000 });
+    await page.waitForSelector(".gx-win .gx-shelf", { timeout: 5000 });
     await page.evaluate(() => {
       const web = [...document.querySelectorAll(".gx-shelf")].find((b) => /World English/.test(b.textContent));
       web.click();
@@ -394,7 +404,7 @@ try {
     await shot(page, "desk-library");
     await page.click('.gx-library-close');
     await sleep(200);
-    const panelGone = await page.evaluate(() => !document.querySelector(".gx-instrument"));
+    const panelGone = await page.evaluate(() => !document.querySelector('.gx-win[data-win="library"]'));
     check("library closes", panelGone);
 
     // THE DOSSIER — entities are first-class. Genesis 14, the Melchizedek
@@ -439,8 +449,8 @@ try {
     check("dossier: relations walk (Melchizedek → Abraham)", true);
 
     // A mention is a door back into scripture — clicking it moves the reader.
-    const target = await page.evaluate(() => document.querySelector(".gx-dos-mention .gx-dos-mention-ref")?.textContent);
-    await page.evaluate(() => document.querySelector(".gx-dos-mention").click());
+    const target = await page.evaluate(() => document.querySelector(".gx-dos-mention .gx-ref-label")?.textContent);
+    await page.evaluate(() => document.querySelector(".gx-dos-mention .gx-ref-go").click());
     await page.waitForFunction(
       (t) => document.querySelector(".gx-reader-title")?.textContent?.replace(/\s+/g, " ").includes(t.replace(/:.*/, "").trim()),
       { timeout: 15000 }, target
@@ -512,6 +522,417 @@ try {
     check("palm: zero js errors", page.jsErrors.length === 0, JSON.stringify(page.jsErrors.slice(0, 3)));
     await ctx.close();
   }
+
+  // ═══════════════════ v0.9.0 — THE GLASS CATHEDRAL ═══════════════════
+  {
+    const { ctx, page } = await boot(1680, 1050);
+    await page.waitForFunction(() => document.querySelectorAll(".gx-verse").length > 0, { timeout: 30000 });
+    await sleep(300);
+
+    // The dock is GENERATED from the registry — every main-surface feature.
+    const dock = await page.evaluate(() => ({
+      buttons: [...document.querySelectorAll(".gx-dock-btn")].map((b) => b.getAttribute("aria-label")),
+      expected: window.__CODEX_FEATURES__.filter((f) => f.main).map((f) => f.title),
+    }));
+    check("dock lists every registered feature",
+      dock.buttons.length === dock.expected.length && dock.expected.every((t) => dock.buttons.includes(t)),
+      JSON.stringify(dock));
+
+    // The kernel executes tool calls locally (EXOGRAMMAR law 5).
+    const kernel = await page.evaluate(async () => {
+      const out = JSON.parse(await window.CODEX_KERNEL.call("threads_for", { ref: "John 3:16" }));
+      return { tools: window.CODEX_KERNEL.tools.length, threads: out.threads?.length ?? 0 };
+    });
+    check("kernel: threads_for executes locally", kernel.tools >= 6 && kernel.threads > 3, JSON.stringify(kernel));
+
+    // PATH gen.1.1 → rev.21.1 returns a route through the fused graph.
+    const route = await page.evaluate(async () => {
+      const out = JSON.parse(await window.CODEX_KERNEL.call("graph_path", { from: "gen.1.1", to: "rev.21.1" }));
+      return out.hops?.length ?? 0;
+    });
+    check("graph: PATH gen.1.1 → rev.21.1 returns a route", route >= 2, `${route} hops`);
+
+    // Omnibar `galaxy` opens the instrument; the sky renders its stars.
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "galaxy");
+    await sleep(250);
+    await page.keyboard.press("Enter");
+    await page.waitForSelector('.gx-win[data-win="galaxy"]', { timeout: 10000 });
+    await page.waitForFunction(
+      () => Number(document.querySelector(".gx-galaxy-canvas")?.dataset.stars || 0) > 25000,
+      { timeout: 30000 }
+    );
+    const stars = await page.evaluate(() => Number(document.querySelector(".gx-galaxy-canvas").dataset.stars));
+    check("galaxy: omnibar opens it and stars render", stars > 25000, `${stars} stars`);
+    await shot(page, "desk-galaxy");
+    await page.evaluate(() => window.__CODEX_PANEL__.close("galaxy"));
+
+    // Two windows at once, geometry persisted across reload.
+    await page.evaluate(() => { window.__CODEX_PANEL__.open("threads"); window.__CODEX_PANEL__.open("marks"); });
+    await page.waitForSelector('.gx-win[data-win="threads"]', { timeout: 5000 });
+    await page.waitForSelector('.gx-win[data-win="marks"]', { timeout: 5000 });
+    // drag the threads window by its title bar
+    const bar = await page.$('.gx-win[data-win="threads"] .gx-win-bar');
+    const bb = await bar.boundingBox();
+    await page.mouse.move(bb.x + bb.width / 2, bb.y + bb.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(300, 300, { steps: 8 });
+    await page.mouse.up();
+    await sleep(400); // persist debounce
+    const before = await page.evaluate(() => {
+      const r = document.querySelector('.gx-win[data-win="threads"]').getBoundingClientRect();
+      return { x: Math.round(r.x), y: Math.round(r.y) };
+    });
+    await page.reload({ waitUntil: "load" });
+    await page.waitForFunction(() => window.__CODEX_READY__ === true, { timeout: 30000 });
+    await page.waitForSelector('.gx-win[data-win="threads"]', { timeout: 5000 });
+    await page.waitForSelector('.gx-win[data-win="marks"]', { timeout: 5000 });
+    const after = await page.evaluate(() => {
+      const r = document.querySelector('.gx-win[data-win="threads"]').getBoundingClientRect();
+      return { x: Math.round(r.x), y: Math.round(r.y) };
+    });
+    check("windows: two at once, geometry survives reload",
+      Math.abs(before.x - after.x) <= 5 && Math.abs(before.y - after.y) <= 5,
+      JSON.stringify({ before, after }));
+    await page.evaluate(() => { window.__CODEX_PANEL__.close("threads"); window.__CODEX_PANEL__.close("marks"); });
+
+    // ? opens the generated help overlay.
+    await page.keyboard.press("?");
+    await page.waitForSelector(".gx-help", { timeout: 5000 });
+    const help = await page.evaluate(() => ({
+      rows: document.querySelectorAll(".gx-help-row").length,
+      keys: document.querySelectorAll(".gx-help-kbd").length,
+      expected: window.__CODEX_FEATURES__.filter((f) => f.main).length,
+    }));
+    check("help: generated from the registry + keys", help.rows === help.expected && help.keys >= 6, JSON.stringify(help));
+    await page.keyboard.press("Escape");
+    await sleep(200);
+
+    // lemma H430 opens the Lexicon on Elohim.
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "lemma H430");
+    await sleep(250);
+    const lemmaRow = await page.evaluate(() => document.querySelector(".gx-omni-row .gx-omni-label")?.textContent);
+    check("omnibar: lemma H430 is offered", lemmaRow === "LEMMA H430", JSON.stringify(lemmaRow));
+    await page.keyboard.press("Enter");
+    await page.waitForSelector(".gx-lex-word", { timeout: 15000 });
+    const lex = await page.evaluate(() => ({
+      word: document.querySelector(".gx-lex-word")?.textContent,
+      gloss: document.querySelector(".gx-lex-gloss")?.textContent,
+      prov: !!document.querySelector(".gx-lexicon .gx-prov-chip"),
+    }));
+    check("lexicon: H430 opens with gloss + provenance", !!lex.word && /God/i.test(lex.gloss || "") && lex.prov, JSON.stringify(lex));
+    await page.evaluate(() => window.__CODEX_PANEL__.close("lexicon"));
+
+    // The timeline: banner, events, CONTESTED stamps, provenance.
+    await page.evaluate(() => window.__CODEX_PANEL__.open("timeline"));
+    await page.waitForSelector(".gx-tl-event", { timeout: 15000 });
+    const tl = await page.evaluate(() => ({
+      banner: document.querySelector(".gx-tl-banner")?.textContent,
+      events: document.querySelectorAll(".gx-tl-event").length,
+      contested: document.querySelectorAll(".gx-tl-contested").length,
+      prov: !!document.querySelector(".gx-timeline .gx-prov-chip"),
+    }));
+    check("timeline: survey banner + events + CONTESTED + provenance",
+      /SCHOLARLY SURVEY, NOT PREDICTION/.test(tl.banner || "") && tl.events > 100 && tl.contested > 5 && tl.prov,
+      JSON.stringify({ events: tl.events, contested: tl.contested }));
+    await page.evaluate(() => window.__CODEX_PANEL__.close("timeline"));
+
+    // Synoptic parallels appear in Compare inside an aligned pericope.
+    await page.evaluate(() => window.__CODEX_PANEL__.open("compare"));
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "Matthew 14:17");
+    await sleep(250);
+    await page.keyboard.press("Enter");
+    await page.waitForSelector(".gx-compare-parallels", { timeout: 15000 });
+    const par = await page.evaluate(() => ({
+      name: document.querySelector(".gx-compare-parallels-name")?.textContent,
+      chips: document.querySelectorAll(".gx-compare-parallels .gx-ref").length,
+    }));
+    check("compare: synoptic parallels row (feeding of the 5,000)", par.chips >= 2, JSON.stringify(par));
+    await page.evaluate(() => window.__CODEX_PANEL__.close("compare"));
+
+    // The shelves carry tradition chips + per-book tags + provenance.
+    await page.evaluate(() => window.__CODEX_PANEL__.open("library"));
+    await page.waitForSelector(".gx-tradition", { timeout: 10000 });
+    const trad = await page.evaluate(() => ({
+      chips: document.querySelectorAll(".gx-tradition").length,
+      tags: document.querySelectorAll(".gx-book-tag").length,
+      prov: !!document.querySelector(".gx-library .gx-prov-chip"),
+    }));
+    check("library: tradition filter chips + book tags + provenance",
+      trad.chips >= 5 && trad.tags > 50 && trad.prov, JSON.stringify(trad));
+    // filtering by Tanakh narrows the shelves
+    const allBooks = await page.evaluate(() => document.querySelectorAll(".gx-book").length);
+    await page.evaluate(() => [...document.querySelectorAll(".gx-tradition")].find((b) => b.textContent === "TANAKH").click());
+    await sleep(250);
+    const tanakhBooks = await page.evaluate(() => document.querySelectorAll(".gx-book").length);
+    check("library: tradition filter narrows the shelves", tanakhBooks > 10 && tanakhBooks < allBooks, `${allBooks} → ${tanakhBooks}`);
+    await page.evaluate(() => window.__CODEX_PANEL__.close("library"));
+
+    // cursor history: two jumps, ⌘[ returns.
+    for (const ref of ["Genesis 1", "Psalm 23"]) {
+      await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+      await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+      await page.type(".gx-omni-input", ref);
+      await sleep(250);
+      await page.keyboard.press("Enter");
+      await sleep(600);
+    }
+    await page.keyboard.down("Meta"); await page.keyboard.press("["); await page.keyboard.up("Meta");
+    await sleep(600);
+    const backTitle = await page.evaluate(() => document.querySelector(".gx-reader-title")?.textContent?.replace(/\s+/g, " "));
+    check("history: ⌘[ walks the ledger back", /Genesis 1\b/.test(backTitle || ""), JSON.stringify(backTitle));
+
+    // the reader title opens the grid picker
+    await page.click(".gx-reader-title-btn");
+    await page.waitForSelector(".gx-picker", { timeout: 5000 });
+    const picker = await page.evaluate(() => ({
+      books: document.querySelectorAll(".gx-picker-book").length,
+      chapters: document.querySelectorAll(".gx-picker-ch").length,
+    }));
+    check("reader: grid picker opens from the title", picker.books > 60 && picker.chapters > 10, JSON.stringify(picker));
+    await page.keyboard.press("Escape");
+
+    // ── the desk's verbs (registry-declared keys) ────────────────────
+    // ⌘2 opens the second dock instrument.
+    const second = await page.evaluate(() => window.__CODEX_FEATURES__.filter((f) => f.main)[1].id);
+    await page.keyboard.down("Meta"); await page.keyboard.press("2"); await page.keyboard.up("Meta");
+    await page.waitForSelector(`.gx-win[data-win="${second}"]`, { timeout: 5000 });
+    check("keys: ⌘2 opens the second dock instrument", true, second);
+    // instruments may autofocus their inputs — keys never fire while typing,
+    // so the desk-verb specs step off the input first (as a reader would).
+    await page.evaluate(() => document.activeElement?.blur());
+
+    // ⌘` cycles focus through open windows.
+    await page.evaluate(() => window.__CODEX_PANEL__.open("threads"));
+    await page.waitForSelector('.gx-win[data-win="threads"]', { timeout: 5000 });
+    const focusBefore = await page.evaluate(() => document.querySelector(".gx-win.is-front")?.dataset.win);
+    await page.keyboard.down("Meta"); await page.keyboard.press("`"); await page.keyboard.up("Meta");
+    await sleep(250);
+    const focusAfter = await page.evaluate(() => document.querySelector(".gx-win.is-front")?.dataset.win);
+    check("keys: ⌘` cycles window focus", focusBefore !== focusAfter, `${focusBefore} → ${focusAfter}`);
+
+    // Escape closes the focused window; ⇧Escape clears the desk.
+    const openBefore = await page.evaluate(() => document.querySelectorAll(".gx-win").length);
+    await page.keyboard.press("Escape");
+    await sleep(250);
+    const openMid = await page.evaluate(() => document.querySelectorAll(".gx-win").length);
+    await page.evaluate(() => { window.__CODEX_PANEL__.open("threads"); window.__CODEX_PANEL__.open("marks"); });
+    await sleep(250);
+    await page.keyboard.down("Shift"); await page.keyboard.press("Escape"); await page.keyboard.up("Shift");
+    await sleep(250);
+    const openEnd = await page.evaluate(() => document.querySelectorAll(".gx-win").length);
+    check("keys: esc closes focused · ⇧esc clears the desk",
+      openMid === openBefore - 1 && openEnd === 0, `${openBefore} → ${openMid} → ${openEnd}`);
+
+    // ⌥T flips the theme; Z enters zen (chrome yields); any key returns.
+    const th1 = await page.evaluate(() => document.documentElement.getAttribute("data-theme"));
+    await page.keyboard.down("Alt"); await page.keyboard.press("KeyT"); await page.keyboard.up("Alt");
+    await sleep(300);
+    const th2 = await page.evaluate(() => document.documentElement.getAttribute("data-theme"));
+    check("keys: ⌥T flips the theme", th1 !== th2, `${th1} → ${th2}`);
+    await page.keyboard.down("Alt"); await page.keyboard.press("KeyT"); await page.keyboard.up("Alt");
+    await sleep(200);
+    await page.keyboard.press("z");
+    await sleep(300);
+    const zenOn = await page.evaluate(() => document.querySelector(".gx-shell").classList.contains("is-zen"));
+    await page.keyboard.press("ArrowRight");
+    await sleep(300);
+    const zenOff = await page.evaluate(() => !document.querySelector(".gx-shell").classList.contains("is-zen"));
+    check("keys: Z enters zen, any key returns", zenOn && zenOff, JSON.stringify({ zenOn, zenOff }));
+
+    // "reset layout" through the door restores default geometry.
+    await page.evaluate(() => window.__CODEX_PANEL__.open("threads"));
+    await page.waitForSelector('.gx-win[data-win="threads"] .gx-win-bar', { timeout: 5000 });
+    const barR = await (await page.$('.gx-win[data-win="threads"] .gx-win-bar')).boundingBox();
+    await page.mouse.move(barR.x + 40, barR.y + 12);
+    await page.mouse.down();
+    await page.mouse.move(400, 500, { steps: 6 });
+    await page.mouse.up();
+    await sleep(300);
+    const draggedX = await page.evaluate(() => document.querySelector('.gx-win[data-win="threads"]').getBoundingClientRect().x);
+    const defaultX = 1256; // right-docked default at 1680
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "reset layout");
+    await sleep(250);
+    await page.keyboard.press("Enter");
+    await sleep(300);
+    const resetX = await page.evaluate(() => document.querySelector('.gx-win[data-win="threads"]').getBoundingClientRect().x);
+    check("omnibar: reset layout restores defaults", resetX !== draggedX && Math.abs(resetX - defaultX) < 60, `${draggedX} → ${resetX}`);
+    await page.keyboard.down("Shift"); await page.keyboard.press("Escape"); await page.keyboard.up("Shift");
+
+    // the help overlay carries the desk's keys — generated, not written.
+    await page.keyboard.press("?");
+    await page.waitForSelector(".gx-help", { timeout: 5000 });
+    const kbds = await page.evaluate(() => [...document.querySelectorAll(".gx-help-kbd")].map((k) => k.textContent));
+    check("help: desk verbs appear (⇧esc · ⌘` · ⌥T · Z · ⌘1–9)",
+      ["⇧esc", "⌘`", "⌥T", "Z", "⌘1–9"].every((k) => kbds.includes(k)), JSON.stringify(kbds));
+    await page.keyboard.press("Escape");
+    await sleep(200);
+
+    check("v0.9.0 desk: zero js errors", page.jsErrors.length === 0, JSON.stringify(page.jsErrors.slice(0, 3)));
+    await ctx.close();
+  }
+
+  // ── onboarding: three invitations on a genuinely fresh boot ───────────
+  {
+    const { ctx, page } = await boot(1680, 1050, false, { freshOnboarding: true });
+    await page.waitForSelector(".gx-whisper-briefing", { timeout: 10000 });
+    const first = await page.evaluate(() => document.querySelector(".gx-whisper-briefing .gx-whisper-title")?.textContent);
+    check("onboarding: the first invitation appears once", /ONE DOOR/.test(first || ""), JSON.stringify(first));
+    await ctx.close();
+  }
+
+  // ── THE AUDIT PASS — every instrument, every posture ─────────────────
+  // Desk: window fully within the viewport, content scrollable to its end,
+  // drag to corners keeps the title bar reachable, resize stays clamped.
+  async function auditDesk(w, h, theme, deep) {
+    const { ctx, page } = await boot(w, h);
+    await page.waitForFunction(() => document.querySelectorAll(".gx-verse").length > 0, { timeout: 30000 });
+    await page.evaluate((t) => document.documentElement.setAttribute("data-theme", t), theme);
+    await sleep(200);
+    const features = await page.evaluate(() => window.__CODEX_FEATURES__.filter((f) => f.main).map((f) => f.id));
+    let bad = [];
+    for (const id of features) {
+      await page.evaluate((x) => window.__CODEX_PANEL__.open(x), id);
+      try { await page.waitForSelector(`.gx-win[data-win="${id}"]`, { timeout: 8000 }); }
+      catch { bad.push(`${id}: window never appeared`); continue; }
+      await sleep(250);
+      const r = await page.evaluate((x) => {
+        const el = document.querySelector(`.gx-win[data-win="${x}"]`);
+        const b = el.getBoundingClientRect();
+        const body = el.querySelector(".gx-win-body");
+        body.scrollTop = body.scrollHeight;
+        const reached = body.scrollHeight - body.clientHeight - body.scrollTop <= 2;
+        return { x: b.x, y: b.y, r: b.right, b: b.bottom, reached };
+      }, id);
+      if (r.x < -1 || r.y < -1 || r.r > w + 1 || r.b > h + 1) bad.push(`${id}: out of viewport ${JSON.stringify(r)}`);
+      if (!r.reached) bad.push(`${id}: content unreachable`);
+      await page.evaluate((x) => window.__CODEX_PANEL__.close(x), id);
+      await sleep(120);
+    }
+    check(`audit desk ${w}x${h} ${theme}: all instruments in-viewport & scrollable`, bad.length === 0, bad.slice(0, 3).join(" · "));
+
+    if (deep) {
+      // drag to every corner — the title bar must stay reachable
+      await page.evaluate(() => window.__CODEX_PANEL__.open("threads"));
+      await page.waitForSelector('.gx-win[data-win="threads"] .gx-win-bar', { timeout: 8000 });
+      let dragBad = [];
+      for (const [cx, cy] of [[4, 4], [w - 4, 4], [4, h - 4], [w - 4, h - 4]]) {
+        const bar = await page.$('.gx-win[data-win="threads"] .gx-win-bar');
+        const bb = await bar.boundingBox();
+        await page.mouse.move(bb.x + Math.min(60, bb.width / 2), bb.y + bb.height / 2);
+        await page.mouse.down();
+        await page.mouse.move(cx, cy, { steps: 10 });
+        await page.mouse.up();
+        await sleep(200);
+        const ok = await page.evaluate(() => {
+          const b = document.querySelector('.gx-win[data-win="threads"] .gx-win-bar').getBoundingClientRect();
+          return b.top >= 0 && b.top <= innerHeight - 20 && b.right > 60 && b.left < innerWidth - 60;
+        });
+        if (!ok) dragBad.push(`corner ${cx},${cy}`);
+      }
+      check(`audit desk ${w}x${h}: dragged window never loses its title bar`, dragBad.length === 0, dragBad.join(" · "));
+
+      // resize far past min and max — geometry stays clamped
+      const barBB = await (await page.$('.gx-win[data-win="threads"]')).boundingBox();
+      await page.mouse.move(barBB.x + barBB.width - 2, barBB.y + barBB.height - 2);
+      await page.mouse.down();
+      await page.mouse.move(barBB.x + 40, barBB.y + 40, { steps: 6 }); // shrink to nothing
+      await page.mouse.up();
+      await sleep(200);
+      const minOk = await page.evaluate(() => {
+        const b = document.querySelector('.gx-win[data-win="threads"]').getBoundingClientRect();
+        return b.width >= 279 && b.height >= 199;
+      });
+      const bb2 = await (await page.$('.gx-win[data-win="threads"]')).boundingBox();
+      await page.mouse.move(bb2.x + bb2.width - 2, bb2.y + bb2.height - 2);
+      await page.mouse.down();
+      await page.mouse.move(w + 400, h + 400, { steps: 6 }); // blow past the viewport
+      await page.mouse.up();
+      await sleep(300);
+      const maxOk = await page.evaluate(() => {
+        const b = document.querySelector('.gx-win[data-win="threads"]').getBoundingClientRect();
+        return b.right <= innerWidth + 1 && b.bottom <= innerHeight + 1;
+      });
+      check(`audit desk ${w}x${h}: resize clamps at min and max`, minOk && maxOk, JSON.stringify({ minOk, maxOk }));
+      // double-click resets
+      const bar2 = await page.$('.gx-win[data-win="threads"] .gx-win-bar');
+      await bar2.click({ clickCount: 2 });
+      await sleep(200);
+      await page.evaluate(() => window.__CODEX_PANEL__.close("threads"));
+    }
+
+    // the omnibar veil is centered and fully visible
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni", { timeout: 5000 });
+    const omni = await page.evaluate(() => {
+      const b = document.querySelector(".gx-omni").getBoundingClientRect();
+      return b.left >= 0 && b.right <= innerWidth && b.top >= 0 && b.bottom <= innerHeight;
+    });
+    check(`audit desk ${w}x${h} ${theme}: omnibar fully visible`, omni);
+    await page.keyboard.press("Escape");
+    check(`audit desk ${w}x${h} ${theme}: zero js errors`, page.jsErrors.length === 0, JSON.stringify(page.jsErrors.slice(0, 2)));
+    if (w === 2560) await shot(page, `studio-${theme}`);
+    await ctx.close();
+  }
+  await auditDesk(1680, 1050, "dark", true);
+  await auditDesk(1680, 1050, "light", false);
+  await auditDesk(2560, 1440, "dark", false);
+  await auditDesk(2560, 1440, "light", false);
+  await auditDesk(1280, 720, "dark", false);
+
+  // Palm: every instrument opens as a sheet, scrolls to its end, and the
+  // page never leaks horizontal scroll — at 390 AND 430, both themes.
+  async function auditPalm(w, h, theme) {
+    const { ctx, page } = await boot(w, h, true);
+    await page.waitForFunction(() => document.querySelectorAll(".gx-verse").length > 0, { timeout: 30000 });
+    await page.evaluate((t) => document.documentElement.setAttribute("data-theme", t), theme);
+    await sleep(200);
+    const features = await page.evaluate(() => window.__CODEX_FEATURES__.filter((f) => f.main).map((f) => f.id));
+    let bad = [];
+    for (const id of features) {
+      await page.evaluate((x) => window.__CODEX_PANEL__.open(x), id);
+      try { await page.waitForSelector(".gx-instrument", { timeout: 8000 }); }
+      catch { bad.push(`${id}: no sheet`); continue; }
+      await sleep(250);
+      const r = await page.evaluate(() => {
+        const el = document.querySelector(".gx-instrument");
+        const b = el.getBoundingClientRect();
+        const body = el.querySelector(".gx-sheet-body");
+        body.scrollTop = body.scrollHeight;
+        const reached = body.scrollHeight - body.clientHeight - body.scrollTop <= 2;
+        const hleak = document.documentElement.scrollWidth - innerWidth;
+        const handle = !!el.querySelector(".gx-sheet-handle");
+        return { top: b.top, reached, hleak, handle };
+      });
+      if (r.top < -1) bad.push(`${id}: sheet above viewport`);
+      if (!r.reached) bad.push(`${id}: content unreachable`);
+      if (r.hleak > 1) bad.push(`${id}: horizontal leak ${r.hleak}px`);
+      if (!r.handle) bad.push(`${id}: no drag handle`);
+      await page.evaluate((x) => window.__CODEX_PANEL__.close(x), id);
+      await sleep(120);
+    }
+    check(`audit palm ${w}x${h} ${theme}: sheets reachable, no leaks`, bad.length === 0, bad.slice(0, 3).join(" · "));
+
+    // the dock orb unfolds the registry
+    await page.tap(".gx-dock-orb");
+    await page.waitForSelector(".gx-dock-palm", { timeout: 5000 });
+    const orbCount = await page.evaluate(() => document.querySelectorAll(".gx-dock-palm .gx-dock-btn").length);
+    check(`audit palm ${w}x${h} ${theme}: orb unfolds the dock`, orbCount >= 10, `${orbCount} instruments`);
+    await page.tap(".gx-dock-orb");
+    check(`audit palm ${w}x${h} ${theme}: zero js errors`, page.jsErrors.length === 0, JSON.stringify(page.jsErrors.slice(0, 2)));
+    if (theme === "light") await shot(page, `palm-${w}-light`);
+    await ctx.close();
+  }
+  await auditPalm(390, 844, "dark");
+  await auditPalm(390, 844, "light");
+  await auditPalm(430, 932, "dark");
 
   const failed = results.filter((r) => !r.ok);
   console.log(`[smoke] ${failed.length ? "FAIL — " + failed.length + "/" + results.length + " failed" : "ALL GREEN — " + results.length + " checks"}`);

@@ -1,11 +1,53 @@
 import { registerFeature } from "@/kernel/registry";
+import { getState, goTo, setState, openReader } from "@/kernel/store";
+import { TRANSLATIONS } from "@/engine/corpus";
 import { Reader } from "./Reader";
+
+// T — cycle the main reader through the registry's voices.
+const cycleTranslation = () => {
+  const { cursor } = getState();
+  const ids = TRANSLATIONS.map((t) => t.id);
+  const next = ids[(ids.indexOf(cursor.translation) + 1) % ids.length];
+  goTo({ translation: next });
+};
 
 registerFeature({
   id: "reader",
   glyph: "☰",
   title: "Reader",
+  keybinding: "← → · B · ⌘[ ⌘]",
+  help: "the sacred center — arrows turn chapters, B keeps a verse, ⌘[ ⌘] walk the ledger",
   surfaces: { main: Reader },
+  commands: [
+    {
+      phrase: "translation",
+      hint: "cycle the reader's voice",
+      keys: "T",
+      keyMatch: (e) => !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "t",
+      run: cycleTranslation,
+    },
+    {
+      phrase: "reader",
+      hint: "reader wlc — a second reader pinned to a voice",
+      run: () => openReader(getState().cursor.translation),
+      match: (q) => {
+        const m = q.match(/^reader\s+(\w+)$/i);
+        if (!m) return null;
+        const t = TRANSLATIONS.find((x) => x.id === m[1].toLowerCase());
+        if (!t) return null;
+        return {
+          label: `READER · ${t.name}`,
+          hint: "a window pinned to this voice",
+          run: () => openReader(t.id),
+        };
+      },
+    },
+    {
+      phrase: "hide reader",
+      hint: "the sacred center yields the desk (again to restore)",
+      run: () => setState((s) => ({ hideReader: !s.hideReader })),
+    },
+  ],
 });
 
 export { Reader };
