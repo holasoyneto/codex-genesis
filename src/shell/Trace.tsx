@@ -3,11 +3,12 @@
 // reach for it.
 
 import { useEffect, useState } from "react";
-import { useApp, setState, openVeil, whisper, getState, dismissWhisper } from "@/kernel/store";
+import { useApp, setState, openVeil, whisper, getState, dismissWhisper, openPanel } from "@/kernel/store";
 import { APP_VERSION, RELEASE_NOTES } from "@/kernel/version";
 
 export function Trace() {
   const theme = useApp((s) => s.settings.theme);
+  const activeCase = useApp((s) => s.investigations.find((c) => c.id === s.activeInvestigation));
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 30_000);
@@ -31,6 +32,14 @@ export function Trace() {
           else whisper({ kind: "update", title: `✦ CODEX GENESIS v${APP_VERSION}`, body: RELEASE_NOTES.join(" — ") });
         }}
       >{`v${APP_VERSION}`}</button>
+      {activeCase ? (
+        <button
+          className="gx-trace-btn gx-trace-case"
+          title={`Active investigation: ${activeCase.title} (${activeCase.items.length} items)`}
+          aria-label="Open the active investigation"
+          onClick={() => openPanel("investigations")}
+        >🗂 {activeCase.items.length}</button>
+      ) : null}
       <span className="gx-trace-time">{hh}:{mm}</span>
       <button
         className="gx-trace-btn"

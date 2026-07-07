@@ -9,7 +9,7 @@ import { useApp, goTo, getState } from "@/kernel/store";
 import { closePanel } from "@/kernel/store";
 import { useInWindow } from "@/shell/Windows";
 import { bookById } from "@/engine/corpus";
-import { loadGraph, path as graphPath, near as graphNear, type Graph, type PathHop } from "@/engine/graph";
+import { loadGraph, path as graphPath, near as graphNear, families as graphFamilies, type Graph, type PathHop } from "@/engine/graph";
 import { loadOntology, type Ontology } from "@/engine/ontology";
 import { starField, bookArcs, entityBodies, verseKeyPos, spiral, ringBBox, type Star, type Body } from "./layout";
 import { subscribeGalaxyQuery, getGalaxyQuery, type GalaxyQuery } from "./query";
@@ -42,7 +42,7 @@ export function Galaxy() {
   // fighting their input (defect #3: initial view was off-center; the
   // canon ring bbox now drives the fit, re-applied on resize until touched).
   const userMovedRef = useRef(false);
-  const [result, setResult] = useState<{ trail?: PathHop[]; glow?: Map<string, number>; note: string } | null>(null);
+  const [result, setResult] = useState<{ trail?: PathHop[]; glow?: Map<string, number>; families?: Map<string, number>; note: string } | null>(null);
 
   // Build the scene once — graph + ontology + deterministic star field.
   useEffect(() => {
@@ -76,9 +76,13 @@ export function Galaxy() {
           ? `PATH ${label(query.a)} → ${label(query.b)} · ${trail.length - 1} hops`
           : `PATH ${label(query.a)} → ${label(query.b)} · no route`,
       });
-    } else {
+    } else if (query.kind === "near") {
       const glow = graphNear(scene.graph, query.ref, query.radius ?? 1);
       setResult({ glow, note: `NEAR ${label(query.ref)} · ${glow.size - 1} neighbors` });
+    } else {
+      const fam = graphFamilies(scene.graph, query.ref, query.radius ?? 2);
+      const communities = new Set(fam.values()).size;
+      setResult({ families: fam, note: `FAMILIES ${label(query.ref)} · ${fam.size} nodes · ${communities} communities` });
     }
   }, [scene, query]);
 
@@ -163,14 +167,34 @@ export function Galaxy() {
         }
       }
 
-      // stars
-      ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+      // stars — plain, unless FAMILIES is active, in which case each
+      // community gets its own hue (a deterministic hash of the label id,
+      // not an arbitrary palette — the same community always reads the
+      // same color across a session).
       const r = Math.max(0.6, Math.min(1.6, v.s));
-      for (const s of scene.stars) {
-        const x = (s.x - v.x) * v.s + w / 2;
-        const y = (s.y - v.y) * v.s + h / 2;
-        if (x < -2 || x > w + 2 || y < -2 || y > h + 2) continue;
-        ctx.fillRect(x, y, r, r);
+      const fam = result?.families;
+      if (fam) {
+        for (const s of scene.stars) {
+          const x = (s.x - v.x) * v.s + w / 2;
+          const y = (s.y - v.y) * v.s + h / 2;
+          if (x < -2 || x > w + 2 || y < -2 || y > h + 2) continue;
+          const lab = fam.get(s.id);
+          if (lab == null) {
+            ctx.globalAlpha = 0.12; ctx.fillStyle = dim;
+          } else {
+            const hue = (lab * 47) % 360; // spread labels across the wheel
+            ctx.globalAlpha = 0.85; ctx.fillStyle = `hsl(${hue} 70% 62%)`;
+          }
+          ctx.fillRect(x, y, r, r);
+        }
+      } else {
+        ctx.globalAlpha = 0.55; ctx.fillStyle = fg;
+        for (const s of scene.stars) {
+          const x = (s.x - v.x) * v.s + w / 2;
+          const y = (s.y - v.y) * v.s + h / 2;
+          if (x < -2 || x > w + 2 || y < -2 || y > h + 2) continue;
+          ctx.fillRect(x, y, r, r);
+        }
       }
 
       // NEAR ignition

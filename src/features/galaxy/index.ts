@@ -70,5 +70,25 @@ registerFeature({
         };
       },
     },
+    {
+      phrase: "families",
+      hint: "families gen.1.1 — color the communities around a place",
+      run: () => {
+        const { cursor } = getState();
+        setGalaxyQuery({ kind: "families", ref: `${cursor.bookId}.${cursor.chapter}.${cursor.verse ?? 1}` });
+        openPanel("galaxy");
+      },
+      match: (q) => {
+        const m = q.match(/^families\s+(.+)$/i);
+        if (!m) return null;
+        const ref = refToken(m[1]);
+        if (!ref) return null;
+        return {
+          label: `FAMILIES ${ref}`,
+          hint: "color the communities in the Galaxy",
+          run: () => { setGalaxyQuery({ kind: "families", ref }); openPanel("galaxy"); },
+        };
+      },
+    },
   ],
 });

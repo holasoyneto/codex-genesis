@@ -50,6 +50,7 @@
   position: relative;
 }
 .gx-trace-btn { width: 28px; height: 28px; font-size: 13px; }
+.gx-trace-case { width: auto; padding: 0 6px; font-family: var(--mono); font-size: 10px; color: var(--gold); }
 .gx-trace-ver { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; padding: 2px 5px; }
 .gx-trace-btn::after, .gx-trace-ver::after { content: ""; position: absolute; inset: -8px; }
 .gx-trace-btn:hover, .gx-trace-ver:hover { color: var(--fg); border-color: var(--line); }

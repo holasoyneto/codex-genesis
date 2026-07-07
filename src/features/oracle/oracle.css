@@ -66,6 +66,12 @@
 .gx-oracle-q { font-family: var(--serif); font-size: 14px; font-style: italic; margin: 0 0 6px; color: var(--gold); }
 .gx-oracle-a-text { font-size: 13.5px; line-height: 1.65; margin: 0 0 4px; white-space: pre-wrap; }
 .gx-oracle-a-chip { font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.1em; color: var(--fg-dim); }
+.gx-oracle-a-inv {
+  display: block; margin-top: 6px;
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em;
+  color: var(--fg-dim); padding: 3px 4px; border-radius: 5px;
+}
+.gx-oracle-a-inv:hover { color: var(--gold); background: color-mix(in oklab, var(--fg) 6%, transparent); }
 .gx-oracle-err { font-family: var(--mono); font-size: 10px; color: var(--red-letter); line-height: 1.6; }
 .gx-oracle-wait { font-family: var(--mono); font-size: 10px; color: var(--fg-dim); }
 .gx-oracle-ask { display: flex; gap: 8px; }

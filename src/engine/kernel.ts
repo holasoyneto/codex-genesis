@@ -4,7 +4,7 @@
 // execution is local, against the app's own engines — the model only
 // chooses; the analyst sees the work.
 
-import { goTo } from "@/kernel/store";
+import { goTo, addToInvestigation } from "@/kernel/store";
 import { bookById, bundleChapters, getChapter, TRANSLATIONS, covers } from "./corpus";
 import { searchScripture } from "./search";
 import { threadsFor } from "./threads";
@@ -136,6 +136,32 @@ export const KERNEL_TOOLS: KernelTool[] = [
       } catch {
         return JSON.stringify({ opened: keyLabel(key) });
       }
+    },
+  },
+  {
+    name: "add_to_investigation",
+    description: "Save a verse, entity, or note as evidence in the analyst's active case file (PALANTIR §3). Use when the user asks to keep, save, or remember something for their investigation/case.",
+    input_schema: {
+      type: "object",
+      properties: {
+        ref: str("a verse reference to save as evidence, e.g. 'jhn.3.16' (optional if entity given)"),
+        entity: str("an entity name to save as evidence, e.g. 'Melchizedek' (optional if ref given)"),
+        note: str("the analyst's note on why this matters"),
+      },
+    },
+    run: async (a) => {
+      const note = String(a.note ?? "");
+      if (a.entity) {
+        const ont = await loadOntology();
+        const e = searchEntities(ont, String(a.entity), 1)[0];
+        if (!e) return JSON.stringify({ error: "no such entity" });
+        const id = addToInvestigation("entity", { id: e.id, name: e.names[0] }, note);
+        return JSON.stringify({ saved: e.names[0], evidenceId: id });
+      }
+      const key = toKey(String(a.ref ?? ""));
+      if (!key) return JSON.stringify({ error: "unparseable reference" });
+      const id = addToInvestigation("verse", { ref: key }, note);
+      return JSON.stringify({ saved: keyLabel(key), evidenceId: id });
     },
   },
 ];

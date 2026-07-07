@@ -5,7 +5,7 @@
 // and the panel never pretends a broken engine works.
 
 import { useEffect, useRef, useState } from "react";
-import { useApp, setState, type OracleSettings, closePanel } from "@/kernel/store";
+import { useApp, setState, type OracleSettings, closePanel, addToInvestigation } from "@/kernel/store";
 import { useInWindow } from "@/shell/Windows";
 import { takeSeed } from "@/kernel/seeds";
 import { askOracleStream, listModels, probeLocal, cloudProvider, type OracleAnswer, type ChatTurn } from "@/engine/oracle";
@@ -249,6 +249,13 @@ export function Oracle() {
                         ⇄ {t.a.engine} · {t.a.model} · {LEVEL_LABEL[t.a.context.level]} (~{Math.round(t.a.context.approxTokens / 1000)}k tokens)
                         {t.cites?.length ? ` · ${t.cites.length} refs · ${t.cites.filter((c) => c.verified === false).length} unverified` : ""}
                       </span>
+                    ) : null}
+                    {t.text ? (
+                      <button
+                        className="gx-oracle-a-inv"
+                        title="Add this answer to your investigation"
+                        onClick={() => addToInvestigation("oracle", { question: t.q, answer: t.text.slice(0, 600) }, "")}
+                      >🗂 add to investigation</button>
                     ) : null}
                   </div>
                 ) : (

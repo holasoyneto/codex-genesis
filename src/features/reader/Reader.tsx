@@ -4,7 +4,7 @@
 
 import { useContext, useEffect, useRef, useState } from "react";
 import {
-  useApp, goTo, setState, openDossier, openPanel, openReader, whisper, type Cursor,
+  useApp, goTo, setState, openDossier, openPanel, openReader, whisper, addToInvestigation, type Cursor,
 } from "@/kernel/store";
 import { setSeed } from "@/kernel/seeds";
 import { WinContext } from "@/shell/Windows";
@@ -137,6 +137,7 @@ function VerseMenu({ refc, text, entityIds, flip, onClose, onNav }: {
       })}>✦ mark</button>
       <button role="menuitem" onClick={act(() => { void navigator.clipboard?.writeText(`“${text}” — ${label}`); })}>⧉ copy</button>
       <button role="menuitem" onClick={act(() => { go(); setSeed("oracle", `About ${label} — `); openPanel("oracle"); })}>☲ ask the Oracle</button>
+      <button role="menuitem" onClick={act(() => addToInvestigation("verse", { ref: `${refc.bookId}.${refc.chapter}.${refc.verse}` }, ""))}>🗂 add to investigation</button>
       {entityIds.length ? (
         <button role="menuitem" onClick={act(() => openDossier(entityIds[0]))}>☖ dossier</button>
       ) : null}

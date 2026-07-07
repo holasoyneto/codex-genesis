@@ -1,0 +1,41 @@
+/* The Trail — a quiet breadcrumb ribbon, desk bottom-left, above the dock's
+   footprint but never overlapping it (both are absolutely positioned in
+   the shared .gx-edge slot; the dock owns bottom-center, the Trail owns
+   bottom-left — no two features ever claim the same pixels). */
+.gx-trail {
+  position: absolute;
+  left: var(--edge-pad);
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  max-width: min(420px, calc(50vw - var(--edge-pad)));
+  pointer-events: auto;
+  padding: 6px 10px;
+  border-radius: 12px;
+  opacity: 0.55;
+  transition: opacity var(--fade);
+}
+.gx-trail:hover, .gx-trail.is-open { opacity: 1; }
+
+.gx-trail-toggle {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.14em;
+  color: var(--fg-dim);
+}
+.gx-trail-toggle:hover { color: var(--fg); }
+
+.gx-trail-steps {
+  list-style: none; margin: 6px 0 0; padding: 0;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px;
+}
+.gx-trail-steps li { display: flex; align-items: center; gap: 4px; }
+.gx-trail-step {
+  font-family: var(--mono); font-size: 9.5px; color: var(--accent);
+  padding: 2px 5px; border-radius: 5px; white-space: nowrap;
+}
+.gx-trail-step:hover { background: color-mix(in oklab, var(--accent) 10%, transparent); }
+.gx-trail-arrow { color: var(--fg-dim); font-size: 9px; opacity: 0.6; }
+
+.gx-trail-save {
+  display: block; margin-top: 6px;
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em;
+  color: var(--gold); padding: 3px 5px; border-radius: 5px;
+}
+.gx-trail-save:hover { background: color-mix(in oklab, var(--gold) 10%, transparent); }

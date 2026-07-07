@@ -482,11 +482,16 @@ async function streamCompat(
   throw new Error("the Oracle looped too long on tools");
 }
 
-/** The streaming door — transcript-aware, tool-driving, honest. */
+/** The streaming door — transcript-aware, tool-driving, honest. An
+    optional `forceEngine` lets a caller (Council, PALANTIR §4) run a
+    specific engine regardless of the user's active setting — used to run
+    local AND cloud in parallel when both are configured. */
 export async function askOracleStream(
-  question: string, transcript: ChatTurn[], ev: OracleStreamEvents
+  question: string, transcript: ChatTurn[], ev: OracleStreamEvents,
+  forceEngine?: "local" | "cloud"
 ): Promise<OracleAnswer> {
-  const { engine, anthropicKey, localUrl, model: chosen } = getState().settings.oracle;
+  const { anthropicKey, localUrl, model: chosen } = getState().settings.oracle;
+  const engine = forceEngine ?? getState().settings.oracle.engine;
   if (!engine) throw new Error("no engine chosen — open Oracle setup");
   try {
     let out: OracleAnswer;
@@ -517,6 +522,19 @@ export async function askOracleStream(
     record("oracle", `${engine} failed: ${String(e).slice(0, 80)}`);
     throw e;
   }
+}
+
+// ── Council (PALANTIR §4) — two minds, reconciled ──────────────────────
+// Council needs two DIFFERENT engines actually reachable — not just two
+// settings fields filled in. A local server that never answers doesn't
+// count as a second mind; we probe honestly.
+export async function councilReady(): Promise<{ local: boolean; cloud: boolean }> {
+  const { localUrl, anthropicKey } = getState().settings.oracle;
+  const [localProbe, cloud] = await Promise.all([
+    probeLocal(localUrl.replace(/\/$/, "")).catch(() => ({ ok: false })),
+    Promise.resolve(!!cloudProvider(anthropicKey)),
+  ]);
+  return { local: localProbe.ok, cloud };
 }
 
 // ── the door ───────────────────────────────────────────────────────────

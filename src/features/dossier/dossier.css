@@ -4,6 +4,11 @@
 .gx-dos-err { display: block; font-family: var(--mono); font-size: 9.5px; opacity: 0.7; margin-top: 6px; }
 
 .gx-dos-head { display: flex; gap: 11px; align-items: baseline; margin: 0 24px 10px 0; }
+.gx-dos-inv {
+  margin-left: auto; width: 26px; height: 26px; border-radius: 6px;
+  color: var(--fg-dim); font-size: 13px; align-self: flex-start;
+}
+.gx-dos-inv:hover { color: var(--gold); }
 .gx-dos-glyph { font-size: 20px; color: var(--gold); line-height: 1; }
 .gx-dos-name { font-family: var(--serif); font-size: 22px; margin: 0; font-weight: 600; }
 .gx-dos-kind {

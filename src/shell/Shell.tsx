@@ -18,6 +18,7 @@ import { getFeature } from "@/kernel/registry";
 import { bookById } from "@/engine/corpus";
 import { Trace } from "./Trace";
 import { Dock } from "./Dock";
+import { Trail } from "./Trail";
 import { Windows } from "./Windows";
 import { PalmNav } from "./PalmNav";
 import { dispatchKey } from "./keymap";
@@ -234,6 +235,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <div className="gx-edge">
         <Trace />
         <Dock />
+        <Trail />
         {palm ? <PalmNav /> : null}
       </div>
       <WhisperLane />

@@ -4,7 +4,7 @@
 // used by search hits, thread rows, dossier mentions, oracle citations —
 // a ref can never again mean five different things in five panels.
 
-import { goTo, openPanel, setState } from "./store";
+import { goTo, openPanel, setState, addToInvestigation } from "./store";
 import { bookById, getChapter } from "@/engine/corpus";
 import { record } from "./witness";
 import { setSeed } from "./seeds";
@@ -55,6 +55,10 @@ export function Ref({ bookId, chapter, verse, detail, className }: RefProps) {
           title="Ask the Oracle"
           onClick={() => { read(); setSeed("oracle", `About ${label} — `); openPanel("oracle"); }}
         >☲</button>
+        <button
+          title="Add to investigation"
+          onClick={() => addToInvestigation("verse", { ref: `${bookId}.${chapter}.${verse ?? 1}` }, "")}
+        >🗂</button>
       </span>
     </span>
   );

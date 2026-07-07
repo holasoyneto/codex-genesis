@@ -4,7 +4,7 @@
 // This is the keystone surface: clicking "Melchizedek" anywhere lands here.
 
 import { useEffect, useState } from "react";
-import { useApp, goTo, openDossier, closePanel } from "@/kernel/store";
+import { useApp, goTo, openDossier, closePanel, addToInvestigation } from "@/kernel/store";
 import { useInWindow } from "@/shell/Windows";
 import { Ref } from "@/kernel/Ref";
 import { bookById } from "@/engine/corpus";
@@ -90,6 +90,11 @@ export function Dossier() {
                 <span className="gx-dos-aka"> · also {entity.names.slice(1).join(", ")}</span>
               ) : null}
             </div>
+            <button
+              className="gx-dos-inv"
+              title="Add to investigation"
+              onClick={() => addToInvestigation("entity", { id: entity.id, name: entity.names[0] }, "")}
+            >🗂</button>
           </header>
 
           <p className="gx-dos-summary">{entity.summary}</p>

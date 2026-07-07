@@ -36,6 +36,44 @@ export interface Mark {
   at: number;     // epoch ms
 }
 
+// ── PALANTIR §3 — Investigations, evidence, the Trail ──────────────────
+// A case file: named, with a walkable list of evidence gathered from
+// anywhere in the app (a verse, a range, an entity, a search hit, an
+// Oracle answer) plus the analyst's own edges between entities (#24).
+export type EvidenceKind = "verse" | "range" | "entity" | "search" | "oracle";
+
+export interface Evidence {
+  id: string;
+  kind: EvidenceKind;
+  /** Free-form payload, kind-specific: a ref string, a range, an entity id,
+      a search query + hit count, an Oracle question+answer excerpt. */
+  payload: Record<string, unknown>;
+  note: string;       // the analyst's own words, editable inline
+  addedAt: number;
+}
+
+export interface UserEdge {
+  id: string;
+  from: string;  // entity id or ref
+  to: string;
+  kind: string;  // free-form relation label the analyst names
+  note: string;
+  addedAt: number;
+}
+
+export interface Investigation {
+  id: string;
+  title: string;
+  created: number;
+  items: Evidence[];
+  userEdges: UserEdge[];
+}
+
+export interface TrailStep {
+  cursor: Cursor;
+  at: number;
+}
+
 /** One instrument window's geometry on the desk. */
 export interface WinGeo { x: number; y: number; w: number; h: number }
 
@@ -63,6 +101,17 @@ export interface AppState {
   /** Windowed readers pinned to a translation ("reader@wlc"). Linked ones
       follow the global cursor; unlinked ones keep their own place. */
   readers: Record<string, { translation: string; linked: boolean; bookId: string; chapter: number }>;
+  /** PALANTIR §3 — every case file the analyst has opened. */
+  investigations: Investigation[];
+  /** The investigation new evidence lands in ("add to investigation"
+      always has a destination — the newest case, or one the analyst
+      pinned as active). null only when no case exists yet. */
+  activeInvestigation: string | null;
+  /** The Witness's jump ledger, rendered as a walkable breadcrumb ribbon
+      (the Trail) — distinct from `history` (which drives ⌘[/⌘]): the
+      Trail is a longer, savable record of EVERY place visited, not just
+      "place changes" eligible for back/forward. */
+  trail: TrailStep[];
 }
 
 export interface Whisper {
@@ -73,7 +122,7 @@ export interface Whisper {
   actions?: { label: string; command: string }[];
 }
 
-const VERSION = 2;
+const VERSION = 3;
 const KEY = "codex-genesis.v" + VERSION;
 
 const DEFAULTS: AppState = {
@@ -95,13 +144,22 @@ const DEFAULTS: AppState = {
   zen: false,
   hideReader: false,
   readers: {},
+  investigations: [],
+  activeInvestigation: null,
+  trail: [],
 };
 
 type Listener = () => void;
 
-// Explicit migrations, oldest first. A v1 save is a strict subset of v2 —
-// the new slices (wm, history, onboarded) take their defaults.
+// Explicit migrations, oldest first. Each version's save is a strict
+// subset of the next — new slices (wm, history, onboarded, investigations,
+// trail…) take their defaults on first load under the new key.
 function migrate(): string | null {
+  const v2 = localStorage.getItem("codex-genesis.v2");
+  if (v2) {
+    localStorage.removeItem("codex-genesis.v2");
+    return v2;
+  }
   const v1 = localStorage.getItem("codex-genesis.v1");
   if (v1) {
     localStorage.removeItem("codex-genesis.v1");
@@ -130,6 +188,9 @@ function load(): AppState {
       wm: { open: saved.wm?.open ?? [], geo: saved.wm?.geo ?? {} },
       history: saved.history ?? [],
       historyAt: saved.historyAt ?? (saved.history?.length ?? 0) - 1,
+      investigations: saved.investigations ?? [],
+      activeInvestigation: saved.activeInvestigation ?? null,
+      trail: saved.trail ?? [],
       veil: null,      // ephemeral — never persisted open
       whispers: [],    // ephemeral
       zen: false,      // ephemeral
@@ -170,6 +231,8 @@ export function subscribe(l: Listener): () => void {
 // ── conveniences ───────────────────────────────────────────────────────
 const HISTORY_MAX = 100;
 
+const TRAIL_MAX = 300;
+
 export function goTo(cursor: Partial<Cursor>): void {
   setState((s) => {
     const next = { ...s.cursor, ...cursor };
@@ -177,7 +240,10 @@ export function goTo(cursor: Partial<Cursor>): void {
     const moved = next.bookId !== s.cursor.bookId || next.chapter !== s.cursor.chapter;
     if (!moved) return { cursor: next };
     const history = [...s.history.slice(0, s.historyAt + 1), next].slice(-HISTORY_MAX);
-    return { cursor: next, history, historyAt: history.length - 1 };
+    // The Trail — every place visited, walkable, longer-lived than the
+    // ⌘[/⌘] ledger and independently savable to an investigation.
+    const trail = [...s.trail, { cursor: next, at: Date.now() }].slice(-TRAIL_MAX);
+    return { cursor: next, history, historyAt: history.length - 1, trail };
   });
 }
 
@@ -307,6 +373,109 @@ export function openDossier(entityId: string): void {
     panel: "dossier",
     wm: { ...s.wm, open: [...s.wm.open.filter((x) => x !== "dossier"), "dossier"] },
   }));
+}
+
+// ── PALANTIR §3 — investigations, evidence, the Trail ───────────────────
+function genId(prefix: string): string {
+  return prefix + Math.random().toString(36).slice(2, 9);
+}
+
+/** New case file; becomes the active investigation immediately. */
+export function createInvestigation(title: string): string {
+  const id = genId("case");
+  setState((s) => ({
+    investigations: [...s.investigations, { id, title: title || "Untitled case", created: Date.now(), items: [], userEdges: [] }],
+    activeInvestigation: id,
+  }));
+  return id;
+}
+
+export function deleteInvestigation(id: string): void {
+  setState((s) => ({
+    investigations: s.investigations.filter((c) => c.id !== id),
+    activeInvestigation: s.activeInvestigation === id ? null : s.activeInvestigation,
+  }));
+}
+
+export function setActiveInvestigation(id: string | null): void {
+  setState({ activeInvestigation: id });
+}
+
+export function renameInvestigation(id: string, title: string): void {
+  setState((s) => ({
+    investigations: s.investigations.map((c) => (c.id === id ? { ...c, title } : c)),
+  }));
+}
+
+/** "add to investigation" — the one action every <Ref>, verse menu,
+    dossier, search hit and Oracle answer can carry. Lands in the active
+    case, creating "Untitled case" the first time there is none. Returns
+    the evidence id (harness-checkable). */
+export function addToInvestigation(kind: EvidenceKind, payload: Record<string, unknown>, note = ""): string {
+  const evId = genId("ev");
+  setState((s) => {
+    let caseId = s.activeInvestigation;
+    let investigations = s.investigations;
+    if (!caseId || !investigations.some((c) => c.id === caseId)) {
+      caseId = genId("case");
+      investigations = [...investigations, { id: caseId, title: "Untitled case", created: Date.now(), items: [], userEdges: [] }];
+    }
+    const item: Evidence = { id: evId, kind, payload, note, addedAt: Date.now() };
+    investigations = investigations.map((c) => (c.id === caseId ? { ...c, items: [...c.items, item] } : c));
+    return { investigations, activeInvestigation: caseId };
+  });
+  return evId;
+}
+
+export function removeEvidence(caseId: string, evId: string): void {
+  setState((s) => ({
+    investigations: s.investigations.map((c) =>
+      c.id === caseId ? { ...c, items: c.items.filter((i) => i.id !== evId) } : c
+    ),
+  }));
+}
+
+export function updateEvidenceNote(caseId: string, evId: string, note: string): void {
+  setState((s) => ({
+    investigations: s.investigations.map((c) =>
+      c.id === caseId
+        ? { ...c, items: c.items.map((i) => (i.id === evId ? { ...i, note } : i)) }
+        : c
+    ),
+  }));
+}
+
+export function addUserEdge(caseId: string, from: string, to: string, kind: string, note = ""): void {
+  setState((s) => ({
+    investigations: s.investigations.map((c) =>
+      c.id === caseId
+        ? { ...c, userEdges: [...c.userEdges, { id: genId("edge"), from, to, kind, note, addedAt: Date.now() }] }
+        : c
+    ),
+  }));
+}
+
+export function removeUserEdge(caseId: string, edgeId: string): void {
+  setState((s) => ({
+    investigations: s.investigations.map((c) =>
+      c.id === caseId ? { ...c, userEdges: c.userEdges.filter((e) => e.id !== edgeId) } : c
+    ),
+  }));
+}
+
+/** "save trail to investigation" — the last N jumps become evidence rows
+    in one stroke. */
+export function saveTrailToInvestigation(n = 20): string {
+  const { trail } = getState();
+  const recent = trail.slice(-n);
+  let last = "";
+  for (const step of recent) {
+    const ref = `${step.cursor.bookId}.${step.cursor.chapter}.${step.cursor.verse ?? 1}`;
+    if (ref === last) continue; // collapse consecutive repeats
+    last = ref;
+    addToInvestigation("verse", { ref }, "from the Trail");
+  }
+  return getState().activeInvestigation ?? "";
 }
 
 // React binding (no dependency): useSyncExternalStore against the store.
