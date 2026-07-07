@@ -5,7 +5,7 @@
 // and the panel never pretends a broken engine works.
 
 import { useEffect, useRef, useState } from "react";
-import { useApp, setState, type OracleSettings, closePanel, addToInvestigation } from "@/kernel/store";
+import { useApp, setState, flushPersist, type OracleSettings, closePanel, addToInvestigation } from "@/kernel/store";
 import { useInWindow } from "@/shell/Windows";
 import { takeSeed } from "@/kernel/seeds";
 import { askOracleStream, listModels, probeLocal, cloudProvider, type OracleAnswer, type ChatTurn } from "@/engine/oracle";
@@ -37,7 +37,7 @@ function Setup() {
     const r = await probeLocal(oracle.localUrl);
     setProbe(r.ok ? "ok" : "fail");
     setProbeWhy(r.ok ? `found ${r.model}` : r.why ?? "");
-    if (r.ok) setOracle({ engine: "local" });
+    if (r.ok) { setOracle({ engine: "local" }); flushPersist(); }
   };
 
   return (
@@ -61,7 +61,7 @@ function Setup() {
           <button
             className="gx-oracle-btn"
             disabled={!cloudProvider(oracle.anthropicKey)}
-            onClick={() => setOracle({ engine: "cloud" })}
+            onClick={() => { setOracle({ engine: "cloud" }); flushPersist(); }}
           >USE CLOUD</button>
         </div>
         {oracle.anthropicKey && !cloudProvider(oracle.anthropicKey) ? (

@@ -227,14 +227,37 @@ let state: AppState = load();
 const listeners = new Set<Listener>();
 let persistTimer: ReturnType<typeof setTimeout> | undefined;
 
+function writeNow() {
+  try {
+    const { veil: _v, whispers: _w, zen: _z, ...durable } = state;
+    localStorage.setItem(KEY, JSON.stringify(durable));
+  } catch { /* private mode */ }
+}
+
 function persist() {
   clearTimeout(persistTimer);
-  persistTimer = setTimeout(() => {
-    try {
-      const { veil: _v, whispers: _w, zen: _z, ...durable } = state;
-      localStorage.setItem(KEY, JSON.stringify(durable));
-    } catch { /* private mode */ }
-  }, 150);
+  persistTimer = setTimeout(writeNow, 150);
+}
+
+/** Force any pending state to disk NOW, cancelling the debounce. Called
+    when the page is hidden or torn down so a value entered a moment ago —
+    an API key above all — is never lost to the 150ms window when the app
+    is closed or backgrounded (a PWA / mobile webview can freeze or kill the
+    page before a debounced write ever fires). */
+export function flushPersist() {
+  clearTimeout(persistTimer);
+  writeNow();
+}
+
+if (typeof window !== "undefined") {
+  // pagehide/beforeunload cover close, navigation and bfcache; the hidden
+  // visibility state is the only reliable signal when a mobile OS or an app
+  // wrapper backgrounds us — so the key survives "enter it, then quit."
+  window.addEventListener("pagehide", flushPersist);
+  window.addEventListener("beforeunload", flushPersist);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") flushPersist();
+  });
 }
 
 export function getState(): AppState { return state; }

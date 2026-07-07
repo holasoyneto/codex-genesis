@@ -1877,20 +1877,52 @@ try {
   }
 
   // ── regression: the CODEX charter translation renders + its honesty banner ──
+  // Boot straight into a codex passage (seed the cursor before load) rather
+  // than patching localStorage post-boot — a page-hide flush now writes the
+  // real in-memory cursor on reload, so the old patch+reload hack is moot.
   {
-    const { ctx, page } = await boot(1280, 900);
-    await page.waitForFunction(() => document.querySelectorAll(".gx-verse").length > 0, { timeout: 30000 });
-    await page.evaluate(() => window.CODEX_KERNEL.call("open_passage", { ref: "exo.3.14" }));
-    await sleep(500); // debounce persist
-    // the store-backed goTo exposed on the kernel doesn't take a translation —
-    // patch the persisted cursor directly, then reload to pick it up fresh.
-    await page.evaluate(() => { const s = JSON.parse(localStorage.getItem("codex-genesis.v3") || "{}"); s.cursor = { bookId: "exo", chapter: 3, verse: 14, translation: "codex" }; localStorage.setItem("codex-genesis.v3", JSON.stringify(s)); });
-    await page.reload({ waitUntil: "load" });
+    const ctx = await browser.createBrowserContext();
+    const page = await ctx.newPage();
+    await page.evaluateOnNewDocument(() => {
+      localStorage.setItem("codex-genesis.v3", JSON.stringify({ onboarded: true, cursor: { bookId: "exo", chapter: 3, verse: 14, translation: "codex" } }));
+    });
+    await page.setViewport({ width: 1280, height: 900, deviceScaleFactor: 2 });
+    await page.goto(URL, { waitUntil: "load", timeout: 30000 });
     await page.waitForFunction(() => window.__CODEX_READY__ === true, { timeout: 30000 });
     await page.waitForFunction(() => document.querySelectorAll(".gx-verse").length > 0, { timeout: 30000 });
     await sleep(300);
     const cx = await page.evaluate(() => ({ title: document.querySelector(".gx-reader-title")?.textContent?.trim(), ungated: !!document.querySelector(".gx-ungated-banner"), verses: document.querySelectorAll(".gx-verse").length }));
     check("codex: the charter translation renders Exodus 3 with the UNGATED honesty banner", /Exodus\s*3/i.test(cx.title || "") && cx.ungated && cx.verses > 0, JSON.stringify(cx));
+    await ctx.close();
+  }
+
+  // ── regression: an entered API key is remembered across a reload ──
+  // (persist is debounced; a synchronous flush on commit + on page-hide must
+  //  land the key so "enter it, then quit" never loses it.)
+  {
+    const { ctx, page } = await boot(1280, 900);
+    const testKey = "sk-ant-api03-SMOKE" + "0".repeat(84);
+    await page.evaluate(() => document.querySelectorAll(".gx-verse").length); // ensure booted
+    await page.evaluate(() => window.__CODEX_PANEL__.open("oracle"));
+    await page.waitForSelector(".gx-oracle-key", { timeout: 5000 });
+    await page.click(".gx-oracle-key");
+    await page.type(".gx-oracle-key", testKey, { delay: 2 });
+    // commit the engine and read localStorage in the SAME tick — only a
+    // synchronous flush (not the 150ms debounce) could have written it.
+    const immediate = await page.evaluate(() => {
+      const b = [...document.querySelectorAll(".gx-oracle-btn")].find((x) => /USE CLOUD/i.test(x.textContent));
+      b.click();
+      const ls = JSON.parse(localStorage.getItem("codex-genesis.v3") || "{}");
+      return { engine: ls?.settings?.oracle?.engine, keyLen: (ls?.settings?.oracle?.anthropicKey || "").length };
+    });
+    check("oracle: committing an engine writes the key synchronously (no debounce race on quit)", immediate.engine === "cloud" && immediate.keyLen === testKey.length, JSON.stringify(immediate));
+    await page.reload({ waitUntil: "load", timeout: 30000 });
+    await page.waitForFunction(() => window.__CODEX_READY__ === true, { timeout: 30000 });
+    await sleep(300);
+    await page.evaluate(() => window.__CODEX_PANEL__.open("oracle"));
+    await sleep(300);
+    const remembered = await page.evaluate(() => ({ setup: !!document.querySelector(".gx-oracle-setup"), ask: !!document.querySelector(".gx-oracle-ask input") }));
+    check("oracle: the API key + engine are remembered across a reload (no re-setup)", !remembered.setup && remembered.ask, JSON.stringify(remembered));
     await ctx.close();
   }
 
