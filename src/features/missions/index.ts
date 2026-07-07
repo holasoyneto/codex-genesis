@@ -6,6 +6,7 @@ registerFeature({
   id: "missions",
   glyph: "☄",
   title: "Missions",
+  purpose: "a multi-step research goal, worked and reported",
   surfaces: { main: Missions },
   commands: [
     { phrase: "missions", hint: "give the Oracle a multi-step research goal", run: () => openPanel("missions") },

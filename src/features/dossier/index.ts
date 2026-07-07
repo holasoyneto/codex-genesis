@@ -11,6 +11,7 @@ registerFeature({
   id: "dossier",
   glyph: "☖",
   title: "Dossier",
+  purpose: "everything about a person or place",
   surfaces: { main: Dossier },
   commands: [
     { phrase: "dossier", hint: "the entity under study", run: () => openPanel("dossier") },

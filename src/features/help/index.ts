@@ -6,6 +6,7 @@ registerFeature({
   id: "help",
   glyph: "?",
   title: "Help",
+  purpose: "every instrument and every key, in one place",
   keybinding: "?",
   help: "everything registered, in one glass overlay",
   surfaces: { veil: Help },

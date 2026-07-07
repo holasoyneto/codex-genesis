@@ -22,6 +22,7 @@ registerFeature({
   id: "galaxy",
   glyph: "✧",
   title: "Galaxy",
+  purpose: "the whole canon as a night sky",
   help: "the whole canon as a sky — pan, zoom, click a star to read",
   surfaces: { main: Galaxy },
   commands: [

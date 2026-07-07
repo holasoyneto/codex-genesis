@@ -8,6 +8,10 @@ export interface FeatureManifest {
   id: string;
   glyph: string;          // one character, the feature's mark
   title: string;
+  /** DESIGN §I.3 — one plain-words line, ≤60 chars, written ONCE here and
+      reused verbatim by the dock, window title bar, help overlay, and the
+      omnibar index. Required; a build-time throw catches an empty one. */
+  purpose: string;
   /** Surfaces this feature can render into. The SHELL decides posture:
       desk mounts `main` as a window, palm mounts it as a sheet. */
   surfaces: {
@@ -36,9 +40,25 @@ export interface FeatureManifest {
 }
 
 const features = new Map<string, FeatureManifest>();
+// DESIGN §II.7 — no two features may share a glyph. Tracked alongside the
+// map so the check is O(1) per registration, not a full-scan build step.
+const glyphOwners = new Map<string, string>();
 
 export function registerFeature(m: FeatureManifest): void {
   if (features.has(m.id)) throw new Error(`feature ${m.id} registered twice`);
+  // DESIGN §VI — purpose is required, plain words, ≤60 chars. A feature
+  // without one does not ship; this throw IS the enforcement.
+  if (!m.purpose || !m.purpose.trim()) {
+    throw new Error(`feature ${m.id} has no purpose — DESIGN §I.3 requires one`);
+  }
+  if (m.purpose.length > 60) {
+    throw new Error(`feature ${m.id} purpose exceeds 60 chars: "${m.purpose}"`);
+  }
+  const prior = glyphOwners.get(m.glyph);
+  if (prior) {
+    throw new Error(`glyph "${m.glyph}" claimed by both ${prior} and ${m.id} — DESIGN §II.7 forbids sharing`);
+  }
+  glyphOwners.set(m.glyph, m.id);
   features.set(m.id, m);
 }
 

@@ -6,6 +6,7 @@ registerFeature({
   id: "investigations",
   glyph: "🗂",
   title: "Investigations",
+  purpose: "your case files — evidence, notes, export",
   surfaces: { main: Investigations },
   commands: [
     { phrase: "investigations", hint: "your case files — evidence, notes, export", run: () => openPanel("investigations") },

@@ -53,6 +53,18 @@
   background: color-mix(in oklab, var(--accent) 7%, transparent);
 }
 .gx-verse.is-red { color: var(--red-letter); }
+/* CODEX Open Canon honesty rendering: gold ONLY for gate=GATED_COMPLETE.
+   Ungated verses stay in normal ink — the chapter banner carries the
+   caveat instead of tinting text that hasn't earned it. */
+.gx-verse.is-gated { border-left-color: color-mix(in oklab, var(--gold) 55%, transparent); }
+.gx-verse.is-gated .gx-vn { color: var(--gold); }
+.gx-ungated-banner {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--fg-dim); text-align: center;
+  margin: 0 0 1.2em; padding: 6px 0;
+  border-top: 1px solid color-mix(in oklab, var(--fg) 12%, transparent);
+  border-bottom: 1px solid color-mix(in oklab, var(--fg) 12%, transparent);
+}
 .gx-vn {
   font-family: var(--mono);
   font-size: 0.58em; color: var(--fg-dim);

@@ -6,6 +6,7 @@ registerFeature({
   id: "timeline",
   glyph: "𝍫",
   title: "Timeline",
+  purpose: "the eras, in order, honestly dated",
   help: "eras and events — a scholarly survey, honestly dated",
   surfaces: { main: Timeline },
   commands: [

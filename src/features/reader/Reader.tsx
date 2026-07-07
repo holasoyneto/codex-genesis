@@ -395,12 +395,18 @@ export function Reader() {
         <p className="gx-reader-wait" aria-live="polite">…</p>
       ) : (
         <div className="gx-verses">
+          {ch.translation === "codex" && ch.verses.some((v) => v.gate === "UNGATED") ? (
+            <p className="gx-ungated-banner" role="note">
+              UNGATED — provisional rendering, gates pending
+            </p>
+          ) : null}
           {ch.verses.map((v) => (
             <p
               key={v.n}
               className={
                 "gx-verse" +
                 (red?.has(v.n) ? " is-red" : "") +
+                (v.gate === "GATED_COMPLETE" ? " is-gated" : "") +
                 (current && cursor.verse === v.n ? " is-focus" : "") +
                 (menu?.verse === v.n ? " has-menu" : "")
               }

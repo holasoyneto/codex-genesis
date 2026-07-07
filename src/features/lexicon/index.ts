@@ -7,6 +7,7 @@ registerFeature({
   id: "lexicon",
   glyph: "אָ",
   title: "Lexicon",
+  purpose: "the original word, and its family",
   help: "Strong's Hebrew & Greek — lemma H430, lemma G26",
   surfaces: { main: Lexicon },
   commands: [

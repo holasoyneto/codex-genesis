@@ -6,6 +6,7 @@ registerFeature({
   id: "library",
   glyph: "❖",
   title: "Library",
+  purpose: "every book, every voice, one shelf",
   surfaces: { main: Library },
   commands: [
     { phrase: "library", hint: "the shelves", run: () => openPanel("library") },

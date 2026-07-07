@@ -17,7 +17,14 @@ export interface Book {
 export const BOOKS: Book[] = booksRaw as Book[];
 export const bookById = new Map(BOOKS.map((b) => [b.id, b]));
 
-export interface Verse { n: number; text: string }
+export interface Verse {
+  n: number;
+  text: string;
+  /** Open Canon honesty fields — undefined for every other bundle. */
+  gate?: "GATED_COMPLETE" | "UNGATED";
+  src?: string | null;   // witness siglum
+  cr?: string | null;    // contested-rendering id
+}
 export interface Chapter {
   translation: string;
   bookId: string;
@@ -68,6 +75,10 @@ export const TRANSLATIONS: Translation[] = [
   { id: "beyond", name: "The Recovered Books", lang: "EN · beyond the canon",
     bundled: true,
     coverage: ["esg", "jub", "4ezr", "3co", "lao", "ps2", "2ba", "epb", "1cl", "2cl", "2en", "od-sol", "jas-pat", "ap-mos", "1mq", "2mq", "3mq", "3en"] },
+  { id: "codex", name: "CODEX · The Open Canon", lang: "EN · gated readings",
+    bundled: true,
+    // Only books with any baked reading — the gap itself is honest, not silent.
+    coverage: ["gen", "jhn"] },
 ];
 
 export function covers(t: Translation, bookId: string): boolean {

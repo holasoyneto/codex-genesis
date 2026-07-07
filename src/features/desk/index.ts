@@ -19,8 +19,9 @@ const dockables = () => allFeatures().filter((f) => f.surfaces.main);
 
 registerFeature({
   id: "desk",
-  glyph: "❖",
+  glyph: "✥",
   title: "Desk",
+  purpose: "the shell itself — windows, theme, zen",
   help: "the shell's own verbs — windows, theme, zen",
   surfaces: {},
   commands: [

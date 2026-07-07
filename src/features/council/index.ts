@@ -6,6 +6,7 @@ registerFeature({
   id: "council",
   glyph: "☯",
   title: "Council",
+  purpose: "two minds answer, disagreement shown",
   surfaces: { main: Council },
   commands: [
     { phrase: "council", hint: "ask two minds at once, reconciled honestly", run: () => openPanel("council") },

@@ -16,6 +16,7 @@ registerFeature({
   id: "reader",
   glyph: "☰",
   title: "Reader",
+  purpose: "the text itself",
   keybinding: "← → · B · ⌘[ ⌘]",
   help: "the sacred center — arrows turn chapters, B keeps a verse, ⌘[ ⌘] walk the ledger",
   surfaces: { main: Reader, veil: NavSheet },
