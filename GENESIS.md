@@ -107,24 +107,39 @@ What v1 got RIGHT — these are the crown jewels, and they port:
 4. ✅ **The shelves** — library/translations (source lights, canons incl. beyond,
    canon-tradition tags · v0.9.0).
 5. ◐ **The instruments** — settings-from-registry ✅, oracle + kernel tools ✅
-   (v0.9.0: streaming tool-use analyst with claim grading), galaxy ✅ (v0.9.0:
-   fused graph + canvas sky), timeline ✅, lexicon ✅ (v0.9.0); sword / mirror /
-   crossref web / map still to come, one per session, each molted per
-   EXOGRAMMAR (instruments, not documents).
+   (v0.9.0: streaming tool-use analyst with claim grading; v1.0.0: kernel
+   grows add_to_investigation), galaxy ✅ (v0.9.0: fused graph + canvas
+   sky; v1.0.0: auto-fit/centered ring, zoom-dependent label culling,
+   FAMILIES coloring), timeline ✅, lexicon ✅ (v0.9.0), investigations ✅
+   / missions ✅ / council ✅ (v1.0.0); sword / mirror / crossref web / map
+   still to come, one per session, each molted per EXOGRAMMAR (instruments,
+   not documents).
 6. ◐ **The skin** — PWA ✅, iOS shell via Capacitor ✅ (v0.9.0 — `npx cap open
    ios`); Tauri desk skin and MLX/New Siri engines still to come.
 
-### PALANTIR progress (v0.9.0 "The Glass Cathedral")
-Sessions 4–10 of ./PALANTIR.md landed in one pass: the fused graph
-(engine/graph.ts) + THE GALAXY; the analyst workbench (window manager,
-pivot-everywhere <Ref>, cursor history, grid picker); the Oracle as
-analyst (kernel tools, SSE streaming both engine families, transcript
+### PALANTIR progress (v0.9.0 "The Glass Cathedral" → v1.0.0 "The Name Is Earned")
+Sessions 4–10 of ./PALANTIR.md landed in v0.9.0 in one pass: the fused
+graph (engine/graph.ts) + THE GALAXY; the analyst workbench (window
+manager, pivot-everywhere <Ref>, cursor history, grid picker); the Oracle
+as analyst (kernel tools, SSE streaming both engine families, transcript
 memory, visible tool chips, claim grading, model/effort picker); reach
 (registry-generated dock + help, onboarding whispers, marks export); and
 the fusion datasets (Strong's lexicon, timeline, synoptic parallels,
 canon traditions) — every dataset with a _meta provenance block and a
-provenance chip in the UI. Investigations/trails, council mode, missions
-with artifacts, and share-URLs remain open (PALANTIR §3/§4/§8).
+provenance chip in the UI.
+
+v1.0.0 retires the rest of §3/§4/§8: Investigations (case files, evidence,
+inline notes, export brief) + the Trail (walkable jump-ledger ribbon,
+desk bottom-left) + "add to investigation" wired into every <Ref>, verse
+menu, Dossier and Oracle answer; Missions (the Oracle's own tool loop
+framed as a step feed + saved artifact) and Council (two reachable
+engines, honest reconciliation — agreement/disagreement as two columns,
+never blended); Galaxy FAMILIES; share permalinks (a hand-rolled
+compressor, no dependency) with read-only rehydration + "save a copy";
+whole-store export/import; omnibar pipes (`threads jhn 1:1 | compare |
+mark`). Also: every AUDIT-0.9.0 defect fixed (see
+scratch_audit/AUDIT-0.9.0.md § RESOLVED), plus a focus trap, aria-labels
+on every icon-only control, and a hover-lift micro-delight pass.
 
 ## What we deliberately do NOT rebuild
 - BabelForge (v1 README vaporware) — stays unbuilt until it can be real.

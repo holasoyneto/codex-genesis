@@ -177,6 +177,15 @@ edges UI) #75 (first Witness surfacing).
 range-mark Gen 1:1–5 lands in an investigation with a note; trail shows
 last 5 jumps and back-button returns; pericope headings render for Mark 1.
 
+**RETIRED in v1.0.0** (investigations + the Trail; ranges/pericopes/nav
+picker landed earlier in v0.9.0's workbench pass): `investigations` store
+slice with evidence items + user edges; "add to investigation" on every
+`<Ref>`, the verse menu, the Dossier, and Oracle answers; the
+Investigations window (case list → case view, inline note editing,
+export to markdown brief); the Trail as a walkable breadcrumb ribbon
+(desk bottom-left) with "save trail to investigation" and an active-case
+chip in the Trace.
+
 ---
 
 ## 4 · Phase Four — THE ORACLE AS ANALYST
@@ -216,6 +225,17 @@ original engine: kernel) #90 (claim grading, shared with Phase 7).
 **Smoke specs:** mocked-engine mission executes ≥2 tool calls and yields
 an artifact; a cited ref chip navigates; a fabricated ref in a canned
 answer is flagged ⚠; transcript survives panel close/reopen.
+
+**RETIRED in v1.0.0** (kernel tools, streaming, transcript memory, cited
+refs and claim grading landed in v0.9.0): Missions — the same
+askOracleStream tool loop framed as a visible step feed with a final
+ARTIFACT (title, findings, verse grid) saved to the active investigation;
+Council — when a local and a cloud engine are BOTH actually reachable
+(probed, not just configured), ask both in parallel and reconcile
+honestly (agreements + likely divergences as two columns, never a
+blended false consensus); Galaxy FAMILIES surfaced via the omnibar,
+coloring the existing label-propagation engine's communities on the star
+field.
 
 ---
 
@@ -361,6 +381,17 @@ leaves the app as product.
 bindings; a piped omnibar command executes; an exported brief contains
 provenance footers; a share URL rehydrates an investigation read-only.
 
+**RETIRED in v1.0.0** (dock, onboarding, generated help, keyboard depth,
+export landed in v0.9.0): share permalinks — an investigation compresses
+into a `#share=...` URL fragment via a hand-rolled LZ-style byte
+compressor + base64url (no new dependency), decodes read-only on the
+receiver's side with a "save a copy" whisper action; whole-store
+export/import to a JSON file (#72's honest first step — append-only
+slices merge on import rather than clobber); omnibar pipes
+(`threads jhn 1:1 | compare | mark`) over the same command surface the
+kernel already exposes. True multi-device sync (#71) remains out of
+scope, stated honestly, pending a server that does not exist.
+
 ---
 
 ## 9 · The mirror, answered
@@ -392,10 +423,10 @@ provenance footers; a share URL rehydrates an investigation read-only.
 | 4 | Graph engine (PATH/NEAR/FAMILIES over TSK+ontology) + quotation dataset; Threads molts to ego-graph | #6, #32–33, #41, #2 |
 | 5 | THE GALAXY instrument (baked layout, fly-to, gold trails) | #1, #3, #94(part) |
 | 6 | Workbench I: real windows on the desk, pivot-everywhere `<Ref>`, verse ranges + pericopes + minimap, book/chapter picker, cursor history | #4–5, #7, #74, #76–79 |
-| 7 | Workbench II: investigations + evidence marks + the Trail (Witness surfaced) + user edges | #8–10, #24, #66(part), #75 |
-| 8 | Oracle-as-analyst I: kernel tools + streaming + navigating citations + system awareness | #45–47, #50, #52 |
-| 9 | Oracle-as-analyst II: missions + artifacts + council + claim grading; model/effort picker | #44, #48–49, #53–55, #90 |
-| 10 | Honesty layer hard gate (provenance panels, bias tags, banners, harness law) + dock + generated help + onboarding | #83–88, #96 |
+| 7 | ✓ **v1.0.0** — Workbench II: investigations + evidence marks + the Trail (Witness surfaced) + user edges | #8–10, #24, #66(part), #75 |
+| 8 | ✓ v0.9.0 — Oracle-as-analyst I: kernel tools + streaming + navigating citations + system awareness | #45–47, #50, #52 |
+| 9 | ✓ **v1.0.0** — Oracle-as-analyst II: missions + artifacts + council + claim grading; model/effort picker | #44, #48–49, #53–55, #90 |
+| 10 | ✓ v0.9.0/1.0.0 — Honesty layer hard gate (provenance panels, bias tags, banners, harness law) + dock + generated help + onboarding | #83–88, #96 |
 
 **Progress note (2026-07-07, v0.9.0 "The Glass Cathedral"):** sessions
 4–10 landed in one pass — fused graph + Galaxy (§2), workbench windows +
@@ -406,6 +437,27 @@ artifacts and council deferred), dock/help/onboarding/export (§8
 essentials), plus the first §5 datasets: Strong's lexicon, timeline,
 synoptic parallels, canon-tradition tags — all provenance-stamped.
 
-Phases 5, 6 and 8 continue from session 11 onward, one dataset or one
-instrument per session, each landing with its smoke specs — the moat
-deepens weekly, under the same laws, until the name is earned.
+**Progress note (2026-07-07, v1.0.0 "The Name Is Earned"):** the same
+day's second pass closed out every deferral from the paragraph above and
+fixed the independent coordinator audit (scratch_audit/AUDIT-0.9.0.md) in
+full — see that file's RESOLVED section for the defect-by-defect record.
+§3's investigations + the Trail, §4's missions + council + Galaxy
+FAMILIES, and §8's share permalinks + store sync + omnibar pipes all
+landed with smoke specs (110 → 130 checks, ALL GREEN). Honest deferrals
+remain, stated plainly rather than hidden: §5's remaining data-moat
+datasets (dictionaries, commentaries, the parallel corpus, text
+criticism, the rest of Beyond, Canon Loop) and §6's analytical
+instruments (query grammar, full-text index, aggregations, THE TIMELINE's
+map companion, gematria, pattern surfacing, authorship lenses) were not
+in this session's scope; sword/mirror/crossref-web/map instruments and
+the Tauri/MLX skin remain queued in GENESIS.md's port order; Council's
+reconciliation pass is a local heuristic, not a third model call, by
+deliberate design (cost/latency); and the Oracle's live-API path is
+still exercised only against mocked specs — no key was available on the
+build machine, so the code is structured for a key to "just work" but
+that path is unverified end-to-end.
+
+Phases 5, 6 and 8 continue from the next session onward, one dataset or
+one instrument per session, each landing with its smoke specs — the moat
+deepens weekly, under the same laws, until every phase of this plan is
+retired.

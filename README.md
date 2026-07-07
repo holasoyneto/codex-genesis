@@ -21,17 +21,39 @@ the edges. Free, offline-first, no accounts, no server.
   neighborhood; a click turns the reader.
 - **The Workbench** — instruments open as movable glass windows that
   remember their places; every reference chip pivots into read · threads
-  · compare · mark · oracle.
+  · compare · mark · oracle · **add to investigation**.
 - **THE ORACLE** — bring your own frontier key (see below): streaming
   answers with the *whole canon* in context, visible tool calls over the
   app's own engines, and claim grading — every quoted verse checked
   verbatim, mismatches stamped ⚠ UNVERIFIED.
+- **Investigations** — case files that accumulate evidence (a verse, an
+  entity, a search hit, an Oracle answer) from anywhere in the app, with
+  inline notes and a clean exportable markdown brief. **The Trail** walks
+  your jump ledger as a breadcrumb ribbon; save it to a case in one click.
+- **Missions** — give the Oracle a research goal; it plans, works the
+  kernel's own tools step by step with a visible feed, and returns a
+  structured artifact you can save to your case.
+- **Council** — when a local AND a cloud engine are both reachable, ask
+  both at once; agreements and disagreements are shown honestly as data,
+  never blended into a false consensus.
+- **The work leaves the app** — share an investigation as a compressed
+  URL (no server, no accounts); export/import your whole store as a file;
+  omnibar pipes chain verbs (`threads jhn 1:1 | compare | mark`).
 - **The palm** — a YouVersion-class pill (book · chapter · voice, two taps
   to anywhere), bottom sheets, immersive scroll, chapter swipe, pinch-zoom
   in the Galaxy — and an iOS shell via Capacitor.
 - **Honesty as machinery** — CONTESTED stamps, SCHOLARLY SURVEY banners,
   and a provenance chip (source · license · date) one tap from every
   dataset-driven row.
+
+## Screenshots
+
+`smoke-shots/` is refreshed by `npm run smoke` — desk, studio (2560px) and
+palm, both themes, plus one shot per new instrument: `desk-dark` /
+`desk-light`, `studio-dark` / `studio-light`, `desk-omnibar`,
+`desk-library`, `desk-dossier`, `desk-galaxy`, `desk-investigation`,
+`desk-investigation-share`, `desk-mission`, `desk-council`, `palm-pill`,
+`palm-dark`, `palm-390-light`, `palm-investigation`.
 
 ## Bring your own frontier key
 
