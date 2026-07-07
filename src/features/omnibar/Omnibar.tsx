@@ -10,6 +10,7 @@ import { record } from "@/kernel/witness";
 import { setSearchSeed } from "@/features/search";
 import { getLoadedOntology, searchEntities } from "@/engine/ontology";
 import { parseRef } from "./refparse";
+import { looksLikePipe, runPipe } from "./pipes";
 
 const setPanel = openPanel;
 import "./omnibar.css";
@@ -30,6 +31,18 @@ export function Omnibar({ seed }: { seed?: string }) {
 
   const rows = useMemo<Row[]>(() => {
     const out: Row[] = [];
+    // Pipes lead the door outright — `threads jhn 1:1 | compare | mark`
+    // is unambiguous intent, never a reference or command guess.
+    if (looksLikePipe(q)) {
+      const preview = q.split("|").map((s) => s.trim()).filter(Boolean).join(" → ");
+      return [{
+        key: "pipe",
+        glyph: "⛓",
+        label: preview,
+        hint: "run this pipe",
+        run: () => { runPipe(q); closeVeil(); },
+      }];
+    }
     const ref = parseRef(q);
     const refRow: Row | null = ref ? {
       key: "ref",

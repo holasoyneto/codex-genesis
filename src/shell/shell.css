@@ -68,6 +68,13 @@
 .gx-whisper-x { color: var(--fg-dim); font-size: 14px; padding: 0 2px; }
 .gx-whisper-x:hover { color: var(--fg); }
 .gx-whisper-body { margin: 6px 0 0; font-size: 12.5px; color: var(--fg-dim); line-height: 1.5; }
+.gx-whisper-actions { display: flex; gap: 6px; margin-top: 8px; }
+.gx-whisper-action {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em;
+  color: var(--gold); border: 1px solid color-mix(in oklab, var(--gold) 40%, transparent);
+  border-radius: 7px; padding: 5px 9px;
+}
+.gx-whisper-action:hover { background: color-mix(in oklab, var(--gold) 10%, transparent); }
 
 /* The palm's bottom sheet — drag handle, half/full snap points, its own
    momentum scroll, safe-area aware. Nothing is ever unreachable.

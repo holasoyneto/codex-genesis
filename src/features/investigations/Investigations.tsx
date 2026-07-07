@@ -13,6 +13,7 @@ import {
 import { useInWindow } from "@/shell/Windows";
 import { bookById } from "@/engine/corpus";
 import { APP_VERSION } from "@/kernel/version";
+import { shareUrl } from "@/kernel/share";
 import "./investigations.css";
 
 function refLabel(ref: string): string {
@@ -121,6 +122,19 @@ function CaseList({ cases, onOpen }: { cases: Investigation[]; onOpen: (id: stri
 
 function CaseView({ c, onBack }: { c: Investigation; onBack: () => void }) {
   const [editing, setEditing] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const share = async () => {
+    const url = shareUrl(c);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard denied — fall back to a visible prompt so the link is
+      // never simply lost.
+      window.prompt("Copy this share link:", url);
+    }
+  };
   return (
     <div className="gx-inv-case">
       <div className="gx-inv-case-head">
@@ -130,6 +144,9 @@ function CaseView({ c, onBack }: { c: Investigation; onBack: () => void }) {
           value={c.title}
           onChange={(e) => renameInvestigation(c.id, e.target.value)}
         />
+        <button className="gx-inv-share" onClick={() => void share()}>
+          {copied ? "✓ link copied" : "🔗 share"}
+        </button>
         <button className="gx-inv-export" onClick={() => exportBrief(c)}>⇩ EXPORT BRIEF</button>
       </div>
       {!c.items.length ? (

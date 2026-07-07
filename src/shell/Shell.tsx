@@ -14,6 +14,7 @@ import {
   useApp, dismissWhisper, closeVeil, closePanel, getState, setState,
   historyBack, historyForward,
 } from "@/kernel/store";
+import { runWhisperCommand } from "@/kernel/whisperCommands";
 import { getFeature } from "@/kernel/registry";
 import { bookById } from "@/engine/corpus";
 import { Trace } from "./Trace";
@@ -64,6 +65,17 @@ function WhisperLane() {
             >×</button>
           </div>
           {w.body ? <p className="gx-whisper-body">{w.body}</p> : null}
+          {w.actions?.length ? (
+            <div className="gx-whisper-actions">
+              {w.actions.map((a, i) => (
+                <button
+                  key={i}
+                  className="gx-whisper-action"
+                  onClick={() => { runWhisperCommand(a.command); dismissWhisper(w.id); }}
+                >{a.label}</button>
+              ))}
+            </div>
+          ) : null}
         </div>
       ))}
     </div>

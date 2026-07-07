@@ -40,6 +40,12 @@
   padding: 4px 6px; border-radius: 6px;
 }
 .gx-inv-case-title:focus { background: color-mix(in oklab, var(--fg) 6%, transparent); }
+.gx-inv-share {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em;
+  color: var(--gold); border: 1px solid color-mix(in oklab, var(--gold) 40%, transparent);
+  border-radius: 7px; padding: 6px 9px; white-space: nowrap;
+}
+.gx-inv-share:hover { background: color-mix(in oklab, var(--gold) 10%, transparent); }
 .gx-inv-export {
   font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em;
   color: var(--accent); border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent);

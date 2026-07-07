@@ -649,6 +649,47 @@ try {
     check("council: honest readiness state when fewer than two engines are configured", /LOCAL/.test(councilState) && /CLOUD/.test(councilState), councilState);
     await page.evaluate(() => window.__CODEX_PANEL__.close("council"));
 
+    // ── PALANTIR §8 — omnibar pipes, share permalinks, store export/import ─
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "threads jhn 1:1 | compare | mark");
+    await sleep(250);
+    const pipeRow = await page.evaluate(() => document.querySelector(".gx-omni-row .gx-omni-label")?.textContent);
+    check("omnibar: a pipe is recognized and previewed", /threads jhn 1:1.*compare.*mark/.test(pipeRow || ""), pipeRow);
+    await page.keyboard.press("Enter");
+    await sleep(300);
+    const pipeResult = await page.evaluate(() => ({
+      title: document.querySelector(".gx-reader-title")?.textContent,
+      threadsOpen: !!document.querySelector('.gx-win[data-win="threads"]'),
+      compareOpen: !!document.querySelector('.gx-win[data-win="compare"]'),
+      marks: document.querySelectorAll(".gx-mark-ref").length,
+    }));
+    check("omnibar: the pipe executed each stage in order", /John 1/.test(pipeResult.title || "") && pipeResult.threadsOpen && pipeResult.compareOpen, JSON.stringify(pipeResult));
+    await page.evaluate(() => { window.__CODEX_PANEL__.close("threads"); window.__CODEX_PANEL__.close("compare"); });
+
+    // Share: an investigation round-trips through encode/decode (exposed
+    // on window.CODEX_SHARE for the same reason CODEX_KERNEL is — a
+    // capability must be callable without any DOM/harness gymnastics).
+    const shareRoundtrip = await page.evaluate(() => {
+      const testCase = { id: "case-test", title: "Test Case", created: Date.now(), items: [{ id: "e1", kind: "verse", payload: { ref: "jhn.3.16" }, note: "n", addedAt: Date.now() }], userEdges: [] };
+      const url = window.CODEX_SHARE.shareUrl(testCase);
+      const frag = url.split("#share=")[1];
+      const decoded = window.CODEX_SHARE.decodeShare(frag);
+      return { ok: !!decoded, titleMatch: decoded?.case?.title === testCase.title, itemsMatch: decoded?.case?.items?.length === 1 };
+    }).catch((e) => ({ ok: false, error: String(e) }));
+    check("share: investigation round-trips through the URL fragment codec", shareRoundtrip.ok && shareRoundtrip.titleMatch && shareRoundtrip.itemsMatch, JSON.stringify(shareRoundtrip));
+    await shot(page, "desk-investigation-share");
+
+    // Store export/import: the button exists and export triggers a download
+    // (we can't easily intercept a real download in this harness, so this
+    // asserts the control is present and wired, not the browser's save
+    // dialog — the codec itself is covered by the share round-trip above).
+    await page.evaluate(() => window.__CODEX_PANEL__.open("settings"));
+    await page.waitForSelector(".gx-set-sync-btn", { timeout: 5000 });
+    const syncBtns = await page.evaluate(() => [...document.querySelectorAll(".gx-set-sync-btn")].map((b) => b.textContent));
+    check("settings: store export/import controls exist", syncBtns.some((t) => /export/.test(t || "")) && syncBtns.some((t) => /import/.test(t || "")), JSON.stringify(syncBtns));
+    await page.evaluate(() => window.__CODEX_PANEL__.close("settings"));
+
     // Two windows at once, geometry persisted across reload.
     await page.evaluate(() => { window.__CODEX_PANEL__.open("threads"); window.__CODEX_PANEL__.open("marks"); });
     await page.waitForSelector('.gx-win[data-win="threads"]', { timeout: 5000 });

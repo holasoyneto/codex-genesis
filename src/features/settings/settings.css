@@ -40,3 +40,12 @@
 .gx-settings-close:hover { color: var(--fg); }
 
 input[type="range"] { accent-color: var(--accent); width: 120px; }
+
+.gx-set-sync { flex-direction: column; align-items: flex-start; gap: 8px; }
+.gx-set-sync-acts { display: flex; gap: 6px; }
+.gx-set-sync-btn {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em;
+  color: var(--fg-dim); border: var(--hairline); border-radius: 7px; padding: 6px 10px;
+}
+.gx-set-sync-btn:hover { color: var(--fg); border-color: color-mix(in oklab, var(--fg) 30%, transparent); }
+.gx-set-sync-msg { font-family: var(--mono); font-size: 9.5px; color: var(--fg-dim); margin: 0; }

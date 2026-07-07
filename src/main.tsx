@@ -23,9 +23,11 @@ import "./features/investigations";
 import "./features/missions";
 import "./features/council";
 import "./features/desk";
-import { getState, setState, whisper } from "./kernel/store";
+import { getState, setState, whisper, setActiveInvestigation } from "./kernel/store";
 import { APP_VERSION, RELEASE_NOTES } from "./kernel/version";
 import { startWitness } from "./kernel/witness";
+import { readShareFromLocation, saveSharedCopy, shareUrl, decodeShare } from "./kernel/share";
+import { registerWhisperCommand } from "./kernel/whisperCommands";
 
 import { callTool, KERNEL_TOOLS } from "./engine/kernel";
 import { allFeatures } from "./kernel/registry";
@@ -40,9 +42,11 @@ declare global {
     CODEX_KERNEL?: { call: typeof callTool; tools: string[] };
     __CODEX_FEATURES__?: { id: string; title: string; main: boolean }[];
     __CODEX_PANEL__?: { open: (id: string) => void; close: (id?: string) => void };
+    CODEX_SHARE?: { shareUrl: typeof shareUrl; decodeShare: typeof decodeShare };
   }
 }
 window.CODEX_KERNEL = { call: callTool, tools: KERNEL_TOOLS.map((t) => t.name) };
+window.CODEX_SHARE = { shareUrl, decodeShare };
 window.__CODEX_PANEL__ = { open: openPanel, close: closePanel };
 
 function App() {
@@ -94,6 +98,26 @@ if ("serviceWorker" in navigator && import.meta.env.PROD) {
       },
     });
   });
+}
+
+// PALANTIR §8 — a study permalink: `#share=...` rehydrates read-only with
+// a one-tap "save a copy" (the copy gets its own id; nothing is silently
+// merged into the receiver's own cases without asking).
+{
+  const shared = readShareFromLocation();
+  if (shared) {
+    registerWhisperCommand("share:save-copy", () => {
+      const id = saveSharedCopy(shared);
+      openPanel("investigations");
+      setActiveInvestigation(id);
+    });
+    whisper({
+      kind: "briefing",
+      title: `✦ SHARED CASE · ${shared.case.title}`,
+      body: `Someone shared an investigation (${shared.case.items.length} items) built with CODEX v${shared.v}. Save your own copy to keep and edit it.`,
+      actions: [{ label: "save a copy", command: "share:save-copy" }],
+    });
+  }
 }
 
 window.__CODEX_FEATURES__ = allFeatures().map((f) => ({ id: f.id, title: f.title, main: !!f.surfaces.main }));

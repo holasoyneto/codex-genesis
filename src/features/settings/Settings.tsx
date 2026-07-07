@@ -2,8 +2,10 @@
 // page answers immediately; there is no "apply". Scripture options only —
 // instrument options live with their instruments.
 
+import { useRef, useState } from "react";
 import { useApp, setState, type Settings as S, closePanel } from "@/kernel/store";
 import { useInWindow } from "@/shell/Windows";
+import { exportStore, importStore } from "@/kernel/share";
 import "./settings.css";
 
 function set<K extends keyof S>(key: K, value: S[K]) {
@@ -18,6 +20,8 @@ const THEMES: { id: S["theme"]; label: string }[] = [
 
 export function Settings() {
   const s = useApp((st) => st.settings);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [importMsg, setImportMsg] = useState<string | null>(null);
   return (
     <div className="gx-settings" role="region" aria-label="Settings">
       <h2 className="gx-settings-title">SETTINGS</h2>
@@ -86,6 +90,29 @@ export function Settings() {
           aria-label="Record app usage locally"
           onClick={() => set("witness", !s.witness)}
         ><i /></button>
+      </div>
+
+      <div className="gx-set-row gx-set-sync">
+        <span className="gx-set-label">Your data — a file, not a wire (#72)</span>
+        <div className="gx-set-sync-acts">
+          <button className="gx-set-sync-btn" onClick={exportStore}>⇩ export store</button>
+          <button className="gx-set-sync-btn" onClick={() => fileRef.current?.click()}>⇧ import store</button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="application/json"
+            style={{ display: "none" }}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (!file) return;
+              const r = await importStore(file);
+              setImportMsg(r.ok ? "imported — marks and cases merged, settings restored" : `failed: ${r.error}`);
+              setTimeout(() => setImportMsg(null), 4000);
+            }}
+          />
+        </div>
+        {importMsg ? <p className="gx-set-sync-msg">{importMsg}</p> : null}
       </div>
 
       {useInWindow() ? null : (
