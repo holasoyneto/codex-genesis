@@ -6,9 +6,9 @@
 // (the reader auto-serves from there) · ○ no known source yet.
 
 import { useEffect, useMemo, useState } from "react";
-import { useApp, goTo, closePanel } from "@/kernel/store";
+import { useApp, goTo, closePanel, openVeil } from "@/kernel/store";
 import { useInWindow } from "@/shell/Windows";
-import { TRANSLATIONS, BOOKS, covers, type Book } from "@/engine/corpus";
+import { BOOKS, covers, allTranslations, type Book } from "@/engine/corpus";
 import { loadTraditions, tagsFor, TRADITION_LABEL, getLoadedTraditions } from "@/engine/traditions";
 import { Provenance } from "@/kernel/Provenance";
 import "./library.css";
@@ -20,9 +20,9 @@ const SHELVES: { key: Book["testament"]; label: string }[] = [
 ];
 
 function sourceLight(bookId: string, activeId: string): "own" | "other" | "none" {
-  const active = TRANSLATIONS.find((t) => t.id === activeId);
+  const active = allTranslations().find((t) => t.id === activeId);
   if (active && covers(active, bookId)) return "own";
-  if (TRANSLATIONS.some((t) => covers(t, bookId))) return "other";
+  if (allTranslations().some((t) => covers(t, bookId))) return "other";
   return "none";
 }
 
@@ -145,27 +145,19 @@ export function Library() {
         {!shelves.length ? <p className="gx-library-note">No book matches “{q}”.</p> : null}
       </div>
 
+      {/* v1.2.0 — the Library lost translation duties (DESIGN §III: one
+          act, one control per surface). It keeps books, canons and
+          traditions; the ONE voices surface is a single door away. */}
       <h3 className="gx-library-sub">TRANSLATION</h3>
-      <ul className="gx-shelves">
-        {TRANSLATIONS.map((t) => (
-          <li key={t.id}>
-            <button
-              className={"gx-shelf" + (t.id === cursor.translation ? " is-active" : "")}
-              onClick={() => goTo({ translation: t.id })}
-              aria-pressed={t.id === cursor.translation}
-            >
-              <span className="gx-shelf-light" data-src={t.bundled ? "bundle" : "network"} aria-hidden>
-                {t.bundled ? "●" : "○"}
-              </span>
-              <span className="gx-shelf-name">{t.name}</span>
-              <span className="gx-shelf-lang">{t.lang}</span>
-            </button>
-          </li>
-        ))}
-      </ul>
-      <p className="gx-library-note">
-        ● baked in — read without a connection · ○ fetched, then kept
-      </p>
+      <button
+        className="gx-library-voices"
+        onClick={() => openVeil("reader", "trans")}
+      >
+        <span className="gx-library-voices-name">Voices…</span>
+        <span className="gx-library-voices-hint">
+          my shelf · the world catalog — reading now: {cursor.translation.replace(/^bolls:/, "").toUpperCase()}
+        </span>
+      </button>
       {tradReady && getLoadedTraditions() ? (
         <Provenance label="CANON REGISTRY · OPEN-CANON" meta={getLoadedTraditions()!._meta} />
       ) : null}

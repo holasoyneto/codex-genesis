@@ -57,26 +57,6 @@
 .gx-ch.is-active {
   color: var(--bg); background: var(--accent); border-color: var(--accent); font-weight: 600;
 }
-.gx-shelves { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
-.gx-shelf {
-  display: grid; grid-template-columns: 18px 1fr; align-items: baseline;
-  column-gap: 10px; width: 100%; text-align: left;
-  padding: 10px 10px; border-radius: 8px;
-  border: 1px solid transparent;
-  transition: background var(--fade);
-}
-.gx-shelf:hover { background: color-mix(in oklab, var(--fg) 5%, transparent); }
-.gx-shelf.is-active {
-  border-color: color-mix(in oklab, var(--accent) 40%, transparent);
-  background: color-mix(in oklab, var(--accent) 8%, transparent);
-}
-.gx-shelf-light { color: var(--gold); font-size: 10px; }
-.gx-shelf-light[data-src="network"] { color: var(--fg-dim); }
-.gx-shelf-name { font-size: 14px; }
-.gx-shelf-lang {
-  grid-column: 2; font-family: var(--mono); font-size: 10px;
-  letter-spacing: 0.08em; color: var(--fg-dim);
-}
 .gx-library-note {
   font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em;
   color: var(--fg-dim); opacity: 0.75; margin: 14px 2px 0; line-height: 1.6;
@@ -113,3 +93,17 @@
   font-family: var(--mono); font-size: 9px; letter-spacing: 0.04em;
   color: var(--fg-dim); opacity: 0.7; margin: 2px 2px 8px;
 }
+
+/* v1.2.0 — the single "Voices…" door (translation duties moved to THE
+   one voices surface). */
+.gx-library-voices {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+  width: 100%;
+  padding: 10px 12px;
+  border: var(--hairline); border-radius: 10px;
+  text-align: left;
+  margin-bottom: 12px;
+}
+.gx-library-voices:hover { background: color-mix(in oklab, var(--fg) 5%, transparent); }
+.gx-library-voices-name { font-size: 14px; color: var(--fg); }
+.gx-library-voices-hint { font-family: var(--mono); font-size: 9.5px; color: var(--fg-dim); }

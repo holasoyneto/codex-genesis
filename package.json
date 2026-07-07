@@ -1,7 +1,7 @@
 {
   "name": "codex-genesis",
   "private": true,
-  "version": "1.1.1",
+  "version": "1.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite --port 7778 --strictPort",
@@ -10,6 +10,7 @@
     "smoke": "node scripts/smoke.mjs",
     "audit:ui": "node scripts/audit-ui.mjs",
     "seed:ontology": "node scripts/seed-ontology.mjs",
+    "bake:voices": "node scripts/bake-voice-catalog.mjs",
     "audit:ontology": "node scripts/audit-ontology.mjs"
   },
   "dependencies": {

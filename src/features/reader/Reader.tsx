@@ -4,12 +4,12 @@
 
 import { useContext, useEffect, useRef, useState } from "react";
 import {
-  useApp, goTo, setState, openDossier, openPanel, openReader, openVeil, whisper, addToInvestigation, type Cursor,
+  useApp, goTo, setState, getState, openDossier, openPanel, openReader, openVeil, whisper, addToInvestigation, type Cursor,
 } from "@/kernel/store";
 import { setSeed } from "@/kernel/seeds";
 import { verb } from "@/kernel/lexicon";
 import { WinContext } from "@/shell/Windows";
-import { getChapter, bookById, BOOKS, TRANSLATIONS, covers, type Chapter } from "@/engine/corpus";
+import { getChapter, bookById, BOOKS, type Chapter } from "@/engine/corpus";
 import { record } from "@/kernel/witness";
 import { loadOntology, getLoadedOntology, chapterMentions, type Mention } from "@/engine/ontology";
 import { redLetterVerses } from "./redletter";
@@ -124,7 +124,6 @@ function VerseMenu({ refc, text, entityIds, flip, onClose, onNav }: {
   onClose: () => void;
   onNav: (patch: Partial<Cursor>) => void;
 }) {
-  const [readers, setReaders] = useState(false);
   const rootRef = useRef<HTMLSpanElement>(null);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -175,61 +174,22 @@ function VerseMenu({ refc, text, entityIds, flip, onClose, onNav }: {
           <span aria-hidden>{dossierV.glyph}</span> {dossierV.word}<i className="gx-vmenu-hint">{dossierV.hint}</i>
         </button>
       ) : null}
+      {/* v1.2.0 — the sub-list of voices died (DESIGN §III: the VOICES
+          surface is THE one translation system). A new reader spawns
+          pinned to the CURRENT voice; its own chip opens the voices
+          surface scoped to its pin. */}
       <button
         role="menuitem"
-        aria-expanded={readers}
-        onClick={() => setReaders((r) => !r)}
+        onClick={act(() => { onNav({ ...refc }); openReader(getStateTranslation()); })}
       >
         <span aria-hidden>{readerV.glyph}</span> {readerV.word}<i className="gx-vmenu-hint">{readerV.hint}</i>
       </button>
-      {readers ? (
-        <span className="gx-vmenu-sub" role="menu">
-          {TRANSLATIONS.filter((t) => t.bundled).map((t) => (
-            <button key={t.id} role="menuitem" onClick={act(() => { onNav({ ...refc }); openReader(t.id); })}>
-              {t.name} <span className="gx-vmenu-lang">{t.lang}</span>
-            </button>
-          ))}
-        </span>
-      ) : null}
     </span>
   );
 }
 
-// The translation chip's popover — one click to any voice, position kept.
-function TransPopover({ current, bookId, onPick, onClose }: {
-  current: string; bookId: string; onPick: (id: string) => void; onClose: () => void;
-}) {
-  const rootRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    const onDown = (e: PointerEvent) => { if (!rootRef.current?.contains(e.target as Node)) onClose(); };
-    window.addEventListener("keydown", onKey);
-    window.addEventListener("pointerdown", onDown);
-    return () => { window.removeEventListener("keydown", onKey); window.removeEventListener("pointerdown", onDown); };
-  }, [onClose]);
-  return (
-    <div ref={rootRef} className="gx-trans-pop glass gx-enter" role="menu" aria-label="Translation">
-      {TRANSLATIONS.map((t) => (
-        <button
-          key={t.id}
-          role="menuitemradio"
-          aria-checked={t.id === current}
-          className={"gx-trans-row" + (t.id === current ? " is-active" : "")}
-          onClick={() => {
-            if (!covers(t, bookId)) {
-              whisper({ kind: "toast", title: `◇ ${t.name}`, body: `${bookById.get(bookId)?.name ?? bookId} lives outside this corpus — the reader will serve it from the nearest voice that carries it.` });
-            }
-            onPick(t.id);
-            onClose();
-          }}
-        >
-          <span className="gx-trans-name">{t.name}</span>
-          <span className="gx-trans-lang">{t.lang}</span>
-          {t.id === current ? <span className="gx-trans-dot" aria-hidden>●</span> : null}
-        </button>
-      ))}
-    </div>
-  );
+function getStateTranslation(): string {
+  return getState().cursor.translation;
 }
 
 export function Reader() {
@@ -268,7 +228,6 @@ export function Reader() {
   const { redLetter, divineName, entities, scriptureScale } = useApp((s) => s.settings);
   const [ch, setCh] = useState<Chapter | null>(null);
   const [picker, setPicker] = useState(false);
-  const [transPop, setTransPop] = useState(false);
   const [menu, setMenu] = useState<{ verse: number; flip: boolean } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [retry, setRetry] = useState(0);
@@ -502,22 +461,15 @@ export function Reader() {
               disabled={cursor.chapter >= book.chapters}
               onClick={() => nav({ chapter: cursor.chapter + 1, verse: null })}
             >›</button>
+            {/* v1.2.0 — the chip opens THE one voices surface (NavSheet),
+                scoped to this window's pin when inside a windowed reader. */}
             <button
               className="gx-trans-chip"
-              aria-label="Translation"
-              aria-expanded={transPop}
-              title="Switch translation"
-              onClick={() => setTransPop((t) => !t)}
-            >{cursor.translation.toUpperCase()}</button>
+              aria-label="Voices"
+              title="Choose a voice"
+              onClick={() => openVeil("reader", winId ? `trans:${winId}` : "trans")}
+            >{cursor.translation.replace(/^bolls:/, "").toUpperCase()}</button>
             {picker && winId ? <Picker bookId={cursor.bookId} onDone={() => setPicker(false)} onGo={nav} /> : null}
-            {transPop ? (
-              <TransPopover
-                current={cursor.translation}
-                bookId={cursor.bookId}
-                onPick={(id) => nav({ translation: id })}
-                onClose={() => setTransPop(false)}
-              />
-            ) : null}
           </>
         )}
       </header>

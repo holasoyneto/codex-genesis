@@ -55,7 +55,7 @@ palm, both themes, plus one shot per new instrument: `desk-dark` /
 `desk-investigation-share`, `desk-mission`, `desk-council`, `palm-pill`,
 `palm-dark`, `palm-390-light`, `palm-investigation`, and (v1.1.0, "the
 legible cathedral") `desk-dock-labels`, `desk-verse-menu`, `palm-menu`,
-`palm-back-stack`.
+`palm-back-stack`, and (v1.2.0) `desk-voices`.
 
 ## The vocabulary (v1.1.0)
 
@@ -83,6 +83,24 @@ spec, not just written down:
 - **Empty states teach** — one sentence + one concrete action, never a
   blank pane; destructive acts (clear the Witness ledger, delete a case)
   confirm in place, two steps, no browser `confirm()`.
+
+## The voices of the world (v1.2.0)
+
+Translation choosing is ONE system: the **VOICES** surface (the same
+polished sheet everywhere — desk header chip, palm pill, windowed-reader
+chip, the Library's single "Voices…" door). Two layers:
+
+- **MY SHELF** — the bundled voices, with the sacred originals (WLC ·
+  SBLGNT · CODEX Open Canon) pinned in their own group, plus every voice
+  you've added; the current one is marked, added ones carry a quiet
+  remove control (never while active).
+- **ADD A VOICE** — the baked world catalog
+  (`scripts/bake-voice-catalog.mjs` → `data/voice-catalog.json`, counts
+  pinned honestly in `_meta`): dozens of languages, ~150 translations,
+  grouped by language and searchable by language or translation name.
+  One tap adds a voice to your shelf and switches to it. Added voices
+  serve through the existing mirror chain and are cached offline after
+  first read — the footer badge always says where the text came from.
 
 ## Bring your own frontier key
 

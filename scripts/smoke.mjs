@@ -371,15 +371,19 @@ try {
       { timeout: 20000 }
     );
 
-    // The shelves: omnibar → library panel → switch to WEB → honest chip.
+    // The shelves: omnibar → library panel → the "Voices…" door → the ONE
+    // voices surface → switch to WEB → honest chip. (v1.2.0: the Library
+    // lost translation duties; it keeps a single door.)
     await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
     await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
     await page.type(".gx-omni-input", "library");
     await sleep(250);
     await page.keyboard.press("Enter");
-    await page.waitForSelector(".gx-win .gx-shelf", { timeout: 5000 });
+    await page.waitForSelector(".gx-win .gx-library-voices", { timeout: 5000 });
+    await page.evaluate(() => document.querySelector(".gx-library-voices").click());
+    await page.waitForSelector(".gx-voices", { timeout: 5000 });
     await page.evaluate(() => {
-      const web = [...document.querySelectorAll(".gx-shelf")].find((b) => /World English/.test(b.textContent));
+      const web = [...document.querySelectorAll(".gx-voice-pick")].find((b) => /World English/.test(b.textContent));
       web.click();
     });
     await page.waitForFunction(
@@ -387,10 +391,11 @@ try {
       { timeout: 20000 }
     );
     const shelf = await page.evaluate(() => ({
-      active: [...document.querySelectorAll(".gx-shelf.is-active")].map((b) => b.querySelector(".gx-shelf-name")?.textContent)[0],
       served: document.querySelector(".gx-served")?.textContent?.trim(),
+      veilClosed: !document.querySelector(".gx-navsheet"),
     }));
-    check("library switches the primary translation (WEB now baked)", /World English/.test(shelf.active || "") && /bundle · WEB/.test(shelf.served || ""), JSON.stringify(shelf));
+    check("library's Voices door switches the primary translation (WEB now baked)",
+      /bundle · WEB/.test(shelf.served || "") && shelf.veilClosed, JSON.stringify(shelf));
 
     // #98: the Oracle's food — the whole canon is baked and buildable.
     const canon = await page.evaluate(async () => {
@@ -990,12 +995,13 @@ try {
     check("readers: unlinked window keeps its own place", beforeWalk === afterWalk, JSON.stringify({ beforeWalk, afterWalk }));
     await page.evaluate(() => window.__CODEX_PANEL__.close("reader@wlc"));
 
-    // the translation chip switches the voice in place
+    // the translation chip opens THE one voices surface (v1.2.0 — the old
+    // popover is gone repo-wide) and a pick switches the voice.
     await page.click(".gx-scripture .gx-trans-chip");
-    await page.waitForSelector(".gx-trans-pop", { timeout: 5000 });
-    await page.evaluate(() => [...document.querySelectorAll(".gx-trans-row")].find((r) => /World English/.test(r.textContent)).click());
+    await page.waitForSelector(".gx-voices", { timeout: 5000 });
+    await page.evaluate(() => [...document.querySelectorAll(".gx-voice-pick")].find((r) => /World English/.test(r.textContent)).click());
     await page.waitForFunction(() => /WEB/.test(document.querySelector(".gx-served")?.textContent || ""), { timeout: 20000 });
-    check("reader: the translation chip switches voices in place", true);
+    check("reader: the chip opens the voices surface and switches in place", true);
 
     // hide reader: the sacred center yields, then returns
     for (const _ of [1, 2]) {
@@ -1039,12 +1045,12 @@ try {
     await page.waitForFunction(() => /Psalms\s*23/.test(document.querySelector(".gx-reader-title")?.textContent?.replace(/\s+/g, " ") || ""), { timeout: 20000 });
     check("palm pill: two taps reach Psalm 23", true);
 
-    // one tap to any voice
+    // one tap to any voice — via THE one voices surface (v1.2.0)
     await page.tap(".gx-pill-voice");
-    await page.waitForSelector(".gx-navsheet", { timeout: 5000 });
-    const voices = await page.evaluate(() => document.querySelectorAll(".gx-navsheet-row").length);
-    check("palm pill: the voices sheet lists every translation", voices >= 8, `${voices} voices`);
-    await page.evaluate(() => [...document.querySelectorAll(".gx-navsheet-row")].find((r) => /World English/.test(r.textContent)).click());
+    await page.waitForSelector(".gx-voices", { timeout: 5000 });
+    const voices = await page.evaluate(() => document.querySelectorAll(".gx-voice-pick").length);
+    check("palm pill: the voices shelf lists every built-in", voices >= 8, `${voices} voices`);
+    await page.evaluate(() => [...document.querySelectorAll(".gx-voice-pick")].find((r) => /World English/.test(r.textContent)).click());
     await page.waitForFunction(() => /WEB/.test(document.querySelector(".gx-pill-voice")?.textContent || ""), { timeout: 20000 });
     check("palm pill: one tap switches the voice", true);
 
@@ -1700,6 +1706,129 @@ try {
       box.top >= 0 && box.left >= 0 && box.bottom <= box.vh && box.right <= box.vw, JSON.stringify(box));
     await page.keyboard.press("Escape");
     check("desk 1280x720 veil picker: zero js errors", page.jsErrors.length === 0, JSON.stringify(page.jsErrors.slice(0, 2)));
+    await ctx.close();
+  }
+
+  // ═══════════ GENESIS 1.2.0 — the voices of the world ═══════════
+  {
+    // The baked catalog: real counts, pinned in _meta, matching the body.
+    // (Upstream carries ~31 languages / ~146 voices — counted honestly,
+    // never inflated; threshold set to what the source actually has.)
+    const cat = JSON.parse(fs.readFileSync("data/voice-catalog.json", "utf8"));
+    const bodyLangs = cat.languages.length;
+    const bodyVoices = cat.languages.reduce((n, l) => n + l.voices.length, 0);
+    check("voice catalog: baked with the world's languages, counts pinned in _meta",
+      bodyLangs >= 25 && bodyVoices >= 100 && cat._meta.languages === bodyLangs && cat._meta.voices === bodyVoices,
+      `${bodyLangs} languages · ${bodyVoices} voices`);
+
+    // ONE TRANSLATION SYSTEM — grep-level: exactly one source file renders
+    // the voices surface (the marker class), and the old fragments are
+    // gone repo-wide (popover, Library shelf list, verse-menu voice list).
+    const srcFiles = [];
+    const walk = (dir) => {
+      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+        const p = `${dir}/${e.name}`;
+        if (e.isDirectory()) walk(p);
+        else if (/\.(tsx?|css)$/.test(e.name)) srcFiles.push(p);
+      }
+    };
+    walk("src");
+    const withMarker = srcFiles.filter((p) => /\.tsx$/.test(p) && fs.readFileSync(p, "utf8").includes("gx-voices"));
+    check("one translation system: exactly one component renders the voices surface",
+      withMarker.length === 1 && withMarker[0].endsWith("NavSheet.tsx"), JSON.stringify(withMarker));
+    const ghosts = srcFiles.filter((p) => {
+      const s = fs.readFileSync(p, "utf8");
+      return /TransPopover|gx-trans-pop|gx-shelf\b/.test(s);
+    });
+    check("one translation system: the old popover/shelf-list fragments are gone",
+      ghosts.length === 0, JSON.stringify(ghosts));
+  }
+
+  // DOM audits per posture + ADD A VOICE end-to-end.
+  {
+    const { ctx, page } = await boot(1680, 1050);
+    await page.waitForFunction(() => document.querySelectorAll(".gx-verse").length > 0, { timeout: 30000 });
+    await sleep(200);
+
+    // Desk: chip (gesture 1) → surface with ADD A VOICE tab (gesture 2).
+    await page.click(".gx-trans-chip");
+    await page.waitForSelector(".gx-voices", { timeout: 5000 });
+    const deskTabs = await page.evaluate(() => [...document.querySelectorAll(".gx-voices-tab")].map((t) => t.textContent));
+    check("desk: ADD A VOICE is ≤2 gestures from the reader", deskTabs.includes("ADD A VOICE"), JSON.stringify(deskTabs));
+
+    // ADD A VOICE end-to-end: search → add → chapter renders → persists.
+    await page.evaluate(() => [...document.querySelectorAll(".gx-voices-tab")].find((t) => t.textContent === "ADD A VOICE").click());
+    await page.waitForSelector(".gx-voices-search", { timeout: 5000 });
+    await page.type(".gx-voices-search", "spanish");
+    await sleep(400);
+    await shot(page, "desk-voices");
+    await page.evaluate(() => [...document.querySelectorAll(".gx-voices-add .gx-navsheet-row")].find((r) => r.textContent.includes("RV1960")).click());
+    // The verse text must actually arrive in Spanish, over the existing
+    // mirror chain (needs network — bolls is in the smoke noise filter for
+    // errors, but success is asserted here on purpose). Match the SPECIFIC
+    // voice — a bare /bolls/ would match the pre-existing KJV badge.
+    await page.waitForFunction(
+      () => /RV1960/i.test(document.querySelector(".gx-served")?.textContent || "") &&
+            (document.querySelector(".gx-verse")?.textContent || "").length > 20,
+      { timeout: 25000 }
+    );
+    await sleep(400); // let the store's 150ms persist debounce flush
+    const added = await page.evaluate(() => ({
+      translation: JSON.parse(localStorage.getItem("codex-genesis.v3")).cursor.translation,
+      voices: JSON.parse(localStorage.getItem("codex-genesis.v3")).voices.map((v) => v.id),
+      served: document.querySelector(".gx-served")?.textContent,
+    }));
+    check("add a voice: catalog voice added, switched, honestly served",
+      added.translation === "bolls:RV1960" && added.voices.includes("bolls:RV1960") && /bolls/i.test(added.served || ""),
+      JSON.stringify(added));
+
+    // …and it persists across reload (store slice + IndexedDB cache).
+    await page.reload({ waitUntil: "load" });
+    await page.waitForFunction(() => window.__CODEX_READY__ === true, { timeout: 30000 });
+    await page.waitForFunction(() => (document.querySelector(".gx-verse")?.textContent || "").length > 20, { timeout: 25000 });
+    const persisted = await page.evaluate(() => ({
+      translation: JSON.parse(localStorage.getItem("codex-genesis.v3")).cursor.translation,
+      voices: JSON.parse(localStorage.getItem("codex-genesis.v3")).voices.length,
+      chip: document.querySelector(".gx-trans-chip")?.textContent,
+    }));
+    check("add a voice: persists across reload and renders a chapter",
+      persisted.translation === "bolls:RV1960" && persisted.voices === 1 && persisted.chip === "RV1960",
+      JSON.stringify(persisted));
+
+    // Windowed reader: its chip opens the SAME surface, scoped to the pin
+    // — a pick changes the WINDOW's voice, never the global cursor.
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "reader wlc");
+    await sleep(300);
+    await page.keyboard.press("Enter");
+    await page.waitForSelector('.gx-win[data-win="reader@wlc"]', { timeout: 8000 });
+    const globalBefore = await page.evaluate(() => JSON.parse(localStorage.getItem("codex-genesis.v3")).cursor.translation);
+    await page.click('.gx-win[data-win="reader@wlc"] .gx-trans-chip');
+    await page.waitForSelector(".gx-voices", { timeout: 5000 });
+    await page.evaluate(() => [...document.querySelectorAll(".gx-voice-pick")].find((r) => /SBL Greek/.test(r.textContent)).click());
+    await sleep(500);
+    const scoped = await page.evaluate(() => {
+      const s = JSON.parse(localStorage.getItem("codex-genesis.v3"));
+      return { win: s.readers["reader@wlc"]?.translation, global: s.cursor.translation };
+    });
+    check("windowed reader: the voices surface is scoped to its pin",
+      scoped.win === "sblgnt" && scoped.global === globalBefore, JSON.stringify({ ...scoped, globalBefore }));
+
+    check("voices desk: zero js errors", page.jsErrors.length === 0, JSON.stringify(page.jsErrors.slice(0, 2)));
+    await ctx.close();
+  }
+
+  // Palm: pill voice half (gesture 1) → surface with ADD A VOICE (gesture 2).
+  {
+    const { ctx, page } = await boot(390, 844, true);
+    await page.waitForFunction(() => document.querySelectorAll(".gx-verse").length > 0, { timeout: 30000 });
+    await sleep(300);
+    await page.tap(".gx-pill-voice");
+    await page.waitForSelector(".gx-voices", { timeout: 5000 });
+    const palmTabs = await page.evaluate(() => [...document.querySelectorAll(".gx-voices-tab")].map((t) => t.textContent));
+    check("palm: ADD A VOICE is ≤2 gestures from the reader", palmTabs.includes("ADD A VOICE"), JSON.stringify(palmTabs));
+    check("voices palm: zero js errors", page.jsErrors.length === 0, JSON.stringify(page.jsErrors.slice(0, 2)));
     await ctx.close();
   }
 

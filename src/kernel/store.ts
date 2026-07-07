@@ -83,6 +83,17 @@ export interface WM {
   geo: Record<string, WinGeo>;    // persisted geometry per feature id
 }
 
+/** v1.2.0 — a translation the reader added from the world catalog.
+    `id` is the app-level translation id ("bolls:NVI"); `bolls` is the
+    upstream code the corpus engine's mirror chain already speaks. */
+export interface UserVoice {
+  id: string;
+  bolls: string;
+  name: string;
+  lang: string; // display lane, e.g. "Español"
+  addedAt: number;
+}
+
 export interface AppState {
   cursor: Cursor;
   settings: Settings;
@@ -105,6 +116,10 @@ export interface AppState {
       before the current one, walkable by the universal back affordance.
       Desk ignores this entirely (it has real windows instead). */
   panelStack: string[];
+  /** v1.2.0 — voices the reader added from the world catalog. Built-ins
+      live in the corpus registry; this slice is only the user's own
+      additions, persisted with the store. */
+  voices: UserVoice[];
   /** PALANTIR §3 — every case file the analyst has opened. */
   investigations: Investigation[];
   /** The investigation new evidence lands in ("add to investigation"
@@ -149,6 +164,7 @@ const DEFAULTS: AppState = {
   hideReader: false,
   readers: {},
   panelStack: [],
+  voices: [],
   investigations: [],
   activeInvestigation: null,
   trail: [],
@@ -192,6 +208,7 @@ function load(): AppState {
       },
       wm: { open: saved.wm?.open ?? [], geo: saved.wm?.geo ?? {} },
       panelStack: [], // ephemeral — a fresh boot starts with no back-history
+      voices: saved.voices ?? [],
       history: saved.history ?? [],
       historyAt: saved.historyAt ?? (saved.history?.length ?? 0) - 1,
       investigations: saved.investigations ?? [],
@@ -386,6 +403,29 @@ export function toggleReaderLink(id: string): void {
           : { ...r, linked: true, bookId: s.cursor.bookId, chapter: s.cursor.chapter },
       },
     };
+  });
+}
+
+// ── v1.2.0 — the world's voices ─────────────────────────────────────────
+/** Add a catalog voice to MY SHELF (idempotent) and switch the reader to
+    it. The corpus engine serves it through the existing mirror chain +
+    IndexedDB cache — no new fetch machinery. */
+export function addVoice(v: Omit<UserVoice, "id" | "addedAt">): string {
+  const id = `bolls:${v.bolls}`;
+  setState((s) => ({
+    voices: s.voices.some((x) => x.id === id)
+      ? s.voices
+      : [...s.voices, { ...v, id, addedAt: Date.now() }],
+  }));
+  return id;
+}
+
+/** Remove a user-added voice. The ACTIVE voice cannot be removed (the UI
+    hides the control, and the door double-checks). */
+export function removeVoice(id: string): void {
+  setState((s) => {
+    if (s.cursor.translation === id) return {};
+    return { voices: s.voices.filter((v) => v.id !== id) };
   });
 }
 

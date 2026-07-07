@@ -85,3 +85,49 @@
   border-radius: 10px;
 }
 .gx-navsheet-ch.is-active { color: var(--gold); border-color: color-mix(in oklab, var(--gold) 50%, transparent); }
+
+/* ── v1.2.0 — the VOICES surface: THE one translation system ─────────── */
+.gx-voices { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.gx-voices-tabs {
+  flex: none;
+  display: flex; gap: 2px;
+  padding: 8px 12px 0;
+}
+.gx-voices-tab {
+  flex: 1;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+  color: var(--fg-dim);
+  padding: 9px 0;
+  border-bottom: 2px solid transparent;
+}
+.gx-voices-tab.is-on { color: var(--fg); border-bottom-color: var(--gold); }
+.gx-voices-shelf, .gx-voices-add { flex: 1; min-height: 0; }
+.gx-voice-row { display: flex; align-items: stretch; gap: 2px; padding: 0; }
+.gx-voice-pick {
+  flex: 1; display: flex; align-items: center; gap: 10px;
+  min-height: 44px; padding: 8px 10px; border-radius: 10px;
+  text-align: left;
+}
+.gx-voice-pick:hover { background: color-mix(in oklab, var(--fg) 6%, transparent); }
+.gx-voice-row.is-active .gx-navsheet-name { color: var(--gold); }
+.gx-voice-remove {
+  flex: none; width: 34px; border-radius: 8px;
+  color: var(--fg-dim); font-size: 13px;
+}
+.gx-voice-remove:hover { color: var(--red-letter); }
+.gx-voices-search {
+  display: block;
+  width: calc(100% - 16px);
+  margin: 8px 8px 4px;
+  padding: 10px 12px;
+  font: inherit; font-size: 13px;
+  color: var(--fg);
+  background: color-mix(in oklab, var(--fg) 5%, transparent);
+  border: var(--hairline); border-radius: 10px;
+}
+.gx-voices-search:focus { outline: none; border-color: color-mix(in oklab, var(--accent) 55%, transparent); }
+.gx-voices-note {
+  font-size: 11.5px; color: var(--fg-dim); line-height: 1.55;
+  margin: 6px 10px 8px;
+}
+.gx-navsheet-row.is-on-shelf .gx-navsheet-name { color: var(--gold); }

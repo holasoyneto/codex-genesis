@@ -81,6 +81,32 @@ export const TRANSLATIONS: Translation[] = [
     coverage: ["gen", "jhn"] },
 ];
 
+// ── v1.2.0 — user-added voices from the world catalog ───────────────────
+// The store keeps only the user's additions; here they become full
+// Translation rows (canon66 — the catalog carries no finer coverage) and
+// join the SAME routing/caching machinery as the built-ins: no new fetch
+// code, the mirror chain and IndexedDB cache serve them as-is.
+import { getState } from "@/kernel/store";
+
+export function userTranslations(): Translation[] {
+  return getState().voices.map((v) => ({
+    id: v.id,
+    name: v.name,
+    lang: v.lang,
+    bolls: v.bolls,
+    coverage: "canon66" as const,
+  }));
+}
+
+/** Built-ins + the user's shelf — the ONE list routing reads. */
+export function allTranslations(): Translation[] {
+  return [...TRANSLATIONS, ...userTranslations()];
+}
+
+export function findTranslation(id: string): Translation | undefined {
+  return allTranslations().find((t) => t.id === id);
+}
+
 export function covers(t: Translation, bookId: string): boolean {
   const b = bookById.get(bookId);
   if (!b) return false;
@@ -90,9 +116,10 @@ export function covers(t: Translation, bookId: string): boolean {
   return t.coverage.includes(bookId);
 }
 
-const BOLLS_CODE: Record<string, string> = Object.fromEntries(
-  TRANSLATIONS.filter((t) => t.bolls).map((t) => [t.id, t.bolls as string])
-);
+// The bolls code for any voice — built-in or user-added.
+function bollsCode(translation: string): string | undefined {
+  return findTranslation(translation)?.bolls;
+}
 
 // ── caches ─────────────────────────────────────────────────────────────
 const memory = new Map<string, Chapter>();
@@ -163,7 +190,7 @@ function sanitizeBolls(html: string): string {
 }
 
 async function fromBolls(translation: string, bookId: string, chapter: number): Promise<Verse[] | null> {
-  const code = BOLLS_CODE[translation];
+  const code = bollsCode(translation);
   const bid = BOLLS_ID[bookId];
   if (!code || !bid) return null;
   const r = await fetch(`https://bolls.life/get-text/${code}/${bid}/${chapter}/`);
@@ -203,8 +230,8 @@ export async function getChapter(translation: string, bookId: string, chapter: n
   // — they cannot flake). The chapter that returns says which corpus
   // actually served it; the chip stays honest when a book lives outside
   // the requested translation.
-  const requested = TRANSLATIONS.find((t) => t.id === translation);
-  const able = TRANSLATIONS.filter((t) => covers(t, bookId))
+  const requested = findTranslation(translation);
+  const able = allTranslations().filter((t) => covers(t, bookId))
     .sort((a, b) => Number(b.bundled ?? false) - Number(a.bundled ?? false));
   const order = [
     ...(requested && covers(requested, bookId) ? [requested] : []),

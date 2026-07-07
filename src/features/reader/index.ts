@@ -1,13 +1,13 @@
 import { registerFeature } from "@/kernel/registry";
 import { getState, goTo, setState, openReader } from "@/kernel/store";
-import { TRANSLATIONS } from "@/engine/corpus";
+import { allTranslations } from "@/engine/corpus";
 import { Reader } from "./Reader";
 import { NavSheet } from "./NavSheet";
 
 // T — cycle the main reader through the registry's voices.
 const cycleTranslation = () => {
   const { cursor } = getState();
-  const ids = TRANSLATIONS.map((t) => t.id);
+  const ids = allTranslations().map((t) => t.id);
   const next = ids[(ids.indexOf(cursor.translation) + 1) % ids.length];
   goTo({ translation: next });
 };
@@ -35,7 +35,7 @@ registerFeature({
       match: (q) => {
         const m = q.match(/^reader\s+(\w+)$/i);
         if (!m) return null;
-        const t = TRANSLATIONS.find((x) => x.id === m[1].toLowerCase());
+        const t = allTranslations().find((x) => x.id === m[1].toLowerCase());
         if (!t) return null;
         return {
           label: `READER · ${t.name}`,

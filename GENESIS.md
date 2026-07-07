@@ -162,6 +162,22 @@ spec. Also new: CODEX · The Open Canon, a small honestly-gated
 translation (`scripts/import-open-canon.mjs`) proving the gate/ungated/
 gap rendering pattern for future canon work.
 
+### v1.2.0 "The Voices of the World" — one translation system, every language
+Translation choosing was fragmented four ways (header popover, pill
+sheet, Library shelf list, verse-menu voice sub-list). All four collapsed
+into ONE surface: the NavSheet's VOICES (marker class `gx-voices`,
+asserted repo-unique by the harness at grep level plus DOM audits per
+posture). The Library kept books/canons/traditions and a single "Voices…"
+door; windowed readers open the same surface scoped to their pin
+(`trans:<winId>` seed). New: MY SHELF (sacred originals pinned) + ADD A
+VOICE — the baked bolls.life world catalog
+(`scripts/bake-voice-catalog.mjs` → `data/voice-catalog.json`, 31
+languages / 146 voices counted honestly in `_meta`, never inflated),
+searchable, one tap to add & switch. Added voices are a versioned store
+slice (`voices`) and serve through the EXISTING mirror chain + IndexedDB
+cache — zero new fetch machinery; coverage stays canon66; the servedFrom
+badge keeps the network honesty visible.
+
 ## What we deliberately do NOT rebuild
 - BabelForge (v1 README vaporware) — stays unbuilt until it can be real.
 - Canon Loop — blueprint still awaits explicit user approval.
