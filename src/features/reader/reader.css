@@ -58,6 +58,38 @@
    caveat instead of tinting text that hasn't earned it. */
 .gx-verse.is-gated { border-left-color: color-mix(in oklab, var(--gold) 55%, transparent); }
 .gx-verse.is-gated .gx-vn { color: var(--gold); }
+/* Apple-Books page turn (palm, main reader) — the track holds prev ·
+   current · next, each one viewport-column wide; translateX(-100%)
+   centers the current page and the finger drags the whole track live.
+   touch-action: pan-y leaves vertical scrolling to the browser (the 10px
+   direction lock in JS decides which axis owns the gesture). */
+.gx-pageturn { overflow: hidden; touch-action: pan-y; }
+.gx-pageturn-track {
+  position: relative;
+  width: 100%;
+  transform: translateX(0);
+  will-change: transform;
+}
+/* Side panes are ABSOLUTE overlays clipped to the current page's height —
+   they must never add scroll height below a shorter current chapter. */
+.gx-pt-pane {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.gx-pt-pane:first-child { left: -100%; }
+.gx-pt-pane:last-child { left: 100%; }
+.gx-pt-pane.is-current { position: static; pointer-events: auto; height: auto; overflow: visible; }
+@media (prefers-reduced-motion: reduce) {
+  .gx-pageturn-track { transition: none !important; }
+}
+/* Palm: the static title — same type, no button chrome (the pill is the
+   only reader navigation; DESIGN §III one door per destination). */
+.gx-reader-title.is-static { text-align: center; flex: 1; }
+
 .gx-ungated-banner {
   font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em;
   text-transform: uppercase; color: var(--fg-dim); text-align: center;

@@ -4,7 +4,7 @@
 
 import { useContext, useEffect, useRef, useState } from "react";
 import {
-  useApp, goTo, setState, openDossier, openPanel, openReader, whisper, addToInvestigation, type Cursor,
+  useApp, goTo, setState, openDossier, openPanel, openReader, openVeil, whisper, addToInvestigation, type Cursor,
 } from "@/kernel/store";
 import { setSeed } from "@/kernel/seeds";
 import { verb } from "@/kernel/lexicon";
@@ -97,6 +97,20 @@ function Picker({ bookId, onDone, onGo = goTo }: { bookId: string; onDone: () =>
           >{i + 1}</button>
         )) : null}
       </div>
+    </div>
+  );
+}
+
+// A quiet pre-render of an adjacent chapter for the page-turn track —
+// text only, no menus, no focus: the page under the incoming page.
+function TurnPane({ ch }: { ch: Chapter | null }) {
+  return (
+    <div className="gx-pt-pane" aria-hidden>
+      {ch ? ch.verses.map((v) => (
+        <p key={v.n} className="gx-verse">
+          <span className="gx-vn">{v.n}</span>{v.text}
+        </p>
+      )) : null}
     </div>
   );
 }
@@ -261,20 +275,108 @@ export function Reader() {
   const [ontReady, setOntReady] = useState(false);
   const book = bookById.get(cursor.bookId);
 
-  // Swipe turns the chapter (touch, main reader) — a page under the thumb.
-  const swipe = useRef<{ x: number; y: number; id: number } | null>(null);
-  const onSwipeStart = (e: React.PointerEvent) => {
-    if (winId || e.pointerType !== "touch") return;
-    swipe.current = { x: e.clientX, y: e.clientY, id: e.pointerId };
+  // ── Apple-Books page turn (palm, main reader) ────────────────────────
+  // The page FOLLOWS the finger: adjacent chapters are pre-rendered in
+  // offscreen columns; a horizontal drag translates the track live.
+  // Commit past ~35% width or on a velocity flick (260ms eased settle);
+  // otherwise snap back. A 10px direction lock lets vertical scroll win.
+  // Rubber-band at the book's boundaries. prefers-reduced-motion → the
+  // turn is an instant swap. The header's ‹ › stay (desk) — this replaces
+  // only the old jump-cut swipe.
+  const [palm, setPalm] = useState(() => window.matchMedia("(max-width: 880px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 880px)");
+    const on = () => setPalm(mq.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  const palmMain = palm && !winId;
+
+  const [adjacent, setAdjacent] = useState<{ prev: Chapter | null; next: Chapter | null }>({ prev: null, next: null });
+  useEffect(() => {
+    if (!palmMain || !book) return;
+    let live = true;
+    const p = cursor.chapter > 1
+      ? getChapter(cursor.translation, cursor.bookId, cursor.chapter - 1).catch(() => null)
+      : Promise.resolve(null);
+    const n = cursor.chapter < book.chapters
+      ? getChapter(cursor.translation, cursor.bookId, cursor.chapter + 1).catch(() => null)
+      : Promise.resolve(null);
+    Promise.all([p, n]).then(([prev, next]) => { if (live) setAdjacent({ prev, next }); });
+    return () => { live = false; };
+  }, [palmMain, cursor.translation, cursor.bookId, cursor.chapter, book]);
+
+  const trackRef = useRef<HTMLDivElement>(null);
+  const drag = useRef<null | {
+    x: number; y: number; id: number;
+    mode: "undecided" | "h" | "v";
+    dx: number; lastX: number; lastT: number; vx: number;
+    settling: boolean;
+  }>(null);
+
+  const setTrack = (dx: number, animate = false) => {
+    const el = trackRef.current;
+    if (!el) return;
+    el.style.transition = animate ? "transform 260ms cubic-bezier(0.22, 0.61, 0.36, 1)" : "none";
+    el.style.transform = `translateX(${dx}px)`;
   };
-  const onSwipeEnd = (e: React.PointerEvent) => {
-    const sw = swipe.current;
-    swipe.current = null;
-    if (!sw || sw.id !== e.pointerId || !book) return;
-    const dx = e.clientX - sw.x, dy = e.clientY - sw.y;
-    if (Math.abs(dx) < 64 || Math.abs(dx) < Math.abs(dy) * 1.6) return;
-    const next = cursor.chapter + (dx < 0 ? 1 : -1);
-    if (next >= 1 && next <= book.chapters) nav({ chapter: next, verse: null });
+
+  const onTurnDown = (e: React.PointerEvent) => {
+    if (!palmMain || e.pointerType !== "touch" || drag.current?.settling) return;
+    drag.current = {
+      x: e.clientX, y: e.clientY, id: e.pointerId,
+      mode: "undecided", dx: 0, lastX: e.clientX, lastT: performance.now(), vx: 0,
+      settling: false,
+    };
+  };
+  const onTurnMove = (e: React.PointerEvent) => {
+    const d = drag.current;
+    if (!d || d.settling || d.id !== e.pointerId || !book) return;
+    const dx = e.clientX - d.x, dy = e.clientY - d.y;
+    if (d.mode === "undecided") {
+      // 10px direction lock — vertical intent wins and we never touch the page.
+      if (Math.abs(dy) > 10 && Math.abs(dy) >= Math.abs(dx)) { d.mode = "v"; return; }
+      if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) d.mode = "h";
+      else return;
+    }
+    if (d.mode !== "h") return;
+    const now = performance.now();
+    d.vx = (e.clientX - d.lastX) / Math.max(1, now - d.lastT);
+    d.lastX = e.clientX; d.lastT = now;
+    d.dx = dx;
+    // Rubber-band at canon boundaries: no page that way — resistance.
+    const blocked = (dx > 0 && !adjacent.prev) || (dx < 0 && !adjacent.next);
+    setTrack(blocked ? dx * 0.3 : dx);
+  };
+  const onTurnEnd = (e: React.PointerEvent) => {
+    const d = drag.current;
+    if (!d || d.settling || d.id !== e.pointerId || !book) { if (d && !d.settling) drag.current = null; return; }
+    if (d.mode !== "h") { drag.current = null; return; }
+    const w = window.innerWidth;
+    const dir = d.dx < 0 ? 1 : -1; // drag left → next chapter
+    const available = dir === 1 ? !!adjacent.next : !!adjacent.prev;
+    const past = Math.abs(d.dx) > 0.35 * w;
+    const flick = Math.abs(d.vx) > 0.5 && Math.abs(d.dx) > 24 && Math.sign(-d.vx) === dir;
+    const commit = available && (past || flick);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (commit) {
+      if (reduced) {
+        setTrack(0);
+        nav({ chapter: cursor.chapter + dir, verse: null });
+        drag.current = null;
+      } else {
+        d.settling = true;
+        setTrack(dir === 1 ? -w : w, true);
+        window.setTimeout(() => {
+          nav({ chapter: cursor.chapter + dir, verse: null });
+          setTrack(0);
+          drag.current = null;
+        }, 265);
+      }
+    } else {
+      setTrack(0, !reduced && d.dx !== 0);
+      drag.current = null;
+    }
   };
 
   // Warm the ontology once; a re-render swaps text for chips when it lands.
@@ -359,49 +461,65 @@ export function Reader() {
       className="gx-reader"
       style={{ ["--scripture-size" as string]: `${scriptureScale}px` }}
       aria-label={`${book.name} ${cursor.chapter}`}
-      onPointerDown={onSwipeStart}
-      onPointerUp={onSwipeEnd}
     >
       <header className="gx-reader-head">
-        <button
-          className="gx-reader-nav"
-          aria-label="Previous chapter"
-          disabled={cursor.chapter <= 1}
-          onClick={() => nav({ chapter: cursor.chapter - 1, verse: null })}
-        >‹</button>
-        <button
-          className="gx-reader-title-btn"
-          aria-label="Choose book and chapter"
-          aria-expanded={picker}
-          onClick={() => setPicker((p) => !p)}
-        >
-          <h1 className="gx-reader-title">
+        {/* DESIGN §III — one act, one control per surface. On the palm the
+            PILL is the reader's only navigation: the header keeps just the
+            static title (no arrows, no chip, no click); tapping anything
+            nav-shaped can only ever mean the pill's own fullscreen picker.
+            The desk keeps arrows + chip (it has the room), but the title
+            now opens the SAME polished veil picker (NavSheet) the pill
+            uses — one picker component, two postures. Windowed readers
+            keep the inline grid (their nav drives a private pin, not the
+            global cursor the veil moves). */}
+        {palmMain ? (
+          <h1 className="gx-reader-title is-static">
             {book.name} <b>{cursor.chapter}</b>
             <span className="gx-reader-of">/ {book.chapters}</span>
           </h1>
-        </button>
-        <button
-          className="gx-reader-nav"
-          aria-label="Next chapter"
-          disabled={cursor.chapter >= book.chapters}
-          onClick={() => nav({ chapter: cursor.chapter + 1, verse: null })}
-        >›</button>
-        <button
-          className="gx-trans-chip"
-          aria-label="Translation"
-          aria-expanded={transPop}
-          title="Switch translation"
-          onClick={() => setTransPop((t) => !t)}
-        >{cursor.translation.toUpperCase()}</button>
-        {picker ? <Picker bookId={cursor.bookId} onDone={() => setPicker(false)} onGo={nav} /> : null}
-        {transPop ? (
-          <TransPopover
-            current={cursor.translation}
-            bookId={cursor.bookId}
-            onPick={(id) => nav({ translation: id })}
-            onClose={() => setTransPop(false)}
-          />
-        ) : null}
+        ) : (
+          <>
+            <button
+              className="gx-reader-nav"
+              aria-label="Previous chapter"
+              disabled={cursor.chapter <= 1}
+              onClick={() => nav({ chapter: cursor.chapter - 1, verse: null })}
+            >‹</button>
+            <button
+              className="gx-reader-title-btn"
+              aria-label="Choose book and chapter"
+              aria-expanded={picker}
+              onClick={() => (winId ? setPicker((p) => !p) : openVeil("reader", "book"))}
+            >
+              <h1 className="gx-reader-title">
+                {book.name} <b>{cursor.chapter}</b>
+                <span className="gx-reader-of">/ {book.chapters}</span>
+              </h1>
+            </button>
+            <button
+              className="gx-reader-nav"
+              aria-label="Next chapter"
+              disabled={cursor.chapter >= book.chapters}
+              onClick={() => nav({ chapter: cursor.chapter + 1, verse: null })}
+            >›</button>
+            <button
+              className="gx-trans-chip"
+              aria-label="Translation"
+              aria-expanded={transPop}
+              title="Switch translation"
+              onClick={() => setTransPop((t) => !t)}
+            >{cursor.translation.toUpperCase()}</button>
+            {picker && winId ? <Picker bookId={cursor.bookId} onDone={() => setPicker(false)} onGo={nav} /> : null}
+            {transPop ? (
+              <TransPopover
+                current={cursor.translation}
+                bookId={cursor.bookId}
+                onPick={(id) => nav({ translation: id })}
+                onClose={() => setTransPop(false)}
+              />
+            ) : null}
+          </>
+        )}
       </header>
 
       {error ? (
@@ -415,45 +533,66 @@ export function Reader() {
         </div>
       ) : !ch ? (
         <p className="gx-reader-wait" aria-live="polite">…</p>
-      ) : (
-        <div className="gx-verses">
-          {ch.translation === "codex" && ch.verses.some((v) => v.gate === "UNGATED") ? (
-            <p className="gx-ungated-banner" role="note">
-              UNGATED — provisional rendering, gates pending
-            </p>
-          ) : null}
-          {ch.verses.map((v) => (
-            <p
-              key={v.n}
-              className={
-                "gx-verse" +
-                (red?.has(v.n) ? " is-red" : "") +
-                (v.gate === "GATED_COMPLETE" ? " is-gated" : "") +
-                (current && cursor.verse === v.n ? " is-focus" : "") +
-                (menu?.verse === v.n ? " has-menu" : "")
-              }
-              onClick={(e) => {
-                if (!winId) goTo({ verse: v.n });
-                const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                setTimeout(() => setMenu({ verse: v.n, flip: r.bottom > innerHeight * 0.62 }), 0);
-              }}
-            >
-              <span className="gx-vn" aria-hidden>{v.n}</span>
-              <VerseBody text={v.text} mentions={chMentions?.get(v.n)} divineName={divineName} />
-              {menu?.verse === v.n ? (
-                <VerseMenu
-                  refc={{ bookId: cursor.bookId, chapter: cursor.chapter, verse: v.n }}
-                  text={v.text}
-                  entityIds={[...new Set((chMentions?.get(v.n) ?? []).map((m) => m.entityId))]}
-                  flip={menu.flip}
-                  onClose={() => setMenu(null)}
-                  onNav={nav}
-                />
-              ) : null}
-            </p>
-          ))}
-        </div>
-      )}
+      ) : (() => {
+        const verses = (
+          <div className="gx-verses">
+            {ch.translation === "codex" && ch.verses.some((v) => v.gate === "UNGATED") ? (
+              <p className="gx-ungated-banner" role="note">
+                UNGATED — provisional rendering, gates pending
+              </p>
+            ) : null}
+            {ch.verses.map((v) => (
+              <p
+                key={v.n}
+                className={
+                  "gx-verse" +
+                  (red?.has(v.n) ? " is-red" : "") +
+                  (v.gate === "GATED_COMPLETE" ? " is-gated" : "") +
+                  (current && cursor.verse === v.n ? " is-focus" : "") +
+                  (menu?.verse === v.n ? " has-menu" : "")
+                }
+                onClick={(e) => {
+                  if (!winId) goTo({ verse: v.n });
+                  const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  setTimeout(() => setMenu({ verse: v.n, flip: r.bottom > innerHeight * 0.62 }), 0);
+                }}
+              >
+                <span className="gx-vn" aria-hidden>{v.n}</span>
+                <VerseBody text={v.text} mentions={chMentions?.get(v.n)} divineName={divineName} />
+                {menu?.verse === v.n ? (
+                  <VerseMenu
+                    refc={{ bookId: cursor.bookId, chapter: cursor.chapter, verse: v.n }}
+                    text={v.text}
+                    entityIds={[...new Set((chMentions?.get(v.n) ?? []).map((m) => m.entityId))]}
+                    flip={menu.flip}
+                    onClose={() => setMenu(null)}
+                    onNav={nav}
+                  />
+                ) : null}
+              </p>
+            ))}
+          </div>
+        );
+        if (!palmMain) return verses;
+        // The page-turn track: prev · current · next, one viewport-width
+        // column each, centered on the current page. The finger drags the
+        // whole track; the side panes are quiet pre-renders (no menus).
+        return (
+          <div
+            className="gx-pageturn"
+            onPointerDown={onTurnDown}
+            onPointerMove={onTurnMove}
+            onPointerUp={onTurnEnd}
+            onPointerCancel={onTurnEnd}
+          >
+            <div className="gx-pageturn-track" ref={trackRef}>
+              <TurnPane ch={adjacent.prev} />
+              <div className="gx-pt-pane is-current">{verses}</div>
+              <TurnPane ch={adjacent.next} />
+            </div>
+          </div>
+        );
+      })()}
 
       {ch ? (
         <footer className="gx-reader-foot">

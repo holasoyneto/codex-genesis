@@ -823,14 +823,17 @@ try {
     const backTitle = await page.evaluate(() => document.querySelector(".gx-reader-title")?.textContent?.replace(/\s+/g, " "));
     check("history: ⌘[ walks the ledger back", /Genesis 1\b/.test(backTitle || ""), JSON.stringify(backTitle));
 
-    // the reader title opens the grid picker
+    // the reader title opens the VEIL picker — the same polished NavSheet
+    // the palm pill uses (one picker component, two postures), replacing
+    // the old cropped inline dropdown (DESIGN §III).
     await page.click(".gx-reader-title-btn");
-    await page.waitForSelector(".gx-picker", { timeout: 5000 });
+    await page.waitForSelector(".gx-navsheet", { timeout: 5000 });
     const picker = await page.evaluate(() => ({
-      books: document.querySelectorAll(".gx-picker-book").length,
-      chapters: document.querySelectorAll(".gx-picker-ch").length,
+      shelves: document.querySelectorAll(".gx-navsheet-shelf").length,
+      books: document.querySelectorAll(".gx-navsheet-row").length,
     }));
-    check("reader: grid picker opens from the title", picker.books > 60 && picker.chapters > 10, JSON.stringify(picker));
+    check("reader: title opens the veil picker (NavSheet, canon-sectioned)",
+      picker.shelves >= 3 && picker.books > 60, JSON.stringify(picker));
     await page.keyboard.press("Escape");
 
     // ── the desk's verbs (registry-declared keys) ────────────────────
@@ -1597,6 +1600,107 @@ try {
     await oneSheet("Dossier door (<Ref> pill / entity click path)", async (page) => {
       await page.evaluate(() => window.__CODEX_PANEL__.open("dossier"));
     });
+  }
+
+  // ═══════════ GENESIS 1.1.1 — the page follows the finger ═══════════
+  // Apple-Books page turn on the palm's main reader, plus the picker
+  // unification (the pill's fullscreen picker is the canonical pattern).
+  {
+    const { ctx, page } = await boot(390, 844, true);
+    await page.waitForFunction(() => document.querySelectorAll(".gx-verse").length > 0, { timeout: 30000 });
+    await sleep(300);
+
+    // DESIGN §III on palm: the header carries ZERO nav affordances — no
+    // ‹ › arrows, no translation chip, no clickable title. The pill is
+    // the reader's only navigation; exactly ONE translation affordance
+    // exists on the whole palm reader surface (the pill's voice half).
+    const palmHeader = await page.evaluate(() => ({
+      navBtns: document.querySelectorAll(".gx-reader-nav").length,
+      transChips: document.querySelectorAll(".gx-trans-chip").length,
+      titleBtns: document.querySelectorAll(".gx-reader-title-btn").length,
+      staticTitle: !!document.querySelector(".gx-reader-title.is-static"),
+      pillVoice: document.querySelectorAll(".gx-pill-voice").length,
+    }));
+    check("palm: reader header carries zero nav affordances (pill is the one door)",
+      palmHeader.navBtns === 0 && palmHeader.transChips === 0 && palmHeader.titleBtns === 0 && palmHeader.staticTitle,
+      JSON.stringify(palmHeader));
+    check("palm: exactly ONE translation affordance (the pill's)",
+      palmHeader.transChips === 0 && palmHeader.pillVoice === 1, JSON.stringify(palmHeader));
+    // …and NOTHING on the palm reader can open the old desk dropdown.
+    const dropdownGone = await page.evaluate(() => !document.querySelector(".gx-picker"));
+    check("palm: the desk dropdown picker can never appear", dropdownGone);
+
+    // Page turn — helpers dispatch touch-typed pointer events with real
+    // spacing so velocity reflects the gesture, not the dispatch loop.
+    const dragH = async (fromXFrac, distFrac, steps = 6, stepMs = 40) => {
+      await page.evaluate(async ({ fromXFrac, distFrac, steps, stepMs }) => {
+        const el = document.querySelector(".gx-pageturn");
+        const w = innerWidth;
+        const x0 = w * fromXFrac, dist = w * distFrac;
+        const fire = (type, x, y) => el.dispatchEvent(new PointerEvent(type, {
+          bubbles: true, cancelable: true, pointerId: 42, pointerType: "touch", clientX: x, clientY: y,
+        }));
+        const zzz = (ms) => new Promise((r) => setTimeout(r, ms));
+        fire("pointerdown", x0, 300);
+        for (let i = 1; i <= steps; i++) { await zzz(stepMs); fire("pointermove", x0 + dist * (i / steps), 300); }
+        await zzz(80); // settle the velocity window
+        fire("pointermove", x0 + dist, 300);
+        fire("pointerup", x0 + dist, 300);
+      }, { fromXFrac, distFrac, steps, stepMs });
+      await sleep(600); // eased settle (260ms) + nav + re-render
+    };
+    const title = () => page.evaluate(() => document.querySelector(".gx-reader-title")?.textContent?.replace(/\s+/g, " "));
+
+    const t0 = await title();
+    // 60% drag left → next chapter commits
+    await dragH(0.85, -0.6);
+    const t1 = await title();
+    check("page turn: a 60% drag turns the chapter", t0 !== t1, `${t0} → ${t1}`);
+
+    // 15% drag left → snaps back, chapter unchanged
+    await dragH(0.85, -0.15);
+    const t2 = await title();
+    check("page turn: a 15% drag snaps back (no turn)", t2 === t1, `${t1} → ${t2}`);
+    const trackReset = await page.evaluate(() =>
+      /translateX\(0px\)/.test(document.querySelector(".gx-pageturn-track")?.style.transform ?? ""));
+    check("page turn: the track settles back to center after a snap-back", trackReset);
+
+    // vertical scroll gesture → never turns (10px direction lock)
+    await page.evaluate(async () => {
+      const el = document.querySelector(".gx-pageturn");
+      const fire = (type, x, y) => el.dispatchEvent(new PointerEvent(type, {
+        bubbles: true, cancelable: true, pointerId: 43, pointerType: "touch", clientX: x, clientY: y,
+      }));
+      const zzz = (ms) => new Promise((r) => setTimeout(r, ms));
+      fire("pointerdown", 200, 500);
+      for (let i = 1; i <= 5; i++) { await zzz(30); fire("pointermove", 200 - 6, 500 - 70 * i); }
+      fire("pointerup", 194, 150);
+    });
+    await sleep(500);
+    const t3 = await title();
+    check("page turn: vertical scroll never turns the chapter", t3 === t2, `${t2} → ${t3}`);
+
+    check("page turn palm: zero js errors", page.jsErrors.length === 0, JSON.stringify(page.jsErrors.slice(0, 2)));
+    await ctx.close();
+  }
+
+  // Desk: the title-click veil picker is fully visible at 1280×720 (the
+  // small-desk case the old dropdown used to crop on).
+  {
+    const { ctx, page } = await boot(1280, 720);
+    await page.waitForFunction(() => document.querySelectorAll(".gx-verse").length > 0, { timeout: 30000 });
+    await sleep(200);
+    await page.click(".gx-reader-title-btn");
+    await page.waitForSelector(".gx-navsheet", { timeout: 5000 });
+    const box = await page.evaluate(() => {
+      const b = document.querySelector(".gx-navsheet").getBoundingClientRect();
+      return { top: b.top, bottom: b.bottom, left: b.left, right: b.right, vw: innerWidth, vh: innerHeight };
+    });
+    check("desk 1280x720: title-click veil picker fully visible",
+      box.top >= 0 && box.left >= 0 && box.bottom <= box.vh && box.right <= box.vw, JSON.stringify(box));
+    await page.keyboard.press("Escape");
+    check("desk 1280x720 veil picker: zero js errors", page.jsErrors.length === 0, JSON.stringify(page.jsErrors.slice(0, 2)));
+    await ctx.close();
   }
 
   const failed = results.filter((r) => !r.ok);

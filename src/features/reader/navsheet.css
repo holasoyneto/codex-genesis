@@ -1,9 +1,18 @@
 .gx-navsheet {
   width: min(560px, calc(100vw - 2 * var(--edge-pad)));
-  max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  /* The veil offsets content 14vh from the top on the desk — the sheet's
+     height budget must subtract it or small desks (1280×720) crop the
+     bottom rows. The palm override below restores near-full height (its
+     veil padding is only ~8px). */
+  max-height: calc(86vh - 24px - env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+@media (max-width: 880px) {
+  .gx-navsheet {
+    max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  }
 }
 .gx-navsheet-top {
   flex: none;
