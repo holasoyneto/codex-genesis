@@ -26,7 +26,15 @@ const str = (description: string) => ({ type: "string", description });
 function toKey(raw: string): string | null {
   const t = String(raw).trim();
   const m = t.toLowerCase().match(/^([\w-]+)\.(\d+)\.(\d+)$/);
-  if (m) return bookById.has(m[1]) ? t.toLowerCase() : null;
+  if (m) {
+    const b = bookById.get(m[1]);
+    if (!b) return null;
+    // Clamp to the book's real bounds — the Oracle must not push the shared
+    // cursor into a chapter that does not exist (that is how pages go dark).
+    const chapter = Math.min(Math.max(1, parseInt(m[2], 10) || 1), b.chapters);
+    const verse = Math.max(1, parseInt(m[3], 10) || 1);
+    return `${m[1]}.${chapter}.${verse}`;
+  }
   const p = parseRef(t);
   return p ? `${p.book.id}.${p.chapter}.${p.verse ?? 1}` : null;
 }

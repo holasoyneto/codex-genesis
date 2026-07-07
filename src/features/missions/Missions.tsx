@@ -8,12 +8,13 @@
 // the engine is the askOracleStream + kernel tool registry; this panel
 // is a thin, mortal skin over it).
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useApp, addToInvestigation } from "@/kernel/store";
 import { useInWindow } from "@/shell/Windows";
 import { askOracleStream, type ChatTurn } from "@/engine/oracle";
 import { Ref } from "@/kernel/Ref";
 import { parseRef } from "@/features/omnibar/refparse";
+import { takeSeed } from "@/kernel/seeds";
 import "./missions.css";
 
 interface StepChip { kind: "tool"; name: string; args: string }
@@ -62,23 +63,26 @@ export function Missions() {
   const [artifact, setArtifact] = useState<Artifact | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const stepsRef = useRef(0);
+  useEffect(() => { const s = takeSeed("missions"); if (s) setGoal(s); }, []);
 
   const run = async () => {
     const g = goal.trim();
     if (!g || busy || !oracle.engine) return;
     setBusy(true); setSteps([]); setLive(""); setArtifact(null); setErr(null); setSaved(false);
+    stepsRef.current = 0;
     try {
       const transcript: ChatTurn[] = [];
       const a = await askOracleStream(MISSION_PROMPT(g), transcript, {
         onDelta: (d) => setLive((t) => t + d),
-        onTool: (name, args) => setSteps((s) => [...s, { kind: "tool", name, args: JSON.stringify(args) }]),
+        onTool: (name, args) => { stepsRef.current++; setSteps((s) => [...s, { kind: "tool", name, args: JSON.stringify(args) }]); },
       });
       const titleMatch = a.text.match(/TITLE:\s*(.+)/);
       setArtifact({
         title: titleMatch?.[1]?.trim() || g,
         text: a.text.replace(/TITLE:\s*.+\n?/, "").trim(),
         refs: extractRefs(a.text),
-        toolCalls: steps.length,
+        toolCalls: stepsRef.current,
       });
     } catch (e) {
       setErr(String(e).slice(0, 300));
@@ -104,7 +108,10 @@ export function Missions() {
         Give the Oracle a research goal — it plans, works the kernel's tools step by step, and returns a structured brief you can save to your investigation.
       </p>
       {!oracle.engine ? (
-        <p className="gx-mis-none">No Oracle engine configured yet — open the Oracle to set one up first.</p>
+        <div className="gx-mis-noengine">
+          {goal ? <p className="gx-mis-seeded">Goal ready — “{goal}”</p> : null}
+          <p className="gx-mis-none">No Oracle engine configured yet — open the Oracle to set one up first, then return here to launch.</p>
+        </div>
       ) : (
         <>
           <div className="gx-mis-ask">

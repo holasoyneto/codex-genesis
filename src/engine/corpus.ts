@@ -24,6 +24,7 @@ export interface Verse {
   gate?: "GATED_COMPLETE" | "UNGATED";
   src?: string | null;   // witness siglum
   cr?: string | null;    // contested-rendering id
+  tier?: string;   // charter quality tier: fable-lead | fable-fleet | machine | other
 }
 export interface Chapter {
   translation: string;
@@ -77,8 +78,10 @@ export const TRANSLATIONS: Translation[] = [
     coverage: ["esg", "jub", "4ezr", "3co", "lao", "ps2", "2ba", "epb", "1cl", "2cl", "2en", "od-sol", "jas-pat", "ap-mos", "1mq", "2mq", "3mq", "3en"] },
   { id: "codex", name: "CODEX · The Open Canon", lang: "EN · gated readings",
     bundled: true,
-    // Only books with any baked reading — the gap itself is honest, not silent.
-    coverage: ["gen", "jhn"] },
+    // Only books with any baked reading — the gap itself is honest, not
+    // silent. Sourced from data/bibles/codex.json's _meta.books (regenerate
+    // via scripts/import-open-canon.mjs, then update this list to match).
+    coverage: ["1ch", "1co", "1jn", "1ki", "1pe", "1sa", "1th", "1ti", "2ch", "2co", "2jn", "2ki", "2pe", "2sa", "2th", "2ti", "3jn", "amo", "col", "dan", "ecc", "eph", "est", "exo", "ezr", "gal", "gen", "hab", "hag", "heb", "hos", "isa", "jas", "jdg", "jhn", "jol", "jon", "jos", "jud", "lam", "lev", "mal", "mat", "mic", "mrk", "nam", "neh", "oba", "phm", "php", "psa", "rev", "rom", "rut", "sng", "tit", "zec", "zep"] },
 ];
 
 // ── v1.2.0 — user-added voices from the world catalog ───────────────────

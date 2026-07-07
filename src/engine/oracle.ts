@@ -291,7 +291,12 @@ export async function listModels(): Promise<{ provider: string; models: string[]
 }
 
 // ── Anthropic: native tool use, streamed ───────────────────────────────
-interface AnthBlock { type: string; id?: string; name?: string; text?: string; input?: unknown }
+interface AnthBlock {
+  type: string; id?: string; name?: string; text?: string; input?: unknown;
+  // Extended-thinking blocks — must survive verbatim into the next round's
+  // messages, or Anthropic 400s the moment a tool call follows a thought.
+  thinking?: string; signature?: string; data?: string;
+}
 
 async function streamAnthropic(
   key: string, question: string, transcript: ChatTurn[], ev: OracleStreamEvents
@@ -345,11 +350,12 @@ async function streamAnthropic(
     const partialJson: Record<number, string> = {};
     let stopReason = "";
     for await (const data of sse(r.body)) {
-      const j = JSON.parse(data) as {
+      const j = safeParse(data) as {
         type: string; index?: number;
         content_block?: AnthBlock;
-        delta?: { type?: string; text?: string; partial_json?: string; stop_reason?: string };
-      };
+        delta?: { type?: string; text?: string; thinking?: string; signature?: string; partial_json?: string; stop_reason?: string };
+      } | null;
+      if (!j) continue;
       if (j.type === "content_block_start" && j.content_block) {
         blocks[j.index!] = { ...j.content_block };
         if (j.content_block.type === "tool_use") partialJson[j.index!] = "";
@@ -361,6 +367,10 @@ async function streamAnthropic(
           ev.onDelta(j.delta.text);
         } else if (j.delta.type === "input_json_delta" && j.delta.partial_json != null) {
           partialJson[j.index!] += j.delta.partial_json;
+        } else if (j.delta.type === "thinking_delta" && j.delta.thinking) {
+          if (b) b.thinking = (b.thinking ?? "") + j.delta.thinking;
+        } else if (j.delta.type === "signature_delta" && j.delta.signature) {
+          if (b) b.signature = (b.signature ?? "") + j.delta.signature;
         }
       } else if (j.type === "message_delta" && j.delta?.stop_reason) {
         stopReason = j.delta.stop_reason;
@@ -376,9 +386,13 @@ async function streamAnthropic(
     // Execute the requested tools locally; hand back tool_results; loop.
     const inputFor = (idx: number): Record<string, unknown> =>
       (safeParse(partialJson[idx] ?? "") ?? blocks[idx]?.input ?? {}) as Record<string, unknown>;
+    // Thinking blocks must be re-emitted verbatim and in order — they
+    // precede the tool_use per Anthropic's contract, or the next round 400s.
     const assistantContent = blocks
       .map((b, idx) => {
         if (!b) return null;
+        if (b.type === "thinking") return { type: "thinking", thinking: b.thinking ?? "", signature: b.signature ?? "" };
+        if (b.type === "redacted_thinking") return { type: "redacted_thinking", data: b.data ?? "" };
         if (b.type === "tool_use") return { type: "tool_use", id: b.id, name: b.name, input: inputFor(idx) };
         return b.text ? { type: "text", text: b.text } : null;
       })

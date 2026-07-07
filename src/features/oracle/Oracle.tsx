@@ -183,7 +183,10 @@ export function Oracle() {
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
-  useEffect(() => endRef.current?.scrollIntoView({ block: "end" }), [turns]);
+  // Brace body on purpose: scrollIntoView can return a non-undefined value
+  // in some engines, and a concise arrow would leak it to React as the
+  // effect's cleanup ("destroy is not a function" → the panel crashes).
+  useEffect(() => { endRef.current?.scrollIntoView({ block: "end" }); }, [turns]);
   // A <Ref> chip may open the panel WITH a question in hand.
   useEffect(() => { const s = takeSeed("oracle"); if (s) setQ(s); }, []);
 

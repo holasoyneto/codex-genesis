@@ -46,3 +46,6 @@
 }
 .gx-mis-save:hover:not(:disabled) { background: color-mix(in oklab, var(--accent) 10%, transparent); }
 .gx-mis-save:disabled { opacity: 0.6; }
+
+.gx-mis-noengine { display: flex; flex-direction: column; gap: 8px; }
+.gx-mis-seeded { font-size: 14px; opacity: .85; margin: 0; }

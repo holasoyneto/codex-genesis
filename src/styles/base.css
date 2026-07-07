@@ -25,3 +25,13 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .gx-ref-rail { display: flex !important; }
   input, select, textarea { font-size: 16px !important; } /* no iOS zoom */
 }
+
+/* Crash fallback — the boundary's calm face. */
+.gx-crash { position: fixed; inset: 0; display: grid; place-items: center; padding: 24px; z-index: 9999; }
+.gx-crash-card { max-width: 520px; padding: 28px 26px; border-radius: 16px; }
+.gx-crash-title { font-size: 18px; margin: 0 0 10px; font-weight: 600; }
+.gx-crash-body { font-size: 14px; opacity: .8; margin: 0 0 14px; line-height: 1.5; }
+.gx-crash-detail { font-family: ui-monospace, monospace; font-size: 12px; opacity: .6; white-space: pre-wrap; word-break: break-word; margin: 0 0 16px; max-height: 160px; overflow: auto; }
+.gx-crash-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.gx-crash-btn { padding: 8px 16px; border-radius: 10px; border: 1px solid rgba(128,128,128,.35); background: transparent; color: inherit; cursor: pointer; font: inherit; }
+.gx-crash-btn.is-primary { background: rgba(128,128,128,.18); }

@@ -11,6 +11,8 @@ import { setSearchSeed } from "@/features/search";
 import { getLoadedOntology, searchEntities } from "@/engine/ontology";
 import { parseRef } from "./refparse";
 import { looksLikePipe, runPipe } from "./pipes";
+import { setSeed } from "@/kernel/seeds";
+import { looksLikeQuestion } from "./intent";
 
 const setPanel = openPanel;
 import "./omnibar.css";
@@ -27,7 +29,7 @@ export function Omnibar({ seed }: { seed?: string }) {
   const [q, setQ] = useState(seed ?? "");
   const [sel, setSel] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
-  useEffect(() => inputRef.current?.focus(), []);
+  useEffect(() => { inputRef.current?.focus(); }, []);
 
   const rows = useMemo<Row[]>(() => {
     const out: Row[] = [];
@@ -99,6 +101,25 @@ export function Omnibar({ seed }: { seed?: string }) {
       }
     }
     if (refRow && ref!.fuzzy) out.push(refRow);
+    // A natural-language question is not a lexical search — offer the minds
+    // that can answer it. The literal-search row still follows (never a
+    // dead end), but the question leads.
+    if (needle.length > 2 && !ref && looksLikeQuestion(q)) {
+      out.push({
+        key: "oracle-ask",
+        glyph: "◎",
+        label: `Ask the Oracle — “${q.trim()}”`,
+        hint: "a frontier mind, with receipts",
+        run: () => { setSeed("oracle", q.trim()); setPanel("oracle"); closeVeil(); },
+      });
+      out.push({
+        key: "mission-launch",
+        glyph: "☄",
+        label: `Launch a mission — “${q.trim()}”`,
+        hint: "plan, work the tools, return a brief",
+        run: () => { setSeed("missions", q.trim()); setPanel("missions"); closeVeil(); },
+      });
+    }
     // Free text that names no verse and no command searches Scripture —
     // words are never a dead end.
     if (needle.length > 2 && !ref) {

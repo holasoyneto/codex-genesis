@@ -686,6 +686,25 @@ try {
     check("omnibar: the pipe executed each stage in order", /John 1/.test(pipeResult.title || "") && pipeResult.threadsOpen && pipeResult.compareOpen, JSON.stringify(pipeResult));
     await page.evaluate(() => { window.__CODEX_PANEL__.close("threads"); window.__CODEX_PANEL__.close("compare"); });
 
+    // A natural-language question is not a lexical search — it offers the
+    // minds that can answer it, and the Oracle leads (mission follows).
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "what does the covenant mean");
+    await sleep(250);
+    const qLabels = await page.evaluate(() => Array.from(document.querySelectorAll(".gx-omni-row .gx-omni-label")).map((e) => e.textContent.trim()));
+    check("omnibar: a natural-language question offers the Oracle and a Mission (not just search)", qLabels.some((l) => /Ask the Oracle/i.test(l)) && qLabels.some((l) => /Launch a mission/i.test(l)) && /Ask the Oracle/i.test(qLabels[0] || ""), qLabels.join(" | "));
+    await page.keyboard.press("Escape"); await sleep(150);
+
+    // `mission <goal>` is a parametrized command — it previews a MISSION row.
+    await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
+    await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
+    await page.type(".gx-omni-input", "mission trace the exodus route");
+    await sleep(250);
+    const misLabels = await page.evaluate(() => Array.from(document.querySelectorAll(".gx-omni-row .gx-omni-label")).map((e) => e.textContent.trim()));
+    check("omnibar: 'mission <goal>' offers a MISSION launch row", misLabels.some((l) => /MISSION/i.test(l)), misLabels.join(" | "));
+    await page.keyboard.press("Escape"); await sleep(150);
+
     // Share: an investigation round-trips through encode/decode (exposed
     // on window.CODEX_SHARE for the same reason CODEX_KERNEL is — a
     // capability must be callable without any DOM/harness gymnastics).
@@ -1829,6 +1848,49 @@ try {
     const palmTabs = await page.evaluate(() => [...document.querySelectorAll(".gx-voices-tab")].map((t) => t.textContent));
     check("palm: ADD A VOICE is ≤2 gestures from the reader", palmTabs.includes("ADD A VOICE"), JSON.stringify(palmTabs));
     check("voices palm: zero js errors", page.jsErrors.length === 0, JSON.stringify(page.jsErrors.slice(0, 2)));
+    await ctx.close();
+  }
+
+  // ── regression: the Oracle must not crash when an engine IS configured ──
+  // (endRef.current?.scrollIntoView({...}) as a concise effect body can leak
+  // a non-undefined return value to React as the effect's cleanup fn —
+  // "destroy is not a function" — which used to tear the panel down; the
+  // default boot() context has no engine, so this needs its own seed.)
+  {
+    const ctx = await browser.createBrowserContext();
+    const page = await ctx.newPage();
+    await page.evaluateOnNewDocument(() => {
+      localStorage.setItem("codex-genesis.v3", JSON.stringify({ onboarded: true, settings: { oracle: { engine: "local", localUrl: "http://127.0.0.1:1/v1" } } }));
+    });
+    await page.setViewport({ width: 1280, height: 900, deviceScaleFactor: 2 });
+    page.jsErrors = [];
+    page.on("pageerror", (e) => { if (!EXTERNAL.test(e.message)) page.jsErrors.push("pageerror: " + e.message); });
+    page.on("console", (m) => { if (m.type() === "error" && !EXTERNAL.test(m.text())) page.jsErrors.push(m.text()); });
+    await page.goto(URL, { waitUntil: "load", timeout: 30000 });
+    await page.waitForFunction(() => window.__CODEX_READY__ === true, { timeout: 30000 });
+    await page.evaluate(() => window.__CODEX_PANEL__.open("oracle"));
+    await sleep(600);
+    const oracleOk = await page.evaluate(() => ({ surface: !!document.querySelector(".gx-oracle"), askBox: !!document.querySelector(".gx-oracle-ask input"), crash: !!document.querySelector(".gx-crash") }));
+    check("oracle: mounts with an engine configured WITHOUT crashing (ask box renders, no error boundary)", oracleOk.surface && oracleOk.askBox && !oracleOk.crash && page.jsErrors.length === 0, JSON.stringify(oracleOk) + " errs=" + page.jsErrors.slice(0, 2).join("|"));
+    await shot(page, "desk-oracle-engine");
+    await ctx.close();
+  }
+
+  // ── regression: the CODEX charter translation renders + its honesty banner ──
+  {
+    const { ctx, page } = await boot(1280, 900);
+    await page.waitForFunction(() => document.querySelectorAll(".gx-verse").length > 0, { timeout: 30000 });
+    await page.evaluate(() => window.CODEX_KERNEL.call("open_passage", { ref: "exo.3.14" }));
+    await sleep(500); // debounce persist
+    // the store-backed goTo exposed on the kernel doesn't take a translation —
+    // patch the persisted cursor directly, then reload to pick it up fresh.
+    await page.evaluate(() => { const s = JSON.parse(localStorage.getItem("codex-genesis.v3") || "{}"); s.cursor = { bookId: "exo", chapter: 3, verse: 14, translation: "codex" }; localStorage.setItem("codex-genesis.v3", JSON.stringify(s)); });
+    await page.reload({ waitUntil: "load" });
+    await page.waitForFunction(() => window.__CODEX_READY__ === true, { timeout: 30000 });
+    await page.waitForFunction(() => document.querySelectorAll(".gx-verse").length > 0, { timeout: 30000 });
+    await sleep(300);
+    const cx = await page.evaluate(() => ({ title: document.querySelector(".gx-reader-title")?.textContent?.trim(), ungated: !!document.querySelector(".gx-ungated-banner"), verses: document.querySelectorAll(".gx-verse").length }));
+    check("codex: the charter translation renders Exodus 3 with the UNGATED honesty banner", /Exodus\s*3/i.test(cx.title || "") && cx.ungated && cx.verses > 0, JSON.stringify(cx));
     await ctx.close();
   }
 

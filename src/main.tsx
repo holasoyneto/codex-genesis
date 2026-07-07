@@ -49,6 +49,33 @@ window.CODEX_KERNEL = { call: callTool, tools: KERNEL_TOOLS.map((t) => t.name) }
 window.CODEX_SHARE = { shareUrl, decodeShare };
 window.__CODEX_PANEL__ = { open: openPanel, close: closePanel };
 
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { error: Error | null }> {
+  state: { error: Error | null } = { error: null };
+  static getDerivedStateFromError(error: Error) { return { error }; }
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    // The interface is mortal; a thrown panel must not take the canon down.
+    console.error("[codex] render error", error, info.componentStack);
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="gx-crash" role="alert">
+          <div className="gx-crash-card glass glass-lg">
+            <h1 className="gx-crash-title">Something broke — the reading is safe.</h1>
+            <p className="gx-crash-body">A panel threw an error. Your marks, cases and place in the text are stored; nothing is lost.</p>
+            <pre className="gx-crash-detail">{String(this.state.error?.message ?? this.state.error)}</pre>
+            <div className="gx-crash-actions">
+              <button className="gx-crash-btn" onClick={() => this.setState({ error: null })}>dismiss</button>
+              <button className="gx-crash-btn is-primary" onClick={() => location.reload()}>reload</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function App() {
   return (
     <Shell>
@@ -60,7 +87,9 @@ function App() {
 const root = createRoot(document.getElementById("root")!);
 root.render(
   <React.StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </React.StrictMode>
 );
 // What's-new, once per update. First-ever visit records silently — there

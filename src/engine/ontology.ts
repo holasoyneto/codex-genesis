@@ -156,11 +156,14 @@ export function searchEntities(o: Ontology, query: string, limit = 5): Entity[] 
   const scored: { e: Entity; s: number }[] = [];
   for (const e of o.entities.values()) {
     let best = 0;
+    const tokens = q.split(/\s+/).filter((t) => t.length >= 3);
     for (const name of e.names) {
       const n = name.toLowerCase();
       if (n === q) best = Math.max(best, 100);
       else if (n.startsWith(q)) best = Math.max(best, 70);
       else if (n.includes(q)) best = Math.max(best, 40);
+      else if (tokens.some((t) => n === t)) best = Math.max(best, 55);
+      else if (tokens.some((t) => n.startsWith(t) || t.startsWith(n))) best = Math.max(best, 28);
     }
     if (best) scored.push({ e, s: best });
   }

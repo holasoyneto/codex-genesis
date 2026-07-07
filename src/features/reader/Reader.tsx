@@ -414,7 +414,17 @@ export function Reader() {
   // focus and marks must never act on it.
   const current = ch && ch.bookId === cursor.bookId && ch.chapter === cursor.chapter ? ch : null;
 
-  if (!book) return null;
+  if (!book) {
+    return (
+      <div className="gx-reader-dark">
+        <p className="gx-reader-dark-line">THE PAGE IS DARK — this book is unknown.</p>
+        <div className="gx-reader-dark-acts">
+          <button className="gx-dark-act" onClick={() => goTo({ bookId: "gen", chapter: 1, verse: 1 })}>⌂ GENESIS 1</button>
+          <button className="gx-dark-act" onClick={() => openPanel("library")}>❖ THE SHELVES</button>
+        </div>
+      </div>
+    );
+  }
   return (
     <article
       className="gx-reader"

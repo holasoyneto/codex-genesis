@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 7778
+    },
+    {
+      "name": "genesis-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "--port", "7799", "--strictPort"],
+      "port": 7799
     }
   ]
 }
