@@ -1,0 +1,44 @@
+{
+  "name": "codex-desktop",
+  "productName": "CODEX",
+  "version": "3.0.0",
+  "description": "CODEX — native Mac app. The Word, offline. Every verse, every tool, no network required.",
+  "main": "main.js",
+  "author": "djmandragora.com",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --mac"
+  },
+  "build": {
+    "appId": "com.codex.genesis",
+    "productName": "CODEX",
+    "asar": false,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "server.js",
+      "mlx.js",
+      "preload.js",
+      "app/**"
+    ],
+    "mac": {
+      "category": "public.app-category.reference",
+      "target": [
+        {
+          "target": "dir",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "../build/icon.icns"
+    }
+  },
+  "devDependencies": {
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8"
+  }
+}

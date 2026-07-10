@@ -63,10 +63,10 @@ export interface Translation {
 }
 
 export const TRANSLATIONS: Translation[] = [
-  { id: "kjv", name: "King James Version", lang: "EN 1611", bolls: "KJV", coverage: "canon66" },
+  { id: "kjv", name: "King James Version", lang: "EN 1611", bolls: "KJV", bundled: true, coverage: "canon66" },
   { id: "web", name: "World English Bible", lang: "EN 2000", bolls: "WEB", bundled: true, coverage: "canon66" },
-  { id: "asv", name: "American Standard", lang: "EN 1901", bolls: "ASV", coverage: "canon66" },
-  { id: "ylt", name: "Young's Literal", lang: "EN 1862", bolls: "YLT", coverage: "canon66" },
+  { id: "asv", name: "American Standard", lang: "EN 1901", bolls: "ASV", bundled: true, coverage: "canon66" },
+  { id: "ylt", name: "Young's Literal", lang: "EN 1862", bolls: "YLT", bundled: true, coverage: "canon66" },
   { id: "wlc", name: "Westminster Leningrad Codex", lang: "עברית · Tanakh", bundled: true, coverage: "ot" },
   { id: "sblgnt", name: "SBL Greek New Testament", lang: "Ελληνικά · NT", bundled: true, coverage: "nt" },
   { id: "charles", name: "Charles 1913 Apocrypha", lang: "EN · Deuterocanon",

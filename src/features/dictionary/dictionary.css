@@ -1,0 +1,68 @@
+.gx-dictionary { position: relative; padding: 18px 16px; }
+.gx-dictionary-title {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.22em;
+  color: var(--fg-dim); margin: 0 0 6px; font-weight: 500;
+}
+.gx-dictionary-note {
+  font-family: var(--mono); font-size: 9.5px; color: var(--fg-dim);
+  letter-spacing: 0.03em; margin: 0 0 10px;
+}
+.gx-dictionary-input {
+  width: 100%; font-family: var(--serif); font-size: 15px;
+  color: var(--fg); background: transparent;
+  border: none; border-bottom: var(--hairline); padding: 6px 2px;
+  margin: 0 0 12px;
+}
+.gx-dictionary-input:focus { outline: none; border-bottom-color: var(--gold); }
+.gx-dictionary-wait { color: var(--fg-dim); font-family: var(--mono); font-size: 11px; }
+
+.gx-dictionary-picks { margin: 0 0 14px; padding-bottom: 10px; border-bottom: var(--hairline); }
+.gx-dictionary-picks-h {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.14em;
+  color: var(--gold); text-transform: uppercase; margin: 0 0 6px;
+}
+.gx-dictionary-picks-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.gx-dictionary-pick {
+  font-family: var(--serif); font-size: 13px; color: var(--fg);
+  border: var(--hairline); padding: 5px 9px; border-radius: 4px;
+}
+.gx-dictionary-pick:hover { border-color: var(--gold); color: var(--gold); }
+
+.gx-dictionary-section-h {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.14em;
+  color: var(--gold); text-transform: uppercase; margin: 0 0 6px;
+}
+.gx-dictionary-results { list-style: none; margin: 0; padding: 0; }
+.gx-dictionary-result-row { border-bottom: var(--hairline); }
+.gx-dictionary-result-btn {
+  width: 100%; text-align: left; background: transparent; border: none;
+  color: var(--fg); padding: 8px 2px; font-family: var(--serif); font-size: 14px;
+}
+.gx-dictionary-result-btn:hover b { color: var(--gold); }
+.gx-dictionary-result-snippet {
+  display: block; font-family: var(--serif); font-size: 12.5px;
+  color: var(--fg-dim); margin-top: 2px;
+}
+
+.gx-dictionary-entry { margin-top: 4px; }
+.gx-dictionary-entry-title {
+  font-family: var(--serif); font-size: 24px; font-weight: 600;
+  margin: 4px 0 10px; line-height: 1.15;
+}
+.gx-dictionary-entry-body {
+  font-family: var(--serif); font-size: 14.5px; line-height: 1.6; color: var(--fg);
+  margin: 0 0 10px;
+}
+.gx-dictionary-back {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+  color: var(--fg-dim); border: var(--hairline); border-radius: 4px;
+  padding: 2px 8px; margin-bottom: 10px;
+}
+.gx-dictionary-back:hover { color: var(--fg); border-color: var(--gold); }
+
+.gx-dictionary-close {
+  position: absolute; top: 10px; right: 10px;
+  width: 28px; height: 28px; border-radius: 6px;
+  color: var(--fg-dim); font-size: 15px;
+}
+.gx-dictionary-close:hover { color: var(--fg); }

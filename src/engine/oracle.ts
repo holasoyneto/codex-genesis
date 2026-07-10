@@ -504,7 +504,7 @@ export async function askOracleStream(
   question: string, transcript: ChatTurn[], ev: OracleStreamEvents,
   forceEngine?: "local" | "cloud"
 ): Promise<OracleAnswer> {
-  const { anthropicKey, localUrl, model: chosen } = getState().settings.oracle;
+  const { anthropicKey, localUrl, localModel, model: chosen } = getState().settings.oracle;
   const engine = forceEngine ?? getState().settings.oracle.engine;
   if (!engine) throw new Error("no engine chosen — open Oracle setup");
   try {
@@ -513,7 +513,7 @@ export async function askOracleStream(
       const base = localUrl.replace(/\/$/, "");
       const probe = await probeLocal(base);
       if (!probe.ok || !probe.model) throw new Error("local engine unreachable — " + (probe.why ?? ""));
-      out = await streamCompat(base, {}, chosen || probe.model, 6_000, "local", question, transcript, ev);
+      out = await streamCompat(base, {}, localModel || probe.model, 6_000, "local", question, transcript, ev);
     } else {
       const p = cloudProvider(anthropicKey);
       if (!p) throw new Error("no usable key — paste a key from Gemini, Groq, OpenRouter, Anthropic or xAI in Oracle setup");

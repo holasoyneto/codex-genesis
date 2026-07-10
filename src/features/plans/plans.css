@@ -1,0 +1,66 @@
+.gx-plans { position: relative; padding: 18px 16px; }
+.gx-plans-title {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.22em;
+  color: var(--fg-dim); margin: 0 0 8px; font-weight: 500;
+}
+.gx-plans-wait { color: var(--fg-dim); }
+.gx-plans-empty { font-family: var(--mono); font-size: 10.5px; color: var(--fg-dim); letter-spacing: 0.05em; margin: 8px 0; }
+
+.gx-plans-list { list-style: none; margin: 0; padding: 0; }
+.gx-plans-item { border-bottom: var(--hairline); }
+.gx-plans-item.is-open { padding-bottom: 12px; }
+
+.gx-plans-card {
+  display: block; width: 100%; text-align: left;
+  padding: 10px 2px; background: none; border: 0; cursor: pointer;
+}
+.gx-plans-name { display: block; font-family: var(--serif); font-size: 15px; color: var(--fg); }
+.gx-plans-badge {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em;
+  color: var(--gold); margin-left: 8px;
+}
+.gx-plans-meta {
+  display: block; font-family: var(--mono); font-size: 9.5px;
+  letter-spacing: 0.12em; color: var(--fg-dim); margin-top: 2px;
+}
+.gx-plans-desc { display: block; font-family: var(--serif); font-size: 12.5px; color: var(--fg-dim); margin-top: 4px; line-height: 1.5; }
+.gx-plans-item.is-open .gx-plans-name { color: var(--gold); }
+
+.gx-plans-detail { padding: 0 2px; }
+.gx-plans-stats {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+  color: var(--gold); margin: 0 0 8px;
+}
+.gx-plans-context { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.1em; color: var(--fg-dim); margin: 0 0 6px; }
+.gx-plans-finished { font-family: var(--serif); font-size: 13.5px; color: var(--fg); margin: 0 0 8px; }
+
+.gx-plans-readings { list-style: none; margin: 0 0 10px; padding: 0; }
+.gx-plans-reading { padding: 4px 0; }
+.gx-plans-readlink {
+  background: none; border: 0; padding: 0; cursor: pointer;
+  font-family: var(--serif); font-size: 14px; color: var(--fg);
+}
+.gx-plans-readlink:hover { color: var(--gold); }
+.gx-plans-readtext { font-family: var(--serif); font-size: 14px; color: var(--fg-dim); }
+
+.gx-plans-btn {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+  color: var(--fg); background: none; border: var(--hairline);
+  border-radius: 6px; padding: 6px 12px; cursor: pointer;
+}
+.gx-plans-btn:hover { color: var(--gold); }
+.gx-plans-btn.is-done { color: var(--gold); }
+
+.gx-plans-reset {
+  display: block; margin-top: 10px;
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em;
+  color: var(--fg-dim); background: none; border: 0; padding: 0; cursor: pointer;
+}
+.gx-plans-reset:hover { color: var(--fg); }
+
+.gx-plans-close {
+  position: absolute; top: 10px; right: 10px;
+  width: 28px; height: 28px; border-radius: 6px;
+  color: var(--fg-dim); font-size: 15px;
+}
+.gx-plans-close:hover { color: var(--fg); }

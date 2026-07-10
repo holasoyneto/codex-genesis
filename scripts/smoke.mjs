@@ -331,10 +331,10 @@ try {
       cloudGated: [...document.querySelectorAll(".gx-oracle-btn")].find((b) => /USE CLOUD/.test(b.textContent))?.disabled,
     }));
     check("oracle: setup offers frontier + local, key button gated", setup.cards === 2 && setup.cloudGated === true, JSON.stringify(setup));
-    await page.evaluate(() => [...document.querySelectorAll(".gx-oracle-btn")].find((b) => /TEST/.test(b.textContent)).click());
-    await page.waitForFunction(() => document.querySelector(".gx-oracle-probe.is-fail, .gx-oracle-probe.is-ok"), { timeout: 10000 });
-    const probe = await page.evaluate(() => document.querySelector(".gx-oracle-probe")?.className);
-    check("oracle: probe answers honestly", /is-fail|is-ok/.test(probe || ""), probe);
+    await page.evaluate(() => [...document.querySelectorAll(".gx-oracle-btn")].find((b) => /AUTOFIND/.test(b.textContent)).click());
+    await page.waitForFunction(() => document.querySelector(".gx-oracle-probe.is-ok"), { timeout: 10000 });
+    const probe = await page.evaluate(() => document.querySelector(".gx-oracle-probe")?.textContent);
+    check("oracle: autofind answers honestly (no local server in CI)", /nothing serving yet|model\(s\) on/.test(probe || ""), probe);
     // Keys persist: paste an xAI-shaped key, reload, it's still there and
     // recognized (the provider is detected by key shape).
     await page.type(".gx-oracle-key", "xai-persistence-proof");

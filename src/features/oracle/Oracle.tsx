@@ -8,7 +8,8 @@ import { useEffect, useRef, useState } from "react";
 import { useApp, setState, flushPersist, type OracleSettings, closePanel, addToInvestigation } from "@/kernel/store";
 import { useInWindow } from "@/shell/Windows";
 import { takeSeed } from "@/kernel/seeds";
-import { askOracleStream, listModels, probeLocal, cloudProvider, type OracleAnswer, type ChatTurn } from "@/engine/oracle";
+import { askOracleStream, listModels, cloudProvider, type OracleAnswer, type ChatTurn } from "@/engine/oracle";
+import { autofindLocal, scanFolderForModels, supportsFolderScan, nativeMlx, type LocalServer, type MlxModelInfo } from "@/engine/detectLocal";
 import { gradeClaims, type Citation } from "@/engine/claims";
 import { Ref } from "@/kernel/Ref";
 import "./oracle.css";
@@ -26,19 +27,121 @@ function setOracle(patch: Partial<OracleSettings>) {
   setState((s) => ({ settings: { ...s.settings, oracle: { ...s.settings.oracle, ...patch } } }));
 }
 
+// NATIVE MLX ENGINE — only rendered inside the packaged Mac app, where
+// window.codexNative exists. Lists models already on disk (HF cache + any
+// picked folders) and starts/stops mlx_lm.server with a click — no Terminal.
+function MlxEngine() {
+  const [models, setModels] = useState<MlxModelInfo[]>([]);
+  const [status, setStatus] = useState<{ running: boolean; port: number; model: string | null }>({ running: false, port: 0, model: null });
+  const [starting, setStarting] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  const refresh = async () => {
+    if (!nativeMlx) return;
+    const [list, st] = await Promise.all([nativeMlx.mlxList(), nativeMlx.mlxStatus()]);
+    setModels(list);
+    setStatus(st);
+  };
+  useEffect(() => { void refresh(); }, []);
+
+  const start = async (m: MlxModelInfo) => {
+    if (!nativeMlx) return;
+    setErr(null);
+    setStarting(m.path);
+    const r = await nativeMlx.mlxStart(m.path);
+    setStarting(null);
+    if (!r.ok || !r.base) { setErr(r.error || "failed to start"); return; }
+    // ask the server what it's actually serving, so the Oracle's model id is honest
+    let served = m.name;
+    try {
+      const res = await fetch(`${r.base}/models`, { signal: AbortSignal.timeout(3000) });
+      const j = (await res.json()) as { data?: { id?: string }[] };
+      served = j.data?.[0]?.id || served;
+    } catch { /* fall back to the folder name */ }
+    setOracle({ engine: "local", localUrl: r.base, localModel: served, localProvider: "Apple MLX" });
+    flushPersist();
+    await refresh();
+  };
+
+  const stop = async () => {
+    if (!nativeMlx) return;
+    await nativeMlx.mlxStop();
+    await refresh();
+  };
+
+  const addFolder = async () => {
+    if (!nativeMlx) return;
+    const dir = await nativeMlx.pickFolder();
+    if (dir) await refresh();
+  };
+
+  if (!nativeMlx) return null;
+
+  return (
+    <div className="gx-oracle-mlx">
+      <p className="gx-oracle-local-src">MLX ENGINE <span className="gx-oracle-local-base">native · starts on this Mac</span></p>
+      {status.running ? (
+        <div className="gx-oracle-mlx-running">
+          <span className="gx-oracle-probe is-ok">● MLX serving {status.model}</span>
+          <button className="gx-oracle-btn is-ghost" onClick={() => void stop()}>STOP</button>
+        </div>
+      ) : null}
+      {models.length ? (
+        <div className="gx-oracle-local-list">
+          {models.map((m) => {
+            const busy = starting === m.path;
+            const active = status.running && status.model === m.name;
+            return (
+              <div key={m.path} className="gx-oracle-mlx-row">
+                <span className="gx-oracle-mlx-name">{m.name}</span>
+                <span className="gx-oracle-mlx-size">{m.sizeGB} GB</span>
+                <button
+                  className="gx-oracle-btn is-ghost"
+                  disabled={busy || active}
+                  onClick={() => void start(m)}
+                >{busy ? "waking the engine… first load can take a minute" : active ? "● running" : "▶ START"}</button>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <p className="gx-oracle-keyhint">No MLX models found in the Hugging Face cache yet.</p>
+      )}
+      <div className="gx-oracle-actions">
+        <button className="gx-oracle-btn is-ghost" onClick={() => void addFolder()}>+ ADD FOLDER</button>
+      </div>
+      {err ? <p className="gx-oracle-keyhint">{err}</p> : null}
+    </div>
+  );
+}
+
 function Setup() {
   const oracle = useApp((s) => s.settings.oracle);
-  const [probe, setProbe] = useState<"idle" | "busy" | "ok" | "fail">("idle");
-  const [probeWhy, setProbeWhy] = useState("");
+  const [scan, setScan] = useState<"idle" | "busy" | "done">("idle");
+  const [servers, setServers] = useState<LocalServer[]>([]);
+  const [disk, setDisk] = useState<{ folder: string; models: { name: string; kind: string }[] } | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const test = async () => {
-    setProbe("busy");
-    const r = await probeLocal(oracle.localUrl);
-    setProbe(r.ok ? "ok" : "fail");
-    setProbeWhy(r.ok ? `found ${r.model}` : r.why ?? "");
-    if (r.ok) { setOracle({ engine: "local" }); flushPersist(); }
+  // AUTOFIND — sweep the known local servers and read back their models.
+  const autofind = async () => {
+    setScan("busy");
+    const found = await autofindLocal();
+    setServers(found);
+    setScan("done");
   };
+
+  // Point at a folder and list the model files sitting in it (offline hint).
+  const pickFolder = async () => {
+    const r = await scanFolderForModels();
+    if (r) { setDisk(r); setOracle({ localFolder: r.folder }); flushPersist(); }
+  };
+
+  // ACTIVATE / SWITCH — a chosen model becomes the live local engine.
+  const choose = (s: LocalServer, model: string) => {
+    setOracle({ engine: "local", localUrl: s.base, localModel: model, localProvider: s.provider });
+    flushPersist();
+  };
+  const nothingFound = scan === "done" && servers.length === 0;
 
   return (
     <div className="gx-oracle-setup">
@@ -76,23 +179,70 @@ function Setup() {
       </section>
 
       <section className="gx-oracle-card">
-        <h3 className="gx-oracle-card-title">◆ ON YOUR MACHINE <span className="gx-oracle-tag">private · free · no key</span></h3>
+        <h3 className="gx-oracle-card-title">◆ ON YOUR MACHINE <span className="gx-oracle-tag">private · free · no key · Ollama · Apple MLX</span></h3>
         <ol className="gx-oracle-steps">
-          <li>Download <a href="https://ollama.com" target="_blank" rel="noreferrer">Ollama</a> and open it (it's one app, no account).</li>
-          <li>In Ollama, pick any model when it asks — the small ones work fine.</li>
-          <li>Press TEST below. That's it.</li>
+          <li>Run a local model — <a href="https://ollama.com" target="_blank" rel="noreferrer">Ollama</a> (<code>ollama run llama3.2</code>) or Apple <a href="https://github.com/ml-explore/mlx-lm" target="_blank" rel="noreferrer">MLX</a> (<code>mlx_lm.server</code>).</li>
+          <li>Press AUTOFIND — CODEX finds every model already serving and lets you pick one. Nothing leaves the machine.</li>
         </ol>
+        <MlxEngine />
         <div className="gx-oracle-actions">
-          <button className="gx-oracle-btn" onClick={test} disabled={probe === "busy"}>
-            {probe === "busy" ? "…" : "⚡ TEST"}
+          <button className="gx-oracle-btn" onClick={autofind} disabled={scan === "busy"}>
+            {scan === "busy" ? "scanning…" : "⚡ AUTOFIND"}
           </button>
-          <span className={"gx-oracle-probe is-" + probe}>
-            {probe === "ok" ? `● connected — ${probeWhy}` : probe === "fail" ? `○ not reachable — ${probeWhy}` : ""}
-          </span>
+          {supportsFolderScan ? (
+            <button className="gx-oracle-btn is-ghost" onClick={pickFolder}>📁 SELECT FOLDER</button>
+          ) : null}
+          {scan === "done" ? (
+            <span className="gx-oracle-probe is-ok">
+              {servers.length ? `● ${servers.reduce((n, s) => n + s.models.length, 0)} model(s) on ${servers.length} server(s)` : "○ nothing serving yet"}
+            </span>
+          ) : null}
         </div>
-        {probe === "fail" ? (
+
+        {servers.length ? (
+          <div className="gx-oracle-local-list">
+            {servers.map((s) => (
+              <div key={s.base} className="gx-oracle-local-group">
+                <p className="gx-oracle-local-src">{s.provider} <span className="gx-oracle-local-base">{s.base.replace(/^https?:\/\//, "")}</span></p>
+                {s.models.map((m) => {
+                  const active = oracle.engine === "local" && oracle.localUrl === s.base && oracle.localModel === m;
+                  return (
+                    <button
+                      key={m}
+                      className={"gx-oracle-local-model" + (active ? " is-active" : "")}
+                      onClick={() => choose(s, m)}
+                    >
+                      <span className="gx-oracle-local-dot">{active ? "●" : "○"}</span> {m}
+                      {active ? <span className="gx-oracle-local-on">active</span> : null}
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        {disk ? (
+          <div className="gx-oracle-local-disk">
+            <p className="gx-oracle-local-src">on disk · <b>{disk.folder}</b></p>
+            {disk.models.length ? (
+              <>
+                {disk.models.map((m) => (
+                  <span key={m.name} className="gx-oracle-local-file">
+                    <span className="gx-oracle-local-kind">{m.kind}</span> {m.name}
+                  </span>
+                ))}
+                <p className="gx-oracle-keyhint">Found on disk — start Ollama or <code>mlx_lm.server</code> with one of these, then AUTOFIND to use it.</p>
+              </>
+            ) : (
+              <p className="gx-oracle-keyhint">No <code>.gguf</code> or MLX model folders found here.</p>
+            )}
+          </div>
+        ) : null}
+
+        {nothingFound ? (
           <div className="gx-oracle-fix">
-            <p>Ollama is shy with websites by default. Paste this once into Terminal (⌘-space, type "Terminal"), press return, then TEST again:</p>
+            <p>No local server answered. Start one (<code>ollama run llama3.2</code> or <code>mlx_lm.server</code>). If Ollama is running but shy with apps, paste this once into Terminal, then AUTOFIND again:</p>
             <div className="gx-oracle-cmd">
               <code>{OLLAMA_FIX}</code>
               <button
@@ -225,8 +375,12 @@ export function Oracle() {
       ) : (
         <>
           <p className="gx-oracle-oath">
-            {oracle.engine === "local" ? "◆ on your machine" : "✦ cloud · your key"} · the Oracle can err — Scripture is the source ·{" "}
-            <button className="gx-oracle-relink" onClick={() => setOracle({ engine: null })}>change engine</button>
+            {oracle.engine === "local"
+              ? `◆ ${oracle.localProvider || "on your machine"}${oracle.localModel ? " · " + oracle.localModel : ""}`
+              : "✦ cloud · your key"} · the Oracle can err — Scripture is the source ·{" "}
+            <button className="gx-oracle-relink" onClick={() => setOracle({ engine: null })}>
+              {oracle.engine === "local" ? "switch model" : "change engine"}
+            </button>
           </p>
           <MindPicker />
           <div className="gx-oracle-turns">

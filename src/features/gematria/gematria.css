@@ -1,0 +1,55 @@
+.gx-gematria { position: relative; padding: 18px 16px; }
+.gx-gematria-title {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.22em;
+  color: var(--fg-dim); margin: 0 0 12px; font-weight: 500;
+}
+.gx-gematria-input {
+  width: 100%; font-family: var(--serif); font-size: 15px;
+  color: var(--fg); background: transparent;
+  border: none; border-bottom: var(--hairline); padding: 6px 2px;
+  margin: 0 0 8px;
+}
+.gx-gematria-input:focus { outline: none; border-bottom-color: var(--gold); }
+.gx-gematria-here { font-family: var(--mono); font-size: 11px; color: var(--fg-dim); margin: 0 0 10px; }
+.gx-gematria-hint { font-family: var(--mono); font-size: 9.5px; color: var(--fg-dim); letter-spacing: 0.05em; }
+.gx-gematria-wait { color: var(--fg-dim); font-family: var(--mono); font-size: 11px; }
+.gx-gematria-text { font-family: var(--serif); font-size: 16px; margin: 0 0 4px; }
+.gx-gematria-lang {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.14em;
+  color: var(--gold); text-transform: uppercase; margin: 0 0 10px;
+}
+
+.gx-gematria-rows { list-style: none; margin: 0; padding: 0; }
+.gx-gematria-row {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 10px; padding: 7px 2px; border-bottom: var(--hairline);
+}
+.gx-gematria-row-label { font-family: var(--serif); font-size: 13px; color: var(--fg); }
+.gx-gematria-row-value {
+  font-family: var(--mono); font-size: 13px; color: var(--gold);
+  padding: 2px 6px; letter-spacing: 0.04em;
+}
+.gx-gematria-row-value:hover { color: var(--fg); }
+
+.gx-gematria-matches { margin-top: 14px; }
+.gx-gematria-matches-title {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.18em;
+  color: var(--gold); margin: 0 0 6px; font-weight: 500;
+}
+.gx-gematria-hits { list-style: none; margin: 0; padding: 0; }
+.gx-gematria-hit {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 10px; padding: 6px 2px; border-bottom: var(--hairline);
+}
+.gx-gematria-hit-word { font-family: var(--serif); font-size: 13px; color: var(--fg); }
+.gx-gematria-scannote {
+  font-family: var(--mono); font-size: 9.5px; color: var(--fg-dim);
+  margin: 8px 0 0; letter-spacing: 0.03em;
+}
+
+.gx-gematria-close {
+  position: absolute; top: 10px; right: 10px;
+  width: 28px; height: 28px; border-radius: 6px;
+  color: var(--fg-dim); font-size: 15px;
+}
+.gx-gematria-close:hover { color: var(--fg); }

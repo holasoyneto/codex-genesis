@@ -192,6 +192,105 @@ function getStateTranslation(): string {
   return getState().cursor.translation;
 }
 
+// Collapse a sorted list of verse numbers into contiguous runs for display —
+// "16–18, 21" rather than "16, 17, 18, 21". Shared by the bar's count label
+// and every action that needs a human reference range.
+function collapseRuns(nums: number[]): string {
+  const sorted = [...nums].sort((a, b) => a - b);
+  const runs: string[] = [];
+  let i = 0;
+  while (i < sorted.length) {
+    let j = i;
+    while (j + 1 < sorted.length && sorted[j + 1] === sorted[j] + 1) j++;
+    runs.push(i === j ? `${sorted[i]}` : `${sorted[i]}–${sorted[j]}`);
+    i = j + 1;
+  }
+  return runs.join(", ");
+}
+
+// The selection's own glass bar — the reader's power moves, one gesture
+// deep, appearing only once ≥1 verse is held. Floats above the column
+// (desk) or docks above the palm pill; never reserves layout, never janks.
+function SelectionBar({
+  bookName, chapter, selection, current, onClear, onCompare, onOracle,
+}: {
+  bookName: string;
+  chapter: number;
+  selection: number[];
+  current: Chapter | null;
+  onClear: () => void;
+  onCompare: () => void;
+  onOracle: () => void;
+}) {
+  const sorted = [...selection].sort((a, b) => a - b);
+  const range = collapseRuns(sorted);
+  const label = `${bookName} ${chapter}:${range}`;
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClear(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClear]);
+
+  const copyV = verb("copy"), markV = verb("mark"), compareV = verb("compare"),
+    askV = verb("ask"), caseV = verb("case");
+
+  const doCopy = () => {
+    const text = sorted.map((n) => `${n} ${current?.verses.find((v) => v.n === n)?.text ?? ""}`).join(" ").trim();
+    void navigator.clipboard?.writeText(`"${text}" — ${label}`);
+    whisper({ kind: "toast", title: `Copied ${label}` });
+  };
+
+  const doMark = () => {
+    setState((s) => {
+      let marks = s.marks;
+      for (const n of sorted) {
+        const dup = marks.find((m) => m.bookId === current?.bookId && m.chapter === chapter && m.verse === n);
+        if (dup) continue;
+        const text = current?.verses.find((v) => v.n === n)?.text ?? "";
+        marks = [...marks, {
+          id: "m" + Math.random().toString(36).slice(2, 9),
+          bookId: current?.bookId ?? "", chapter, verse: n, text: text.slice(0, 90), at: Date.now(),
+        }];
+      }
+      return { marks };
+    });
+    sorted.forEach((n) => record("mark", `${current?.bookId}.${chapter}.${n}`));
+    whisper({ kind: "toast", title: `Marked ${sorted.length} verse${sorted.length === 1 ? "" : "s"}` });
+  };
+
+  const doCase = () => {
+    sorted.forEach((n) => addToInvestigation("verse", { ref: `${current?.bookId}.${chapter}.${n}` }, ""));
+    whisper({ kind: "toast", title: `Added ${sorted.length} verse${sorted.length === 1 ? "" : "s"} to case` });
+  };
+
+  return (
+    <div className="gx-selbar glass gx-enter" role="toolbar" aria-label="Selected verses">
+      <span className="gx-selbar-count">
+        {sorted.length} verse{sorted.length === 1 ? "" : "s"} · {label}
+      </span>
+      <span className="gx-selbar-acts">
+        <button className="gx-selbar-act" onClick={doCopy} title={copyV.hint} aria-label={copyV.word}>
+          <span aria-hidden>{copyV.glyph}</span> {copyV.word}
+        </button>
+        <button className="gx-selbar-act" onClick={doMark} title={markV.hint} aria-label={markV.word}>
+          <span aria-hidden>{markV.glyph}</span> {markV.word}
+        </button>
+        <button className="gx-selbar-act" onClick={onCompare} title={compareV.hint} aria-label={compareV.word}>
+          <span aria-hidden>{compareV.glyph}</span> {compareV.word}
+        </button>
+        <button className="gx-selbar-act" onClick={onOracle} title={askV.hint} aria-label={askV.word}>
+          <span aria-hidden>{askV.glyph}</span> {askV.word}
+        </button>
+        <button className="gx-selbar-act" onClick={doCase} title={caseV.hint} aria-label={caseV.word}>
+          <span aria-hidden>{caseV.glyph}</span> {caseV.word}
+        </button>
+      </span>
+      <button className="gx-selbar-x" aria-label="Clear selection" title="Clear selection" onClick={onClear}>×</button>
+    </div>
+  );
+}
+
 export function Reader() {
   // A windowed reader ("reader@wlc") is pinned to a translation; linked
   // ones follow the global cursor, unlinked ones keep their own place.
@@ -233,6 +332,13 @@ export function Reader() {
   const [retry, setRetry] = useState(0);
   const [ontReady, setOntReady] = useState(false);
   const book = bookById.get(cursor.bookId);
+
+  // Multi-verse selection — reader-local, kin to focus but not the same:
+  // focus is "where the cursor is," selection is "what the analyst is
+  // holding right now." Clears whenever the chapter changes underfoot.
+  const [selection, setSelection] = useState<number[]>([]);
+  const selAnchor = useRef<number | null>(null);
+  useEffect(() => { setSelection([]); selAnchor.current = null; }, [cursor.bookId, cursor.chapter]);
 
   // ── Apple-Books page turn (palm, main reader) ────────────────────────
   // The page FOLLOWS the finger: adjacent chapters are pre-rendered in
@@ -511,9 +617,26 @@ export function Reader() {
                   (red?.has(v.n) ? " is-red" : "") +
                   (v.gate === "GATED_COMPLETE" ? " is-gated" : "") +
                   (current && cursor.verse === v.n ? " is-focus" : "") +
+                  (selection.includes(v.n) ? " is-selected" : "") +
                   (menu?.verse === v.n ? " has-menu" : "")
                 }
                 onClick={(e) => {
+                  // Shift-click (desk only) selects the range from the last
+                  // touched verse to this one — no focus/menu side effect,
+                  // a pure "hold this span" gesture.
+                  if (e.shiftKey && !palmMain) {
+                    const anchor = selAnchor.current ?? v.n;
+                    const [lo, hi] = anchor <= v.n ? [anchor, v.n] : [v.n, anchor];
+                    const range: number[] = [];
+                    for (let n = lo; n <= hi; n++) range.push(n);
+                    setSelection((sel) => [...new Set([...sel, ...range])].sort((a, b) => a - b));
+                    selAnchor.current = v.n;
+                    return;
+                  }
+                  selAnchor.current = v.n;
+                  setSelection((sel) =>
+                    sel.includes(v.n) ? sel.filter((n) => n !== v.n) : [...sel, v.n].sort((a, b) => a - b)
+                  );
                   if (!winId) goTo({ verse: v.n });
                   const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
                   setTimeout(() => setMenu({ verse: v.n, flip: r.bottom > innerHeight * 0.62 }), 0);
@@ -562,6 +685,35 @@ export function Reader() {
             ⇄ {ch.servedFrom} · {ch.translation.toUpperCase()}
           </span>
         </footer>
+      ) : null}
+
+      {selection.length ? (
+        <SelectionBar
+          bookName={book.name}
+          chapter={cursor.chapter}
+          selection={selection}
+          current={current}
+          onClear={() => setSelection([])}
+          onCompare={() => {
+            const sorted = [...selection].sort((a, b) => a - b);
+            setSeed("compare", JSON.stringify({ verses: sorted }));
+            nav({ verse: sorted[0] });
+            openPanel("compare");
+            setSelection([]);
+          }}
+          onOracle={() => {
+            const sorted = [...selection].sort((a, b) => a - b);
+            const range = collapseRuns(sorted);
+            const joined = sorted
+              .map((n) => current?.verses.find((v) => v.n === n)?.text ?? "")
+              .filter(Boolean)
+              .join(" ")
+              .slice(0, 400);
+            setSeed("oracle", `Explain ${book.name} ${cursor.chapter}:${range}: "${joined}"`);
+            openPanel("oracle");
+            setSelection([]);
+          }}
+        />
       ) : null}
     </article>
   );

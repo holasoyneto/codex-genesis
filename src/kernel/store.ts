@@ -11,7 +11,10 @@ export interface Cursor {
 
 export interface OracleSettings {
   engine: "local" | "cloud" | null;
-  localUrl: string;        // OpenAI-compatible server (default: Ollama)
+  localUrl: string;        // active local OpenAI-compatible server (Ollama/MLX/…)
+  localModel: string;      // active local model id ("" = first the server offers)
+  localProvider: string;   // human label of the active local stack, e.g. "Ollama"
+  localFolder: string;     // last folder the user pointed autofind at (display only)
   anthropicKey: string;    // the USER'S OWN key — stored on this device only
   model: string;           // "" = the strongest the key can see (auto)
   effort: "low" | "medium" | "high"; // Anthropic thinking budget
@@ -148,7 +151,7 @@ const DEFAULTS: AppState = {
   cursor: { bookId: "jhn", chapter: 1, verse: null, translation: "kjv" },
   settings: {
     theme: "auto", scriptureScale: 19, redLetter: true, divineName: true, entities: true, witness: true,
-    oracle: { engine: null, localUrl: "http://localhost:11434/v1", anthropicKey: "", model: "", effort: "low" },
+    oracle: { engine: null, localUrl: "http://localhost:11434/v1", localModel: "", localProvider: "", localFolder: "", anthropicKey: "", model: "", effort: "low" },
   },
   veil: null,
   panel: null,

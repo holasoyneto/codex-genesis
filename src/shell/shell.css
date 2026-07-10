@@ -35,7 +35,10 @@
 }
 
 .gx-trace {
-  position: absolute; top: 10px; right: var(--edge-pad);
+  /* clear the status bar + Dynamic Island (env top inset); hug the right
+     safe area in landscape so the island can't sit on the version stamp. */
+  position: absolute; top: calc(10px + env(safe-area-inset-top, 0px));
+  right: max(var(--edge-pad), env(safe-area-inset-right, 0px));
   display: flex; align-items: center; gap: 6px;
   pointer-events: auto;
   opacity: 0.38; transition: opacity var(--fade);
@@ -56,7 +59,7 @@
 .gx-trace-btn:hover, .gx-trace-ver:hover { color: var(--fg); border-color: var(--line); }
 
 .gx-whisper-lane {
-  position: absolute; top: 52px; right: var(--edge-pad); z-index: var(--z-whisper);
+  position: absolute; top: calc(52px + env(safe-area-inset-top, 0px)); right: var(--edge-pad); z-index: var(--z-whisper);
   display: flex; flex-direction: column; gap: 8px;
   width: min(360px, calc(100vw - 2 * var(--edge-pad)));
 }
@@ -168,7 +171,9 @@
 /* palm posture — same tree, tighter edges */
 @media (max-width: 880px) {
   .gx-scripture {
-    padding-top: 40px;
+    /* start the Word below the status bar + Dynamic Island, keeping the
+       original 40px breathing room as the floor on inset-less screens. */
+    padding-top: max(40px, calc(env(safe-area-inset-top, 0px) + 16px));
     /* the palm pill is taller than the desk dock and floats above the
        home-indicator safe area — reserve more room below. */
     padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));

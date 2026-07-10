@@ -34,3 +34,20 @@
   min-height: 32px;
 }
 .gx-marks-export:hover { border-color: var(--accent); }
+
+.gx-marks-search {
+  width: 100%; padding: 8px 10px; margin-bottom: 8px;
+  font-family: var(--serif); font-size: 14px;
+  color: var(--fg); background: transparent;
+  border: var(--hairline); border-radius: 8px; outline: none;
+}
+.gx-marks-search:focus { border-color: color-mix(in oklab, var(--accent) 45%, transparent); }
+.gx-marks-airow { margin: 0 0 10px; }
+.gx-marks-aihint { font-family: var(--mono); font-size: 10.5px; color: var(--fg-dim); letter-spacing: 0.03em; }
+.gx-marks-aigo {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+  color: var(--gold);
+  border: 1px solid var(--line); border-radius: 7px;
+  padding: 5px 10px; min-height: 30px;
+}
+.gx-marks-aigo:hover { border-color: var(--gold); }

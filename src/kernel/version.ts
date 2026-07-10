@@ -6,6 +6,9 @@ declare const __APP_VERSION__: string;
 export const APP_VERSION = __APP_VERSION__;
 
 export const RELEASE_NOTES: string[] = [
+  "GENESIS V3 — THE WHOLE LIBRARY, EVERYWHERE. Every built-in voice now ships inside the app: KJV, ASV and Young's Literal join WEB, the Hebrew Tanakh, the Greek NT, the Apocrypha, Enoch, the Recovered Books and the Open Canon — all 100% offline, on desk, palm and the native apps.",
+  "The Oracle finds the minds already on your machine: AUTOFIND sweeps Ollama, Apple MLX, LM Studio and llama.cpp, lists every model each serves, and activates or switches with one press. SELECT FOLDER scans any directory for .gguf and MLX models on disk.",
+  "The study returns: PLANS (daily reading plans with progress), STRONG'S (Hebrew & Greek concordance), WORD STUDY (frequency, first occurrences, every verse), GEMATRIA (Hebrew, Greek and English systems), DICTIONARY (Easton's, aware of the open chapter), and VERSE ART — depictions of the passage before you.",
   "THE NAME IS EARNED. Every defect from the v0.9.0 audit is fixed: one close control per window, the dock/pill can never occlude the last verse, the Galaxy auto-fits and centers the canon ring with zoom-dependent label culling, the Dossier sits on opaque glass, and the Library reads as quiet single-line rows.",
   "Investigations: case files that accumulate evidence — a verse, an entity, a search hit, an Oracle answer — from anywhere in the app, with inline notes and a clean exportable brief. The Trail renders your jump ledger as a walkable ribbon; save it to a case in one click.",
   "Missions: give the Oracle a research goal and it plans, works the kernel's own tools step by step with a visible feed, and returns a structured artifact you can save. Council: when a local AND a cloud engine are both reachable, ask both at once — agreements and disagreements shown honestly as data, never blended.",

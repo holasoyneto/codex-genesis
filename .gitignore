@@ -6,3 +6,7 @@ ios/App/Pods/
 ios/App/App/public/
 ios/DerivedData/
 ios/App/output/
+desktop/node_modules/
+desktop/release/
+desktop/app/
+build/AppIcon.iconset/
