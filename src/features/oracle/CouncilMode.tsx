@@ -1,15 +1,13 @@
-// COUNCIL — PALANTIR §4. When both a local and a cloud engine are
-// actually reachable, ask both the same question in parallel, then a
-// reconciliation pass marks agreements and disagreements. Disagreement is
-// rendered honestly as data — two columns, plus a CONTESTED-style
-// divergence list — never smoothed into a single false consensus
-// (EXOGRAMMAR law 6: honesty is load-bearing).
+// COUNCIL MODE — when both a local and a cloud engine are actually
+// reachable, ask both the same question in parallel, then a reconciliation
+// pass marks agreements and disagreements. Disagreement is rendered honestly
+// as data — two lanes, plus a CONTESTED divergence list — never smoothed into
+// a single false consensus. Fused into the Oracle panel from the former
+// features/council.
 
 import { useEffect, useState } from "react";
 import { useApp } from "@/kernel/store";
-import { useInWindow } from "@/shell/Windows";
-import { askOracleStream, councilReady, type ChatTurn } from "@/engine/oracle";
-import "./council.css";
+import { askOracleStream, councilReady, cloudProvider, type ChatTurn } from "@/engine/oracle";
 
 interface Seat {
   engine: "local" | "cloud";
@@ -23,12 +21,10 @@ interface Reconciliation {
   disagreements: string[];
 }
 
-// A small, local reconciliation — no third API call required (keeps
-// Council usable even with exactly two engines and nothing more): split
-// each answer into sentences, flag sentence pairs that share little
-// vocabulary as likely divergence points versus ones that echo each
-// other closely. This is a heuristic aid to reading, not a verdict — the
-// two full columns are always shown side by side as the ground truth.
+// A small, local reconciliation — no third API call required: split each
+// answer into sentences, flag pairs that share little vocabulary as likely
+// divergence versus ones that echo each other. A heuristic aid to reading,
+// not a verdict — the two full lanes are always the ground truth.
 function reconcile(a: string, b: string): Reconciliation {
   const sentences = (t: string) => t.split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter((s) => s.length > 12);
   const sa = sentences(a), sb = sentences(b);
@@ -45,8 +41,6 @@ function reconcile(a: string, b: string): Reconciliation {
     const best = Math.max(0, ...sb.map((t) => overlap(ws, words(t))));
     if (best > 0.45) agreements.push(s);
   }
-  // Sentences carrying a clear claim ("is/was/means/refers") with weak
-  // cross-column overlap are surfaced as candidate divergences.
   for (const s of sa) {
     if (!/\b(is|was|means|refers|likely|probably|argue|dispute|contested)\b/i.test(s)) continue;
     const ws = words(s);
@@ -57,7 +51,7 @@ function reconcile(a: string, b: string): Reconciliation {
   return { agreements: agreements.slice(0, 6), disagreements: disagreements.slice(0, 6) };
 }
 
-export function Council() {
+export function CouncilMode({ onOpenMind }: { onOpenMind: () => void }) {
   const oracle = useApp((s) => s.settings.oracle);
   const [ready, setReady] = useState<{ local: boolean; cloud: boolean } | null>(null);
   const [q, setQ] = useState("");
@@ -67,6 +61,7 @@ export function Council() {
   useEffect(() => { councilReady().then(setReady); }, [oracle.localUrl, oracle.anthropicKey]);
 
   const bothReady = ready?.local && ready?.cloud;
+  const cloudLabel = cloudProvider(oracle.anthropicKey)?.label ?? "cloud";
 
   const ask = async () => {
     const question = q.trim();
@@ -91,16 +86,27 @@ export function Council() {
     if (localText && cloudText) setRec(reconcile(localText, cloudText));
   };
 
+  const seatSub = (engine: "local" | "cloud") =>
+    engine === "local"
+      ? (oracle.localProvider || "on this machine") + (oracle.localModel ? " · " + oracle.localModel : "")
+      : cloudLabel;
+
   return (
     <div className="gx-council" role="region" aria-label="Council">
-      {!useInWindow() ? <h2 className="gx-council-title">COUNCIL</h2> : null}
       {ready === null ? (
         <p className="gx-council-wait">…</p>
       ) : !bothReady ? (
-        <p className="gx-council-none">
-          Council needs two reachable minds — a LOCAL engine (Ollama, etc.) and a CLOUD key, both configured and answering.
-          {" "}Currently: LOCAL {ready.local ? "✓" : "✗"} · CLOUD {ready.cloud ? "✓" : "✗"}. Set both up in the Oracle.
-        </p>
+        <div className="gx-council-none">
+          <p>
+            Council needs two reachable minds — a <b>LOCAL</b> engine (Ollama, Apple MLX, …) and a{" "}
+            <b>CLOUD</b> key, both configured and answering.
+          </p>
+          <p>
+            Right now: <b>LOCAL</b> {ready.local ? "✓ reachable" : "✗ missing"} ·{" "}
+            <b>CLOUD</b> {ready.cloud ? "✓ configured" : "✗ missing"}.
+          </p>
+          <button className="gx-oracle-btn" onClick={onOpenMind} style={{ marginTop: 8 }}>◆ open THE MIND</button>
+        </div>
       ) : (
         <>
           <div className="gx-council-ask">
@@ -110,6 +116,7 @@ export function Council() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") void ask(); }}
+              aria-label="Ask both minds"
             />
             <button className="gx-council-go" onClick={() => void ask()}>ASK BOTH</button>
           </div>
@@ -118,7 +125,10 @@ export function Council() {
             <div className="gx-council-seats">
               {seats.map((s) => (
                 <div key={s.engine} className="gx-council-seat">
-                  <span className="gx-council-seat-tag">{s.engine.toUpperCase()}</span>
+                  <span className="gx-council-seat-tag">
+                    {s.engine === "local" ? "◆ LOCAL" : "✦ CLOUD"}
+                    <span className="gx-council-seat-sub">{seatSub(s.engine)}</span>
+                  </span>
                   {s.busy ? (
                     <p className="gx-council-seat-wait"><span className="gx-oracle-shimmer">thinking…</span></p>
                   ) : s.err ? (
@@ -133,7 +143,7 @@ export function Council() {
 
           {rec ? (
             <section className="gx-council-rec">
-              <h3 className="gx-council-rec-title">RECONCILIATION <span className="gx-council-rec-note">heuristic — read the columns above as ground truth</span></h3>
+              <h3 className="gx-council-rec-title">RECONCILIATION <span className="gx-council-rec-note">heuristic — read the lanes above as ground truth</span></h3>
               {rec.agreements.length ? (
                 <div className="gx-council-agree">
                   <h4>AGREE</h4>

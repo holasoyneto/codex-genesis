@@ -1,21 +1,15 @@
-// MISSIONS — PALANTIR §4. An Oracle mode where the model runs a
-// multi-step plan against the kernel's tool loop (the same loop the
-// Oracle panel already drives — askOracleStream), with a visible step
-// feed (glass chips: thinking → tool → result) and a final ARTIFACT: a
-// structured brief (title, findings, verse grid, claims ledger) saved to
-// the active investigation. Nothing new engine-side — Missions is a
-// framing of the kernel loop the Oracle already has (EXOGRAMMAR law 5:
-// the engine is the askOracleStream + kernel tool registry; this panel
-// is a thin, mortal skin over it).
+// MISSION MODE — an Oracle mode where the model runs a multi-step plan
+// against the kernel's tool loop (askOracleStream), with a visible step feed
+// and a final ARTIFACT saved to the active investigation. Fused into the
+// Oracle panel from the former features/missions — no engine change, just a
+// framing of the loop the Oracle already drives.
 
 import { useEffect, useRef, useState } from "react";
 import { useApp, addToInvestigation } from "@/kernel/store";
-import { useInWindow } from "@/shell/Windows";
 import { askOracleStream, type ChatTurn } from "@/engine/oracle";
 import { Ref } from "@/kernel/Ref";
 import { parseRef } from "@/features/omnibar/refparse";
 import { takeSeed } from "@/kernel/seeds";
-import "./missions.css";
 
 interface StepChip { kind: "tool"; name: string; args: string }
 interface Artifact {
@@ -34,17 +28,10 @@ const MISSION_PROMPT = (goal: string) =>
 function extractRefs(text: string): Artifact["refs"] {
   const found: Artifact["refs"] = [];
   const seen = new Set<string>();
-  // A loose scan for "Book ch:v" patterns via the same parser the omnibar
-  // uses — good enough for a findings grid, not a citation authority
-  // (claim grading in the Oracle panel remains the authority on verbatim
-  // accuracy; this is a navigational convenience for the artifact).
   const re = /\b([1-3]?\s?[A-Za-z]+\.?)\s?(\d{1,3}):(\d{1,3})\b/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(text))) {
     const p = parseRef(`${m[1]} ${m[2]}:${m[3]}`);
-    // Only exact/prefix book matches — a fuzzy match means the "book" word
-    // was really some other English word that happened to precede digits
-    // (parseRef's typo tolerance is right for the omnibar, wrong here).
     if (!p || p.fuzzy) continue;
     const key = `${p.book.id}.${p.chapter}.${p.verse}`;
     if (seen.has(key)) continue;
@@ -54,7 +41,7 @@ function extractRefs(text: string): Artifact["refs"] {
   return found.slice(0, 24);
 }
 
-export function Missions() {
+export function MissionMode({ onOpenMind }: { onOpenMind: () => void }) {
   const oracle = useApp((s) => s.settings.oracle);
   const [goal, setGoal] = useState("");
   const [busy, setBusy] = useState(false);
@@ -102,15 +89,15 @@ export function Missions() {
   };
 
   return (
-    <div className="gx-missions" role="region" aria-label="Missions">
-      {!useInWindow() ? <h2 className="gx-mis-title">MISSIONS</h2> : null}
+    <div className="gx-missions" role="region" aria-label="Mission">
       <p className="gx-mis-lead">
         Give the Oracle a research goal — it plans, works the kernel's tools step by step, and returns a structured brief you can save to your investigation.
       </p>
       {!oracle.engine ? (
         <div className="gx-mis-noengine">
           {goal ? <p className="gx-mis-seeded">Goal ready — “{goal}”</p> : null}
-          <p className="gx-mis-none">No Oracle engine configured yet — open the Oracle to set one up first, then return here to launch.</p>
+          <p className="gx-mis-none">No Oracle engine configured yet — open THE MIND to set one up first, then return here to launch.</p>
+          <button className="gx-oracle-btn" onClick={onOpenMind}>◆ open THE MIND</button>
         </div>
       ) : (
         <>
@@ -122,6 +109,7 @@ export function Missions() {
               onChange={(e) => setGoal(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") void run(); }}
               disabled={busy}
+              aria-label="Mission goal"
             />
             <button className="gx-mis-go" onClick={() => void run()} disabled={busy || !goal.trim()}>
               {busy ? "…" : "RUN"}

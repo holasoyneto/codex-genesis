@@ -1,7 +1,7 @@
 {
   "name": "codex-desktop",
   "productName": "CODEX",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "CODEX — native Mac app. The Word, offline. Every verse, every tool, no network required.",
   "main": "main.js",
   "author": "djmandragora.com",

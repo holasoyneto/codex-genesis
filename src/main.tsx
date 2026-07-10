@@ -20,8 +20,6 @@ import "./features/help";
 import "./features/lexicon";
 import "./features/timeline";
 import "./features/investigations";
-import "./features/missions";
-import "./features/council";
 import "./features/desk";
 import "./features/plans";
 import "./features/strongs";

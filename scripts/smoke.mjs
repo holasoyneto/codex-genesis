@@ -318,20 +318,20 @@ try {
     await page.evaluate(() => window.__CODEX_PANEL__.close());
     await sleep(200);
 
-    // THE ORACLE: fresh profile shows the beginner setup — both engine
-    // cards, gated key button, and an HONEST probe failure (no Ollama in CI).
+    // THE ORACLE: a fresh profile opens straight into THE MIND drawer — a
+    // LOCAL section and a CLOUD section, a gated key button, and an HONEST
+    // autofind probe (no Ollama in CI). AUTOFIND runs itself on open.
     await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");
     await page.waitForSelector(".gx-omni-input", { timeout: 5000 });
     await page.type(".gx-omni-input", "oracle");
     await sleep(250);
     await page.keyboard.press("Enter");
-    await page.waitForSelector(".gx-oracle-setup", { timeout: 5000 });
+    await page.waitForSelector(".gx-oracle-drawer", { timeout: 5000 });
     const setup = await page.evaluate(() => ({
-      cards: document.querySelectorAll(".gx-oracle-card").length,
+      sections: document.querySelectorAll(".gx-oracle-drawer .gx-oracle-sec").length,
       cloudGated: [...document.querySelectorAll(".gx-oracle-btn")].find((b) => /USE CLOUD/.test(b.textContent))?.disabled,
     }));
-    check("oracle: setup offers frontier + local, key button gated", setup.cards === 2 && setup.cloudGated === true, JSON.stringify(setup));
-    await page.evaluate(() => [...document.querySelectorAll(".gx-oracle-btn")].find((b) => /AUTOFIND/.test(b.textContent)).click());
+    check("oracle: THE MIND offers LOCAL + CLOUD, key button gated", setup.sections >= 2 && setup.cloudGated === true, JSON.stringify(setup));
     await page.waitForFunction(() => document.querySelector(".gx-oracle-probe.is-ok"), { timeout: 10000 });
     const probe = await page.evaluate(() => document.querySelector(".gx-oracle-probe")?.textContent);
     check("oracle: autofind answers honestly (no local server in CI)", /nothing serving yet|model\(s\) on/.test(probe || ""), probe);
@@ -349,7 +349,7 @@ try {
     await page.waitForSelector(".gx-oracle-key", { timeout: 5000 });
     const persisted = await page.evaluate(() => ({
       key: document.querySelector(".gx-oracle-key")?.value,
-      hint: document.querySelector(".gx-oracle-keyhint")?.textContent,
+      hint: document.querySelector(".gx-oracle-card .gx-oracle-keyhint")?.textContent,
       enabled: ![...document.querySelectorAll(".gx-oracle-btn")].find((b) => /USE CLOUD/.test(b.textContent))?.disabled,
     }));
     check("oracle: key persists across reload + provider recognized",
@@ -653,20 +653,30 @@ try {
     const caseAfterTrail = await page.evaluate(() => window.__CODEX_PANEL__ && true);
     check("the Trail: save trail to investigation runs without error", caseAfterTrail === true);
 
-    // ── PALANTIR §4 — Missions & Council (mocked-engine, no live key) ─────
-    await page.evaluate(() => window.__CODEX_PANEL__.open("missions"));
+    // ── PALANTIR §4 — the Oracle's MISSION & COUNCIL modes (no live key) ──
+    // One panel, driven through its mode strip. The Oracle boots with no
+    // engine configured, so THE MIND drawer is open over the ASK body — the
+    // mode strip stays reachable above it, and each mode renders its own
+    // honest no-engine state.
+    await page.evaluate(() => window.__CODEX_PANEL__.open("oracle"));
+    await page.waitForSelector(".gx-oracle", { timeout: 5000 });
+    // MISSION mode via the strip segment.
+    await page.evaluate(() => document.querySelector('.gx-oracle-seg[data-mode="mission"]').click());
     await page.waitForSelector(".gx-missions", { timeout: 5000 });
     const missionsNoEngine = await page.evaluate(() => !!document.querySelector(".gx-mis-none"));
-    check("missions: honest no-engine state when the Oracle isn't configured", missionsNoEngine);
+    check("oracle/mission: honest no-engine state when the Oracle isn't configured", missionsNoEngine);
     await shot(page, "desk-mission");
-    await page.evaluate(() => window.__CODEX_PANEL__.close("missions"));
-
-    await page.evaluate(() => window.__CODEX_PANEL__.open("council"));
+    // COUNCIL mode via the strip segment.
+    await page.evaluate(() => document.querySelector('.gx-oracle-seg[data-mode="council"]').click());
     await page.waitForSelector(".gx-council", { timeout: 5000 });
+    await page.waitForFunction(() => {
+      const t = document.querySelector(".gx-council-none")?.textContent || "";
+      return /LOCAL/.test(t) && /CLOUD/.test(t);
+    }, { timeout: 5000 });
     const councilState = await page.evaluate(() => document.querySelector(".gx-council-none")?.textContent || "");
-    check("council: honest readiness state when fewer than two engines are configured", /LOCAL/.test(councilState) && /CLOUD/.test(councilState), councilState);
+    check("oracle/council: honest readiness state when fewer than two engines are configured", /LOCAL/.test(councilState) && /CLOUD/.test(councilState), councilState);
     await shot(page, "desk-council");
-    await page.evaluate(() => window.__CODEX_PANEL__.close("council"));
+    await page.evaluate(() => window.__CODEX_PANEL__.close("oracle"));
 
     // ── PALANTIR §8 — omnibar pipes, share permalinks, store export/import ─
     await page.keyboard.down("Meta"); await page.keyboard.press("k"); await page.keyboard.up("Meta");

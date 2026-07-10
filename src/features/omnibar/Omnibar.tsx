@@ -117,7 +117,7 @@ export function Omnibar({ seed }: { seed?: string }) {
         glyph: "☄",
         label: `Launch a mission — “${q.trim()}”`,
         hint: "plan, work the tools, return a brief",
-        run: () => { setSeed("missions", q.trim()); setPanel("missions"); closeVeil(); },
+        run: () => { setSeed("missions", q.trim()); setSeed("oracle-mode", "mission"); setPanel("oracle"); closeVeil(); },
       });
     }
     // Free text that names no verse and no command searches Scripture —

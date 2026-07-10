@@ -3,6 +3,115 @@
   font-family: var(--mono); font-size: 11px; letter-spacing: 0.22em;
   color: var(--fg-dim); margin: 0 0 10px; font-weight: 500;
 }
+
+/* ── THE ORACLE — header: mode strip + engine chip ─────────────────────── */
+.gx-oracle-head { position: relative; z-index: 3; }
+.gx-oracle-bar {
+  display: flex; align-items: center; gap: 12px;
+  margin: 0 0 12px; flex-wrap: wrap;
+}
+.gx-oracle-strip {
+  display: inline-flex; align-items: center;
+  border: var(--hairline); border-radius: 999px; padding: 2px; gap: 2px;
+}
+.gx-oracle-seg {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+  color: var(--fg-dim); padding: 5px 12px; border-radius: 999px;
+  transition: color var(--fade), background var(--fade);
+}
+.gx-oracle-seg:hover { color: var(--fg); }
+.gx-oracle-seg.is-on {
+  color: var(--gold);
+  background: color-mix(in oklab, var(--gold) 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--gold) 45%, transparent);
+}
+.gx-oracle-seg:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.gx-oracle-chip {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em;
+  color: var(--fg); border: var(--hairline); border-radius: 999px;
+  padding: 5px 11px; transition: border-color var(--fade), color var(--fade);
+}
+.gx-oracle-chip:hover { border-color: var(--gold); color: var(--gold); }
+.gx-oracle-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.gx-oracle-chip-glyph { color: var(--gold); }
+.gx-oracle-chip-model { color: var(--fg-dim); }
+.gx-oracle-chip-dot { font-size: 8px; }
+.gx-oracle-chip-dot.is-ok { color: var(--gold); }
+.gx-oracle-chip-dot.is-off { color: var(--fg-dim); opacity: 0.6; }
+
+/* ── the stage: the active mode's body; the Mind drawer overlays it ────── */
+.gx-oracle-stage { position: relative; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.gx-oracle-empty {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 12px;
+  padding: 24px 4px; color: var(--fg-dim);
+}
+.gx-oracle-empty p { font-family: var(--serif); font-size: 14.5px; margin: 0; }
+
+/* ── THE MIND drawer — glass overlay, slides in ────────────────────────── */
+.gx-oracle-drawer {
+  position: absolute; inset: 0; z-index: 4;
+  overflow-y: auto; padding: 4px 2px 18px;
+  background: color-mix(in oklab, var(--bg, #0b0b0d) 88%, transparent);
+  backdrop-filter: blur(14px) saturate(1.1);
+  animation: gx-drawer-in 180ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+@keyframes gx-drawer-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .gx-oracle-drawer { animation: none; } }
+.gx-oracle-drawer-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin: 0 2px 12px; padding-bottom: 8px;
+  border-bottom: var(--hairline);
+}
+.gx-oracle-drawer-title {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em;
+  color: var(--gold); margin: 0; font-weight: 500;
+}
+.gx-oracle-drawer-x {
+  width: 28px; height: 28px; border-radius: 6px;
+  color: var(--fg-dim); font-size: 15px; flex-shrink: 0;
+}
+.gx-oracle-drawer-x:hover { color: var(--fg); }
+.gx-oracle-drawer-x:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.gx-oracle-sec { margin: 0 0 16px; }
+.gx-oracle-sec-title {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+  color: var(--fg-dim); margin: 0 0 8px; font-weight: 600;
+  display: flex; align-items: baseline; gap: 8px;
+}
+.gx-oracle-sec-title .gx-oracle-refresh {
+  margin-left: auto; font-family: var(--mono); font-size: 11px;
+  color: var(--fg-dim); padding: 2px 6px; border-radius: 6px;
+}
+.gx-oracle-sec-title .gx-oracle-refresh:hover { color: var(--gold); }
+.gx-oracle-drawer-foot {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em;
+  color: var(--fg-dim); margin: 18px 2px 0; padding-top: 10px;
+  border-top: var(--hairline); line-height: 1.6;
+}
+
+/* effort — a 3-segment control inside the CLOUD section */
+.gx-oracle-effort { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
+.gx-oracle-effort-strip {
+  display: inline-flex; border: var(--hairline); border-radius: 8px; padding: 2px; gap: 2px; align-self: flex-start;
+}
+.gx-oracle-effort-seg {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.1em;
+  color: var(--fg-dim); padding: 4px 12px; border-radius: 6px;
+  transition: color var(--fade), background var(--fade);
+}
+.gx-oracle-effort-seg:hover { color: var(--fg); }
+.gx-oracle-effort-seg.is-on {
+  color: var(--gold); background: color-mix(in oklab, var(--gold) 12%, transparent);
+}
+.gx-oracle-effort-why { font-family: var(--mono); font-size: 8.5px; color: var(--fg-dim); letter-spacing: 0.04em; }
+.gx-oracle-cloud-controls { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.gx-oracle-card.is-active {
+  border-color: var(--gold);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--gold) 40%, transparent);
+}
 .gx-oracle-lead { font-family: var(--serif); font-size: 14.5px; margin: 0 0 14px; }
 
 .gx-oracle-card {
@@ -181,3 +290,94 @@
 }
 .gx-oracle-mlx-name { font-family: var(--mono); font-size: 11px; color: var(--fg); flex: 1; }
 .gx-oracle-mlx-size { font-family: var(--mono); font-size: 9.5px; color: var(--fg-dim); }
+
+/* ══════════ COUNCIL MODE (fused from features/council) ══════════ */
+.gx-council { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.gx-council-none, .gx-council-wait { color: var(--fg-dim); font-size: 12.5px; line-height: 1.6; }
+.gx-council-none b { color: var(--gold); font-weight: 600; }
+
+.gx-council-ask { display: flex; gap: 6px; margin-bottom: 12px; }
+.gx-council-input {
+  flex: 1; padding: 9px 11px; font-family: var(--serif); font-size: 13.5px;
+  color: var(--fg); background: transparent; border: var(--hairline); border-radius: 8px; outline: none;
+}
+.gx-council-input:focus { border-color: color-mix(in oklab, var(--accent) 45%, transparent); }
+.gx-council-go {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em;
+  color: var(--gold); border: 1px solid color-mix(in oklab, var(--gold) 40%, transparent);
+  border-radius: 8px; padding: 0 12px; white-space: nowrap;
+}
+.gx-council-go:hover:not(:disabled) { background: color-mix(in oklab, var(--gold) 10%, transparent); }
+.gx-council-go:disabled { opacity: 0.4; }
+
+.gx-council-seats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+@media (max-width: 620px) { .gx-council-seats { grid-template-columns: 1fr; } }
+.gx-council-seat { border: var(--hairline); border-radius: 8px; padding: 10px; }
+.gx-council-seat-tag { font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; color: var(--gold); }
+.gx-council-seat-sub { font-family: var(--mono); font-size: 8px; color: var(--fg-dim); letter-spacing: 0.04em; margin-left: 6px; }
+.gx-council-seat-text { font-family: var(--serif); font-size: 13px; line-height: 1.55; margin: 6px 0 0; white-space: pre-wrap; }
+.gx-council-seat-wait, .gx-council-seat-err { font-size: 12px; color: var(--fg-dim); margin: 6px 0 0; }
+.gx-council-seat-err { color: var(--red-letter); }
+
+.gx-council-rec-title {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--fg-dim);
+  margin: 0 0 8px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+}
+.gx-council-rec-note { font-size: 9px; opacity: 0.7; letter-spacing: 0.04em; text-transform: none; }
+.gx-council-agree h4, .gx-council-contest h4 {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.1em; margin: 0 0 4px;
+}
+.gx-council-agree h4 { color: var(--accent); }
+.gx-council-contest h4 { color: var(--gold); }
+.gx-council-agree ul, .gx-council-contest ul { margin: 0 0 10px; padding-left: 16px; }
+.gx-council-agree li, .gx-council-contest li { font-family: var(--serif); font-size: 12.5px; line-height: 1.5; margin-bottom: 3px; }
+.gx-council-agree-only { font-family: var(--serif); font-size: 12.5px; color: var(--fg-dim); }
+
+/* ══════════ MISSION MODE (fused from features/missions) ══════════ */
+.gx-missions { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.gx-mis-lead { font-family: var(--serif); font-size: 13.5px; color: var(--fg-dim); line-height: 1.5; margin: 0 0 14px; }
+.gx-mis-none { color: var(--fg-dim); font-size: 12.5px; }
+
+.gx-mis-ask { display: flex; gap: 6px; margin-bottom: 12px; }
+.gx-mis-input {
+  flex: 1; padding: 9px 11px; font-family: var(--serif); font-size: 13.5px;
+  color: var(--fg); background: transparent; border: var(--hairline); border-radius: 8px; outline: none;
+}
+.gx-mis-input:focus { border-color: color-mix(in oklab, var(--accent) 45%, transparent); }
+.gx-mis-go {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em;
+  color: var(--gold); border: 1px solid color-mix(in oklab, var(--gold) 40%, transparent);
+  border-radius: 8px; padding: 0 14px;
+}
+.gx-mis-go:hover:not(:disabled) { background: color-mix(in oklab, var(--gold) 10%, transparent); }
+.gx-mis-go:disabled { opacity: 0.4; }
+
+.gx-mis-steps { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+.gx-mis-step {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.04em;
+  color: var(--fg-dim); border: var(--hairline); border-radius: 999px; padding: 3px 8px;
+}
+.gx-mis-live { font-family: var(--serif); font-size: 13px; color: var(--fg-dim); line-height: 1.55; white-space: pre-wrap; }
+.gx-mis-err { font-family: var(--mono); font-size: 11px; color: var(--red-letter); }
+
+.gx-mis-artifact { border: var(--hairline); border-radius: 10px; padding: 14px; margin-top: 8px; }
+.gx-mis-art-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+.gx-mis-art-tag {
+  font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.2em; color: var(--gold);
+  border: 1px solid color-mix(in oklab, var(--gold) 40%, transparent); border-radius: 4px; padding: 1px 6px;
+}
+.gx-mis-art-title { font-family: var(--serif); font-size: 16px; margin: 0; font-weight: 600; }
+.gx-mis-art-text { font-family: var(--serif); font-size: 13.5px; line-height: 1.6; white-space: pre-wrap; margin: 0 0 10px; }
+.gx-mis-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.gx-mis-art-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 8px; border-top: var(--hairline); }
+.gx-mis-art-meta { font-family: var(--mono); font-size: 9px; color: var(--fg-dim); }
+.gx-mis-save {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em;
+  color: var(--accent); border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent);
+  border-radius: 7px; padding: 5px 9px;
+}
+.gx-mis-save:hover:not(:disabled) { background: color-mix(in oklab, var(--accent) 10%, transparent); }
+.gx-mis-save:disabled { opacity: 0.6; }
+
+.gx-mis-noengine { display: flex; flex-direction: column; gap: 8px; }
+.gx-mis-seeded { font-size: 14px; opacity: .85; margin: 0; }
