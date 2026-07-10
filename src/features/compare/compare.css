@@ -25,3 +25,12 @@
   color: var(--gold); margin-bottom: 4px;
 }
 .gx-compare-parallels-row { display: flex; flex-wrap: wrap; gap: 4px; }
+
+/* Multi-verse hold — each held verse gets its own labeled group of lanes,
+   in reading order. Same lane row language as single-verse mode. */
+.gx-compare-vgroup { margin: 0 0 18px; }
+.gx-compare-vgroup:last-child { margin-bottom: 0; }
+.gx-compare-vgroup-ref {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+  color: var(--gold); margin: 0 0 4px; font-weight: 500;
+}

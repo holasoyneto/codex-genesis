@@ -53,6 +53,20 @@
   background: color-mix(in oklab, var(--accent) 7%, transparent);
 }
 .gx-verse.is-red { color: var(--red-letter); }
+/* Multi-verse selection — kin to focus (same left-rail language) but its
+   own quiet gold, so a held span never reads as "the cursor is here."
+   Cathedral-quiet: no highlight block, just the rail + a faint wash. */
+.gx-verse.is-selected {
+  border-left-color: color-mix(in oklab, var(--gold) 65%, transparent);
+  background: color-mix(in oklab, var(--gold) 6%, transparent);
+}
+.gx-verse.is-selected:hover { background: color-mix(in oklab, var(--gold) 9%, transparent); }
+/* Focus + selection together — the accent rail wins, a thin gold hairline
+   rides just inside it so both truths stay legible at once. */
+.gx-verse.is-selected.is-focus {
+  border-left-color: var(--accent);
+  box-shadow: inset 3px 0 0 -1px color-mix(in oklab, var(--gold) 70%, transparent);
+}
 /* CODEX Open Canon honesty rendering: gold ONLY for gate=GATED_COMPLETE.
    Ungated verses stay in normal ink — the chapter banner carries the
    caveat instead of tinting text that hasn't earned it. */
@@ -237,6 +251,72 @@
   font-size: 10.5px;
   color: var(--fg-dim);
   line-height: 1.3;
+}
+
+/* The selection's action bar — appears only when ≥1 verse is held. Fixed
+   and floating (never reserves layout, never pushes the column → no jank),
+   centered under the scripture column on desk, docked above the palm pill
+   and safe-area aware there. Same glass + gx-enter language as every other
+   transient surface (picker, verse menu). */
+.gx-selbar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--chrome-bottom) + 14px);
+  transform: translateX(-50%);
+  z-index: var(--z-instruments);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 8px 14px;
+  max-width: min(640px, calc(100vw - 2 * var(--edge-pad)));
+  font-family: var(--sans);
+}
+.gx-selbar-count {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--fg-dim);
+  white-space: nowrap;
+}
+.gx-selbar-acts {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.gx-selbar-acts::-webkit-scrollbar { display: none; }
+.gx-selbar-act {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  font-size: 12.5px;
+  color: var(--fg);
+  padding: 7px 10px;
+  border-radius: 8px;
+  transition: background var(--fade), color var(--fade);
+}
+.gx-selbar-act:hover, .gx-selbar-act:focus-visible { background: color-mix(in oklab, var(--gold) 12%, transparent); color: var(--gold); }
+.gx-selbar-act:focus-visible { outline: 1px solid var(--gold); outline-offset: -1px; }
+.gx-selbar-x {
+  width: 26px; height: 26px; border-radius: 50%;
+  color: var(--fg-dim);
+  font-size: 15px; line-height: 1;
+  transition: color var(--fade), background var(--fade);
+}
+.gx-selbar-x:hover, .gx-selbar-x:focus-visible { color: var(--fg); background: color-mix(in oklab, var(--fg) 8%, transparent); }
+
+@media (max-width: 880px) {
+  .gx-selbar {
+    left: var(--edge-pad);
+    right: var(--edge-pad);
+    bottom: calc(var(--chrome-bottom) + 8px);
+    transform: none;
+    max-width: none;
+    justify-content: space-between;
+  }
+  .gx-selbar-count { display: none; }
 }
 
 /* the translation chip + its popover */

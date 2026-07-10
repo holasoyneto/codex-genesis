@@ -6,6 +6,9 @@ declare const __APP_VERSION__: string;
 export const APP_VERSION = __APP_VERSION__;
 
 export const RELEASE_NOTES: string[] = [
+  "V3.1 — THE ENGINE ROOM. On the Mac app, CODEX now starts your local mind itself: it finds the MLX models already on your disk, wakes mlx_lm.server with one press, and the Oracle is thinking locally — no Terminal, ever. STOP and switch just as easily.",
+  "THE READER BECOMES THE STUDY. Tap verses to gather them — shift-click sweeps a range on desk — and a quiet bar rises: COPY with reference, MARK them all, COMPARE the exact selection across every voice, ASK the Oracle about precisely those words, or file them to a CASE.",
+  "VERSE ART, ACTUALLY. The gallery now truly fetches from Wikimedia Commons — a masonry wall of depictions with artist attributions and a lightbox.",
   "GENESIS V3 — THE WHOLE LIBRARY, EVERYWHERE. Every built-in voice now ships inside the app: KJV, ASV and Young's Literal join WEB, the Hebrew Tanakh, the Greek NT, the Apocrypha, Enoch, the Recovered Books and the Open Canon — all 100% offline, on desk, palm and the native apps.",
   "The Oracle finds the minds already on your machine: AUTOFIND sweeps Ollama, Apple MLX, LM Studio and llama.cpp, lists every model each serves, and activates or switches with one press. SELECT FOLDER scans any directory for .gguf and MLX models on disk.",
   "The study returns: PLANS (daily reading plans with progress), STRONG'S (Hebrew & Greek concordance), WORD STUDY (frequency, first occurrences, every verse), GEMATRIA (Hebrew, Greek and English systems), DICTIONARY (Easton's, aware of the open chapter), and VERSE ART — depictions of the passage before you.",
